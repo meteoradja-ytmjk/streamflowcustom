@@ -3194,6 +3194,155 @@ app.get('/auth/youtube/callback', isAuthenticated, async (req, res) => {
   }
 });
 
+// ─── Update Routes ────────────────────────────────────────────────────────────
+const GITHUB_REPO = 'bangtutorial/streamflow';
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+app.get('/api/update/check', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+    if (user.user_role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Only admin can check for updates' });
+    }
+
+    const currentVersion = packageJson.version;
+
+    const axios = require('axios');
+    let latestVersion = null;
+    let changelog = '';
+    let publishedAt = null;
+    let releaseUrl = '';
+    let hasUpdate = false;
+
+    try {
+      const response = await axios.get(GITHUB_API_URL, {
+        headers: {
+          'User-Agent': 'StreamFlow-App',
+          'Accept': 'application/vnd.github+json'
+        },
+        timeout: 10000
+      });
+
+      const release = response.data;
+      latestVersion = release.tag_name ? release.tag_name.replace(/^v/, '') : null;
+      changelog = release.body || '';
+      publishedAt = release.published_at || null;
+      releaseUrl = release.html_url || '';
+
+      if (latestVersion) {
+        const parseVer = (v) => v.split('.').map(Number);
+        const cur = parseVer(currentVersion);
+        const lat = parseVer(latestVersion);
+        for (let i = 0; i < 3; i++) {
+          if ((lat[i] || 0) > (cur[i] || 0)) { hasUpdate = true; break; }
+          if ((lat[i] || 0) < (cur[i] || 0)) { break; }
+        }
+      }
+    } catch (fetchError) {
+      console.error('Failed to fetch release info from GitHub:', fetchError.message);
+      return res.json({
+        success: true,
+        currentVersion,
+        latestVersion: null,
+        hasUpdate: false,
+        changelog: '',
+        publishedAt: null,
+        releaseUrl: '',
+        error: 'Could not connect to GitHub. Check your internet connection.'
+      });
+    }
+
+    res.json({
+      success: true,
+      currentVersion,
+      latestVersion,
+      hasUpdate,
+      changelog,
+      publishedAt,
+      releaseUrl
+    });
+  } catch (error) {
+    console.error('Update check error:', error);
+    res.status(500).json({ success: false, error: 'Failed to check for updates' });
+  }
+});
+
+app.post('/api/update/install', isAuthenticated, csrfProtection, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+    if (user.user_role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Only admin can install updates' });
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const sendLine = (line) => {
+      res.write(`data: ${JSON.stringify({ line })}\n\n`);
+    };
+    const sendDone = (success, message) => {
+      res.write(`data: ${JSON.stringify({ done: true, success, message })}\n\n`);
+      res.end();
+    };
+
+    const { spawn } = require('child_process');
+    const appDir = __dirname;
+
+    sendLine('🔍 Checking git status...');
+
+    // Step 1: git pull
+    const runCommand = (cmd, args, cwd) => new Promise((resolve, reject) => {
+      const proc = spawn(cmd, args, { cwd, shell: true });
+      let output = '';
+      proc.stdout.on('data', (data) => {
+        const text = data.toString();
+        output += text;
+        text.split('\n').filter(Boolean).forEach(l => sendLine(l));
+      });
+      proc.stderr.on('data', (data) => {
+        const text = data.toString();
+        output += text;
+        text.split('\n').filter(Boolean).forEach(l => sendLine(l));
+      });
+      proc.on('close', (code) => {
+        if (code === 0) resolve(output);
+        else reject(new Error(`Process exited with code ${code}`));
+      });
+    });
+
+    try {
+      sendLine('📥 Running: git pull origin main...');
+      await runCommand('git', ['pull', 'origin', 'main'], appDir);
+
+      sendLine('📦 Running: npm install --omit=dev...');
+      await runCommand('npm', ['install', '--omit=dev'], appDir);
+
+      sendLine('✅ Update completed successfully!');
+      sendLine('🔄 Restarting server in 2 seconds...');
+      sendDone(true, 'Update installed. Server is restarting...');
+
+      setTimeout(() => {
+        console.log('Server restarting after update...');
+        process.exit(0);
+      }, 2000);
+
+    } catch (cmdError) {
+      console.error('Update install error:', cmdError.message);
+      sendLine(`❌ Error: ${cmdError.message}`);
+      sendDone(false, 'Update failed. See log above for details.');
+    }
+
+  } catch (error) {
+    console.error('Update install route error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: 'Failed to start update process' });
+    }
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.post('/api/videos/import-drive', isAuthenticated, [
   body('driveUrl').notEmpty().withMessage('Google Drive URL is required')
 ], async (req, res) => {
