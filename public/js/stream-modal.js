@@ -104,8 +104,8 @@ function selectVideo(video) {
   } else {
     desktopPreview.classList.remove('hidden'); mobilePreview.classList.remove('hidden');
     desktopEmptyPreview.classList.add('hidden'); mobileEmptyPreview.classList.add('hidden');
-    document.getElementById('videoPreview').innerHTML = `<video id="native-preview-desktop" class="native-video-player rounded-lg" controls preload="metadata"><source src="${video.url}" type="video/mp4">Your browser does not support the video tag.</video>`;
-    document.getElementById('videoPreviewMobile').innerHTML = `<video id="native-preview-mobile" class="native-video-player" controls preload="metadata"><source src="${video.url}" type="video/mp4">Your browser does not support the video tag.</video>`;
+    document.getElementById('videoPreview').innerHTML = `<video id="native-preview-desktop" class="native-video-player rounded-lg" src="${video.url}" controls preload="metadata">Your browser does not support the video tag.</video>`;
+    document.getElementById('videoPreviewMobile').innerHTML = `<video id="native-preview-mobile" class="native-video-player" src="${video.url}" controls preload="metadata">Your browser does not support the video tag.</video>`;
   }
   document.getElementById('videoSelectorDropdown').classList.add('hidden');
   const hiddenVideoInput = document.getElementById('selectedVideoId');

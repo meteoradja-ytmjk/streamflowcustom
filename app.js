@@ -2492,12 +2492,20 @@ app.get('/stream/:videoId', isAuthenticated, async (req, res) => {
       return res.status(403).send('You do not have permission to access this video');
     }
 
-    // Support absolute paths for streaming
+    // Support absolute/relative paths for streaming
     let videoPath;
-    if (path.isAbsolute(video.filepath) || (process.platform === 'win32' && /^[a-zA-Z]:[\\\/]/.test(video.filepath))) {
+    const isWebRelative = video.filepath.startsWith('/uploads/') || video.filepath.startsWith('/temp/') || 
+                         video.filepath.startsWith('uploads/') || video.filepath.startsWith('temp/');
+    const isWinAbsolute = process.platform === 'win32' && /^[a-zA-Z]:[\\\/]/.test(video.filepath);
+    const isPosixAbsolute = !isWebRelative && video.filepath.startsWith('/');
+
+    if (isWinAbsolute || isPosixAbsolute) {
       videoPath = video.filepath;
     } else {
-      videoPath = path.join(__dirname, 'public', video.filepath);
+      const relPath = video.filepath.startsWith('/') || video.filepath.startsWith('\\')
+        ? video.filepath.substring(1)
+        : video.filepath;
+      videoPath = path.join(__dirname, 'public', relPath);
     }
 
     if (!fs.existsSync(videoPath)) {
@@ -2507,6 +2515,26 @@ app.get('/stream/:videoId', isAuthenticated, async (req, res) => {
     const stat = fs.statSync(videoPath);
     const fileSize = stat.size;
     const range = req.headers.range;
+    
+    // Dynamically detect Content-Type based on extension
+    const ext = path.extname(videoPath).toLowerCase();
+    const mimeTypes = {
+      '.mp4': 'video/mp4',
+      '.m4v': 'video/mp4',
+      '.webm': 'video/webm',
+      '.ogv': 'video/ogg',
+      '.avi': 'video/x-msvideo',
+      '.mov': 'video/quicktime',
+      '.mkv': 'video/x-matroska',
+      '.mp3': 'audio/mpeg',
+      '.wav': 'audio/wav',
+      '.aac': 'audio/aac',
+      '.m4a': 'audio/mp4',
+      '.ogg': 'audio/ogg',
+      '.flac': 'audio/flac',
+    };
+    const contentType = mimeTypes[ext] || 'video/mp4';
+
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'no-store');
@@ -2520,13 +2548,13 @@ app.get('/stream/:videoId', isAuthenticated, async (req, res) => {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunkSize,
-        'Content-Type': 'video/mp4',
+        'Content-Type': contentType,
       });
       file.pipe(res);
     } else {
       res.writeHead(200, {
         'Content-Length': fileSize,
-        'Content-Type': 'video/mp4',
+        'Content-Type': contentType,
       });
       fs.createReadStream(videoPath).pipe(res);
     }

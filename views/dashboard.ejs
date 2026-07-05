@@ -4093,14 +4093,12 @@
       const desktopVideoContainer = document.getElementById('editVideoPreview');
       const mobileVideoContainer = document.getElementById('editVideoPreviewMobile');
       desktopVideoContainer.innerHTML = `
-    <video id="edit-native-preview-desktop" class="native-video-player rounded-lg" controls preload="metadata">
-      <source src="${video.url}" type="video/mp4">
+    <video id="edit-native-preview-desktop" class="native-video-player rounded-lg" src="${video.url}" controls preload="metadata">
       Your browser does not support the video tag.
     </video>
   `;
       mobileVideoContainer.innerHTML = `
-    <video id="edit-native-preview-mobile" class="native-video-player" controls preload="metadata">
-      <source src="${video.url}" type="video/mp4">
+    <video id="edit-native-preview-mobile" class="native-video-player" src="${video.url}" controls preload="metadata">
       Your browser does not support the video tag.
     </video>
   `;

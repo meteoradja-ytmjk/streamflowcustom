@@ -688,8 +688,7 @@ function playMedia(mediaId, mediaTitle, mediaType) {
             </button>
           </div>
           <div class="p-6">
-            <audio id="audio-player" class="w-full" controls autoplay>
-              <source src="/stream/${mediaId}" type="audio/mp4">
+            <audio id="audio-player" class="w-full" src="/stream/${mediaId}" controls autoplay>
               Your browser does not support the audio element.
             </audio>
           </div>
@@ -707,8 +706,8 @@ function playMedia(mediaId, mediaTitle, mediaType) {
             </button>
           </div>
           <div class="bg-black aspect-video">
-            <video id="native-player" class="w-full h-full" controls preload="auto" autoplay>
-              <source src="/stream/${mediaId}" type="video/mp4">
+            <video id="native-player" class="w-full h-full" src="/stream/${mediaId}" controls preload="auto" autoplay>
+              Your browser does not support the video element.
             </video>
           </div>
         </div>
