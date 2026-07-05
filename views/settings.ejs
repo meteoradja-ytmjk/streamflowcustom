@@ -109,6 +109,87 @@
           </div>
         </form>
       </div>
+
+      <%# ── Update Notice Card (admin only) ─────────────────────────────── %>
+      <% if (user.user_role === 'admin') { %>
+      <div id="profile-update-card" class="bg-gray-800 rounded-lg p-6 mt-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <i class="ti ti-cloud-download text-blue-400 text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold">Application Update</h3>
+              <p class="text-gray-400 text-xs">Check for the latest version of LIVORA</p>
+            </div>
+          </div>
+          <button id="profile-check-update-btn"
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+            <i class="ti ti-refresh"></i>
+            <span>Check</span>
+          </button>
+        </div>
+
+        <!-- Version row -->
+        <div class="flex items-center gap-4 mb-4">
+          <div class="bg-dark-900 rounded-lg px-4 py-2 border border-gray-700 flex-1 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Current</p>
+            <p class="font-bold text-white">v<%= typeof appVersion !== 'undefined' ? appVersion : '?' %></p>
+          </div>
+          <i class="ti ti-arrow-right text-gray-600"></i>
+          <div class="bg-dark-900 rounded-lg px-4 py-2 border border-gray-700 flex-1 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Latest</p>
+            <p id="profile-latest-ver" class="font-bold text-gray-400">--</p>
+          </div>
+        </div>
+
+        <!-- Status messages -->
+        <div id="profile-update-status" class="hidden">
+          <!-- Up to date -->
+          <div id="profile-uptodate" class="hidden flex items-center gap-2 bg-green-900/20 border border-green-700/50 rounded-lg px-4 py-3">
+            <i class="ti ti-circle-check text-green-400"></i>
+            <span class="text-green-400 text-sm font-medium">You're up to date!</span>
+          </div>
+          <!-- Update available -->
+          <div id="profile-update-available" class="hidden">
+            <div class="bg-blue-900/20 border border-blue-700/50 rounded-lg px-4 py-3 mb-3">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="ti ti-sparkles text-blue-400"></i>
+                <span class="text-blue-400 font-medium text-sm">New version available!</span>
+              </div>
+              <p id="profile-update-published" class="text-gray-400 text-xs"></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="profile-install-btn"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg transition-colors text-sm font-medium">
+                <i class="ti ti-download"></i>
+                Install Update
+              </button>
+              <a href="/settings#update" onclick="switchToUpdateTab()"
+                class="text-sm text-gray-400 hover:text-white transition-colors">
+                View details &rarr;
+              </a>
+            </div>
+          </div>
+          <!-- Error -->
+          <div id="profile-update-error" class="hidden flex items-center gap-2 bg-red-900/20 border border-red-700/50 rounded-lg px-4 py-3">
+            <i class="ti ti-wifi-off text-red-400"></i>
+            <span class="text-red-400 text-sm">Could not reach GitHub. Check internet connection.</span>
+          </div>
+        </div>
+
+        <!-- Install progress (inline) -->
+        <div id="profile-install-progress" class="hidden mt-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-gray-400">Installing update...</span>
+            <span id="profile-install-status" class="text-xs text-gray-500">Running...</span>
+          </div>
+          <div class="bg-dark-900 rounded border border-gray-700 p-2 font-mono text-xs text-green-400 max-h-40 overflow-y-auto" id="profile-install-log"></div>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
     </div>
     
     <div id="security-tab" class="settings-content hidden">
@@ -1678,5 +1759,161 @@
       }
     });
   }
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ─── Profile Tab: Update Card Logic ──────────────────────────────────────
+  (function () {
+    const profileCheckBtn     = document.getElementById('profile-check-update-btn');
+    const profileInstallBtn   = document.getElementById('profile-install-btn');
+    const profileStatusArea   = document.getElementById('profile-update-status');
+    const profileLatestVer    = document.getElementById('profile-latest-ver');
+    const profileInstallProg  = document.getElementById('profile-install-progress');
+    const profileInstallLog   = document.getElementById('profile-install-log');
+    const profileInstallStat  = document.getElementById('profile-install-status');
+
+    if (!profileCheckBtn) return; // only for admin
+
+    function showProfileStatus(id) {
+      ['profile-uptodate', 'profile-update-available', 'profile-update-error'].forEach(sid => {
+        document.getElementById(sid).classList.add('hidden');
+      });
+      profileStatusArea.classList.remove('hidden');
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    async function doCheckUpdate() {
+      profileCheckBtn.disabled = true;
+      profileCheckBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i><span>Checking...</span>';
+      profileStatusArea.classList.add('hidden');
+
+      try {
+        const resp = await fetch('/api/update/check');
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+          showProfileStatus('profile-update-error');
+          profileLatestVer.textContent = '--';
+        } else {
+          profileLatestVer.textContent = data.latestVersion ? 'v' + data.latestVersion : '--';
+          if (data.hasUpdate) {
+            const pub = document.getElementById('profile-update-published');
+            if (pub && data.publishedAt) {
+              pub.textContent = 'Released: ' + new Date(data.publishedAt).toLocaleDateString('id-ID', {
+                year: 'numeric', month: 'long', day: 'numeric'
+              });
+            }
+            showProfileStatus('profile-update-available');
+          } else {
+            showProfileStatus('profile-uptodate');
+          }
+        }
+      } catch (e) {
+        showProfileStatus('profile-update-error');
+      }
+
+      profileCheckBtn.disabled = false;
+      profileCheckBtn.innerHTML = '<i class="ti ti-refresh"></i><span>Check</span>';
+    }
+
+    // Auto-check when Profile tab first opens
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileTab = document.querySelector('[data-tab="profile"]');
+      if (profileTab) {
+        profileTab.addEventListener('click', () => {
+          // Only auto-check if not yet checked
+          if (profileStatusArea && profileStatusArea.classList.contains('hidden')) {
+            doCheckUpdate();
+          }
+        });
+      }
+      // If profile is already active on load, check immediately
+      const activeTab = document.querySelector('.settings-tab.active');
+      if (activeTab && activeTab.getAttribute('data-tab') === 'profile') {
+        doCheckUpdate();
+      }
+    });
+
+    profileCheckBtn.addEventListener('click', doCheckUpdate);
+
+    // Install button on profile card
+    if (profileInstallBtn) {
+      profileInstallBtn.addEventListener('click', async () => {
+        profileInstallBtn.disabled = true;
+        profileInstallBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Installing...';
+        profileInstallProg.classList.remove('hidden');
+        profileInstallLog.innerHTML = '';
+        profileInstallStat.textContent = 'Running...';
+
+        function appendLog(line) {
+          const el = document.createElement('div');
+          el.textContent = line;
+          profileInstallLog.appendChild(el);
+          profileInstallLog.scrollTop = profileInstallLog.scrollHeight;
+        }
+
+        try {
+          const resp = await fetch('/api/update/install', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': '<%= csrfToken %>'
+            }
+          });
+
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop();
+
+            for (const part of parts) {
+              if (!part.startsWith('data:')) continue;
+              try {
+                const json = JSON.parse(part.replace(/^data:\s*/, ''));
+                if (json.line) appendLog(json.line);
+                if (json.done) {
+                  profileInstallStat.textContent = json.success ? 'Complete!' : 'Failed';
+                  profileInstallStat.className = json.success
+                    ? 'text-xs text-green-400'
+                    : 'text-xs text-red-400';
+                  if (json.success) {
+                    appendLog('');
+                    appendLog('🚀 Server restarting... Please wait then refresh the page.');
+                    showToast('success', 'Update installed! Reconnecting...');
+                    setTimeout(function poll() {
+                      fetch('/api/update/check')
+                        .then(r => { if (r.ok) window.location.reload(); else setTimeout(poll, 3000); })
+                        .catch(() => setTimeout(poll, 3000));
+                    }, 6000);
+                  } else {
+                    profileInstallBtn.disabled = false;
+                    profileInstallBtn.innerHTML = '<i class="ti ti-download"></i> Install Update';
+                  }
+                }
+              } catch(e) { /* ignore */ }
+            }
+          }
+        } catch (err) {
+          appendLog('❌ Connection error: ' + err.message);
+          profileInstallStat.textContent = 'Failed';
+          profileInstallStat.className = 'text-xs text-red-400';
+          profileInstallBtn.disabled = false;
+          profileInstallBtn.innerHTML = '<i class="ti ti-download"></i> Install Update';
+        }
+      });
+    }
+
+    // Helper: switch to Update tab
+    window.switchToUpdateTab = function() {
+      const updateTabBtn = document.querySelector('[data-tab="update"]');
+      if (updateTabBtn) updateTabBtn.click();
+    };
+  })();
   // ─────────────────────────────────────────────────────────────────────────
   </script>
