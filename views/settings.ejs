@@ -254,109 +254,7 @@
           </form>
         </div>
 
-        <% if (user.user_role === 'admin') { %>
-        <div class="bg-gray-800 rounded-lg p-6">
-          <h3 class="text-lg font-semibold mb-6">Google reCAPTCHA Settings</h3>
-          
-          <div class="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4 mb-6 sm:max-w-md">
-            <div class="flex items-start gap-3">
-              <i class="ti ti-info-circle text-blue-400 text-xl flex-shrink-0 mt-0.5"></i>
-              <div class="text-sm">
-                <p class="text-blue-400 font-medium mb-2">Enable <b>reCAPTCHA v2</b> to protect login page</p>
-                <div class="flex flex-wrap gap-2">
-                  <a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer" 
-                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-xs">
-                    <i class="ti ti-external-link"></i>
-                    Get reCAPTCHA Keys
-                  </a>
-                  <a href="https://youtu.be/-TUHupNHdpI" target="_blank" rel="noopener noreferrer" 
-                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-xs">
-                    <i class="ti ti-brand-youtube-filled"></i>
-                    Tutorial
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <form id="recaptcha-form" class="space-y-6" action="/settings/recaptcha" method="post">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <input type="hidden" name="activeTab" value="security">
-
-            <div class="space-y-2">
-              <label for="recaptcha-site-key" class="block text-sm font-medium text-gray-300">
-                <i class="ti ti-key mr-1"></i>Site Key
-              </label>
-              <div class="relative sm:max-w-md">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <i class="ti ti-world"></i>
-                </span>
-                <input type="text" id="recaptcha-site-key" name="recaptchaSiteKey"
-                  class="bg-dark-900 text-white pl-10 pr-4 py-2 rounded-lg block w-full focus:outline-none focus:ring-1 focus:ring-primary border border-gray-700"
-                  placeholder="Enter your reCAPTCHA Site Key"
-                  value="<%= typeof recaptchaSiteKey !== 'undefined' ? recaptchaSiteKey : '' %>">
-              </div>
-            </div>
-            
-            <div class="space-y-2">
-              <label for="recaptcha-secret-key" class="block text-sm font-medium text-gray-300">
-                <i class="ti ti-lock mr-1"></i>Secret Key
-              </label>
-              <div class="relative sm:max-w-md">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <i class="ti ti-shield-lock"></i>
-                </span>
-                <input type="password" id="recaptcha-secret-key" name="recaptchaSecretKey"
-                  class="bg-dark-900 text-white pl-10 pr-10 py-2 rounded-lg block w-full focus:outline-none focus:ring-1 focus:ring-primary border border-gray-700"
-                  placeholder="Enter your reCAPTCHA Secret Key"
-                  value="<%= typeof recaptchaSecretKey !== 'undefined' ? recaptchaSecretKey : '' %>">
-                <button type="button"
-                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white"
-                  id="toggle-recaptcha-secret">
-                  <i class="ti ti-eye"></i>
-                </button>
-              </div>
-              <% if (typeof hasRecaptchaKeys !== 'undefined' && hasRecaptchaKeys) { %>
-              <p class="text-xs text-gray-500">Enter a new value to update</p>
-              <% } %>
-            </div>
-
-            <div class="space-y-2">
-              <label class="flex items-center justify-between sm:max-w-md cursor-pointer group <%= typeof hasRecaptchaKeys !== 'undefined' && hasRecaptchaKeys ? '' : 'opacity-50 pointer-events-none' %>">
-                <div class="flex items-center gap-2">
-                  <i class="ti ti-shield-check text-gray-400 group-hover:text-primary transition-colors"></i>
-                  <span class="text-sm font-medium text-gray-300">Enable reCAPTCHA Protection</span>
-                </div>
-                <div class="relative">
-                  <input type="checkbox" id="recaptcha-enabled" name="recaptchaEnabled" class="sr-only peer"
-                    <%= typeof recaptchaEnabled !== 'undefined' && recaptchaEnabled ? 'checked' : '' %>
-                    <%= typeof hasRecaptchaKeys !== 'undefined' && hasRecaptchaKeys ? '' : 'disabled' %>>
-                  <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-disabled:opacity-50"></div>
-                </div>
-              </label>
-              <p class="text-xs text-gray-500">
-                <% if (typeof hasRecaptchaKeys !== 'undefined' && hasRecaptchaKeys) { %>
-                <% } else { %>
-                Save your reCAPTCHA keys first to enable this feature
-                <% } %>
-              </p>
-            </div>
-
-            <div class="flex items-center gap-3 pt-2">
-              <button type="submit"
-                class="px-4 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg transition-colors">
-                <i class="ti ti-device-floppy mr-2"></i>Save reCAPTCHA Keys
-              </button>
-              <% if (typeof hasRecaptchaKeys !== 'undefined' && hasRecaptchaKeys) { %>
-              <button type="button" id="remove-recaptcha"
-                class="px-4 py-2 bg-gray-700 hover:bg-red-600 text-white rounded-lg transition-colors">
-                <i class="ti ti-trash mr-2"></i>Remove Keys
-              </button>
-              <% } %>
-            </div>
-          </form>
-        </div>
-        <% } %>
 
       </div>
     </div>
@@ -430,22 +328,22 @@
 
           <div class="lg:pl-8">
             <div class="space-y-4">
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h4 class="text-lg font-semibold mb-1">Connected Channels</h4>
                   <p class="text-gray-400 text-sm">Manage your YouTube channels for streaming</p>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1 bg-gray-700/50 p-1 rounded-lg">
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <div class="flex items-center gap-1 bg-gray-700/50 p-1 rounded-lg w-full sm:w-auto justify-between sm:justify-start">
                     <button type="button" id="download-tokens"
-                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-xs flex items-center gap-1.5"
+                      class="flex-1 sm:flex-none px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-xs flex items-center justify-center gap-1.5"
                       title="Download YouTube Tokens"
                       <%= (typeof youtubeChannels === 'undefined' || youtubeChannels.length === 0) ? 'disabled' : '' %>>
                       <i class="ti ti-download"></i>
                       <span>Download</span>
                     </button>
                     <button type="button" id="upload-tokens-btn"
-                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-xs flex items-center gap-1.5"
+                      class="flex-1 sm:flex-none px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-xs flex items-center justify-center gap-1.5"
                       title="Upload YouTube Tokens">
                       <i class="ti ti-upload"></i>
                       <span>Upload</span>
@@ -453,7 +351,7 @@
                     <input type="file" id="token-file-input" class="hidden" accept=".json">
                   </div>
                   <button type="button" id="connect-youtube"
-                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    class="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     <%= (typeof hasYoutubeCredentials === 'undefined' || !hasYoutubeCredentials) ? 'disabled' : '' %>>
                     <i class="ti ti-plus"></i>
                     <span>Add Channel</span>
@@ -612,41 +510,47 @@
         <h3 class="text-lg font-semibold mb-2">Backup & Restore</h3>
         <p class="text-gray-400 text-sm mb-6">Backup your database to move it to another VPS or keep it safe.</p>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-2 gap-4 max-w-xl">
           <!-- Export Section -->
-          <div class="bg-dark-900 rounded-lg p-5 border border-gray-700">
-            <div class="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center mb-4 text-blue-400">
-              <i class="ti ti-download text-2xl"></i>
+          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700 flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-full bg-blue-900/30 flex items-center justify-center mb-3 text-blue-400">
+                <i class="ti ti-download text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-white text-sm mb-1">Export Data</h4>
+              <p class="text-[11px] text-gray-500 mb-4 leading-relaxed">Download database copy with schedules, channels, and metadata.</p>
             </div>
-            <h4 class="font-medium text-white mb-2">Export Data</h4>
-            <p class="text-xs text-gray-500 mb-4">Download your database containing all schedules, channels, and metadata.</p>
-            <a href="/api/backup/export" class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg transition-colors text-sm w-full justify-center">
+            <a href="/api/backup/export" class="inline-flex items-center gap-1.5 px-3 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg transition-colors text-xs w-full justify-center font-medium">
               <i class="ti ti-download"></i>
-              Download Backup (.db)
+              Download Backup
             </a>
           </div>
 
           <!-- Import Section -->
-          <div class="bg-dark-900 rounded-lg p-5 border border-gray-700">
-            <div class="w-12 h-12 rounded-full bg-amber-900/30 flex items-center justify-center mb-4 text-amber-400">
-              <i class="ti ti-upload text-2xl"></i>
+          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700 flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center mb-3 text-amber-400">
+                <i class="ti ti-upload text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-white text-sm mb-1">Restore Data</h4>
+              <p class="text-[11px] text-gray-500 mb-4 leading-relaxed">Upload a previously exported database file to restore all settings.</p>
             </div>
-            <h4 class="font-medium text-white mb-2">Restore Data</h4>
-            <p class="text-xs text-gray-500 mb-4">Upload a previously exported .db file to restore all your data.</p>
-            <button type="button" onclick="document.getElementById('import-db-input').click()" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors text-sm w-full justify-center">
-              <i class="ti ti-upload"></i>
-              Upload & Restore
-            </button>
-            <input type="file" id="import-db-input" class="hidden" accept=".db" onchange="handleRestore(this)">
+            <div>
+              <button type="button" onclick="document.getElementById('import-db-input').click()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors text-xs w-full justify-center font-medium">
+                <i class="ti ti-upload"></i>
+                Upload & Restore
+              </button>
+              <input type="file" id="import-db-input" class="hidden" accept=".db" onchange="handleRestore(this)">
+            </div>
           </div>
         </div>
 
-        <div class="mt-8 p-4 bg-red-900/10 border border-red-900/30 rounded-lg">
+        <div class="mt-6 p-4 bg-red-950/20 border border-red-900/40 rounded-lg max-w-xl">
           <div class="flex gap-3 text-red-400">
-            <i class="ti ti-alert-triangle text-xl flex-shrink-0"></i>
-            <div class="text-sm">
+            <i class="ti ti-alert-triangle text-lg flex-shrink-0 mt-0.5"></i>
+            <div class="text-xs">
               <p class="font-bold mb-1">Peringatan Penting!</p>
-              <p>Mengembalikan data (Restore) akan <b>menghapus seluruh data jadwal saat ini</b> dan menggantinya dengan data dari file backup. Aplikasi akan otomatis restart setelah proses selesai.</p>
+              <p class="text-gray-400 leading-relaxed">Mengembalikan data (Restore) akan menghapus seluruh data jadwal saat ini dan menggantinya dengan data backup. Aplikasi akan otomatis restart setelah proses selesai.</p>
             </div>
           </div>
         </div>
@@ -1029,84 +933,7 @@
         }
       });
 
-      const toggleRecaptchaSecret = document.getElementById('toggle-recaptcha-secret');
-      const recaptchaSecretField = document.getElementById('recaptcha-secret-key');
-      if (toggleRecaptchaSecret && recaptchaSecretField) {
-        toggleRecaptchaSecret.addEventListener('click', () => {
-          if (recaptchaSecretField.type === 'password') {
-            recaptchaSecretField.type = 'text';
-            toggleRecaptchaSecret.innerHTML = '<i class="ti ti-eye-off"></i>';
-          } else {
-            recaptchaSecretField.type = 'password';
-            toggleRecaptchaSecret.innerHTML = '<i class="ti ti-eye"></i>';
-          }
-        });
-      }
 
-      const recaptchaForm = document.getElementById('recaptcha-form');
-      const saveRecaptchaBtn = recaptchaForm ? recaptchaForm.querySelector('button[type="submit"]') : null;
-      const hasExistingRecaptchaKeys = settingsInitData.hasRecaptchaKeys === 'true';
-      
-      if (recaptchaForm && saveRecaptchaBtn) {
-        recaptchaForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          
-          const siteKey = document.getElementById('recaptcha-site-key').value.trim();
-          const secretKey = document.getElementById('recaptcha-secret-key').value.trim();
-          const enabled = document.getElementById('recaptcha-enabled').checked;
-          
-          if (!siteKey) {
-            showToast('error', 'Please enter reCAPTCHA Site Key.');
-            return false;
-          }
-          
-          const isMaskedSecret = secretKey === '••••••••••••••••';
-          
-          if (!hasExistingRecaptchaKeys && (!secretKey || isMaskedSecret)) {
-            showToast('error', 'Please enter reCAPTCHA Secret Key.');
-            return false;
-          }
-          
-          const originalBtnText = saveRecaptchaBtn.innerHTML;
-          saveRecaptchaBtn.disabled = true;
-          saveRecaptchaBtn.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Validating...';
-          
-          try {
-            const payload = { siteKey, enabled };
-            if (!isMaskedSecret && secretKey) {
-              payload.secretKey = secretKey;
-            }
-            
-            const response = await fetch('/api/settings/recaptcha', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': settingsInitData.csrfToken
-              },
-              body: JSON.stringify(payload)
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-              saveRecaptchaBtn.innerHTML = '<i class="ti ti-check mr-2"></i>Saved!';
-              showToast('success', 'reCAPTCHA settings saved successfully');
-              setTimeout(() => {
-                window.location.hash = 'security';
-                window.location.reload();
-              }, 1000);
-            } else {
-              saveRecaptchaBtn.disabled = false;
-              saveRecaptchaBtn.innerHTML = originalBtnText;
-              showToast('error', data.error || 'Failed to save reCAPTCHA settings');
-            }
-          } catch (error) {
-            saveRecaptchaBtn.disabled = false;
-            saveRecaptchaBtn.innerHTML = originalBtnText;
-            showToast('error', 'Failed to save reCAPTCHA settings');
-          }
-        });
-      }
 
       const geminiForm = document.getElementById('gemini-form');
       if (geminiForm) {
@@ -1144,66 +971,7 @@
         });
       }
 
-      const recaptchaEnabledToggle = document.getElementById('recaptcha-enabled');
-      if (recaptchaEnabledToggle && !recaptchaEnabledToggle.disabled) {
-        recaptchaEnabledToggle.addEventListener('change', async () => {
-          const enabled = recaptchaEnabledToggle.checked;
-          
-          try {
-            const response = await fetch('/api/settings/recaptcha/toggle', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': settingsInitData.csrfToken
-              },
-              body: JSON.stringify({ enabled })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-              showToast('success', data.message);
-            } else {
-              recaptchaEnabledToggle.checked = !enabled;
-              showToast('error', data.error || 'Failed to update reCAPTCHA status');
-            }
-          } catch (error) {
-            recaptchaEnabledToggle.checked = !enabled;
-            showToast('error', 'Failed to update reCAPTCHA status');
-          }
-        });
-      }
 
-      const removeRecaptchaBtn = document.getElementById('remove-recaptcha');
-      if (removeRecaptchaBtn) {
-        removeRecaptchaBtn.addEventListener('click', async () => {
-          if (!confirm('Are you sure you want to remove reCAPTCHA keys? This will disable reCAPTCHA protection.')) return;
-          
-          try {
-            const response = await fetch('/api/settings/recaptcha', {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': settingsInitData.csrfToken
-              }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-              showToast('success', 'reCAPTCHA keys removed successfully');
-              setTimeout(() => {
-                window.location.hash = 'security';
-                window.location.reload();
-              }, 1000);
-            } else {
-              showToast('error', data.error || 'Failed to remove reCAPTCHA keys');
-            }
-          } catch (error) {
-            showToast('error', 'Failed to remove reCAPTCHA keys');
-          }
-        });
-      }
 
 
       if (settingsInitData.success) {
