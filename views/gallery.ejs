@@ -95,40 +95,40 @@ function formatDuration(seconds) {
 %>
 
 <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden">
-  <div class="flex flex-col gap-3 p-4 border-b border-gray-700">
-    <!-- Search Row (always full width on mobile) -->
+  <div class="flex flex-col gap-3 py-4 px-0 sm:px-4 border-b border-gray-700">
+    <!-- Search Row (always full width on mobile, matching outer bounds of top buttons) -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
       <div class="relative w-full sm:w-80">
         <input type="text" id="searchInput" placeholder="Search files and folders..."
-          class="w-full bg-dark-700 border border-gray-600 text-white pl-9 pr-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
-        <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          class="w-full h-10 bg-dark-700 border-t border-b border-l-0 border-r-0 sm:border border-gray-600 text-white pl-9 pr-4 rounded-none sm:rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm">
+        <i class="ti ti-search absolute left-4 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
       </div>
       
-      <!-- Controls Row (1 single row on mobile below Search, next to Search on desktop) -->
-      <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-        <div class="flex items-center gap-2">
+      <!-- Controls Row (1 single row on mobile below Search, next to Search on desktop, nicely padded on mobile) -->
+      <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-3 w-full sm:w-auto px-4 sm:px-0">
+        <div class="flex items-center gap-1.5 sm:gap-2">
           <% if (!currentFolder) { %>
           <button onclick="openCreateFolderDialog()" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white rounded-lg transition-colors" title="Create folder" aria-label="Create folder">
             <i class="ti ti-folder-plus text-lg"></i>
           </button>
           <% } %>
-          <div class="flex items-center bg-dark-700 border border-gray-600 rounded-lg overflow-hidden flex-shrink-0">
-            <button id="gridViewBtn" class="px-3 py-2 bg-primary text-white" title="Grid view">
+          <div class="flex items-center bg-dark-700 border border-gray-600 rounded-lg overflow-hidden flex-shrink-0 h-10">
+            <button id="gridViewBtn" class="px-2.5 sm:px-3 h-full bg-primary text-white flex items-center justify-center" title="Grid view">
               <i class="ti ti-layout-grid"></i>
             </button>
-            <button id="listViewBtn" class="px-3 py-2 text-gray-400 hover:text-white transition-colors" title="List view">
+            <button id="listViewBtn" class="px-2.5 sm:px-3 h-full text-gray-400 hover:text-white transition-colors flex items-center justify-center" title="List view">
               <i class="ti ti-list"></i>
             </button>
           </div>
         </div>
         
-        <div class="flex items-center gap-2">
-          <select id="typeFilter" class="bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm flex-shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <select id="typeFilter" class="h-10 bg-dark-700 border border-gray-600 text-white px-2 sm:px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs sm:text-sm flex-shrink-0">
             <option value="all">All Media</option>
             <option value="video">Video</option>
             <option value="audio">Audio</option>
           </select>
-          <select id="sortSelect" class="bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm flex-shrink-0">
+          <select id="sortSelect" class="h-10 bg-dark-700 border border-gray-600 text-white px-2 sm:px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs sm:text-sm flex-shrink-0">
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="name">Name</option>
