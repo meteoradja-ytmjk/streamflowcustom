@@ -3235,6 +3235,27 @@ app.get('/api/update/check', isAuthenticated, async (req, res) => {
 
     const currentVersion = packageJson.version;
 
+    // Detect Git Info
+    let isGitRepo = false;
+    let gitRemoteRepo = GITHUB_REPO;
+    let gitBranch = 'main';
+    let localCommit = '';
+
+    try {
+      const { execSync } = require('child_process');
+      execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
+      isGitRepo = true;
+      gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim() || 'main';
+      localCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+      const remoteUrl = execSync('git config --get remote.origin.url', { encoding: 'utf8' }).trim();
+      const match = remoteUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)(?:\.git)?$/);
+      if (match) {
+        gitRemoteRepo = `${match[1]}/${match[2]}`;
+      }
+    } catch (gitErr) {
+      console.log('Update check: Not a git repository or git not available.');
+    }
+
     const axios = require('axios');
     let latestVersion = null;
     let changelog = '';
@@ -3242,8 +3263,10 @@ app.get('/api/update/check', isAuthenticated, async (req, res) => {
     let releaseUrl = '';
     let hasUpdate = false;
 
+    // Try to fetch latest release from the remote repo first
     try {
-      const response = await axios.get(GITHUB_API_URL, {
+      const releaseApiUrl = `https://api.github.com/repos/${gitRemoteRepo}/releases/latest`;
+      const response = await axios.get(releaseApiUrl, {
         headers: {
           'User-Agent': 'StreamFlow-App',
           'Accept': 'application/vnd.github+json'
@@ -3252,32 +3275,90 @@ app.get('/api/update/check', isAuthenticated, async (req, res) => {
       });
 
       const release = response.data;
-      latestVersion = release.tag_name ? release.tag_name.replace(/^v/, '') : null;
-      changelog = release.body || '';
-      publishedAt = release.published_at || null;
-      releaseUrl = release.html_url || '';
+      if (release && release.tag_name) {
+        latestVersion = release.tag_name.replace(/^v/, '');
+        changelog = release.body || '';
+        publishedAt = release.published_at || null;
+        releaseUrl = release.html_url || '';
 
-      if (latestVersion) {
-        const parseVer = (v) => v.split('.').map(Number);
-        const cur = parseVer(currentVersion);
-        const lat = parseVer(latestVersion);
-        for (let i = 0; i < 3; i++) {
-          if ((lat[i] || 0) > (cur[i] || 0)) { hasUpdate = true; break; }
-          if ((lat[i] || 0) < (cur[i] || 0)) { break; }
+        if (latestVersion) {
+          const parseVer = (v) => v.split('.').map(Number);
+          const cur = parseVer(currentVersion);
+          const lat = parseVer(latestVersion);
+          for (let i = 0; i < 3; i++) {
+            if ((lat[i] || 0) > (cur[i] || 0)) { hasUpdate = true; break; }
+            if ((lat[i] || 0) < (cur[i] || 0)) { break; }
+          }
         }
       }
-    } catch (fetchError) {
-      console.error('Failed to fetch release info from GitHub:', fetchError.message);
-      return res.json({
-        success: true,
-        currentVersion,
-        latestVersion: null,
-        hasUpdate: false,
-        changelog: '',
-        publishedAt: null,
-        releaseUrl: '',
-        error: 'Could not connect to GitHub. Check your internet connection.'
-      });
+    } catch (releaseError) {
+      // Fallback: Check commits if releases API fails/404 and we are a Git repo
+      if (isGitRepo) {
+        try {
+          const commitApiUrl = `https://api.github.com/repos/${gitRemoteRepo}/commits/${gitBranch}`;
+          const response = await axios.get(commitApiUrl, {
+            headers: {
+              'User-Agent': 'StreamFlow-App',
+              'Accept': 'application/vnd.github+json'
+            },
+            timeout: 10000
+          });
+
+          const commitData = response.data;
+          const remoteCommitSha = commitData.sha;
+
+          if (localCommit && remoteCommitSha && localCommit !== remoteCommitSha) {
+            hasUpdate = true;
+
+            // Fetch remote package.json to get remote version
+            let remoteVersion = currentVersion;
+            try {
+              const rawPackageJsonUrl = `https://raw.githubusercontent.com/${gitRemoteRepo}/${gitBranch}/package.json`;
+              const pkgResponse = await axios.get(rawPackageJsonUrl, { timeout: 5000 });
+              if (pkgResponse.data && pkgResponse.data.version) {
+                remoteVersion = pkgResponse.data.version;
+              }
+            } catch (pkgErr) {
+              console.error('Failed to fetch remote package.json:', pkgErr.message);
+            }
+
+            latestVersion = remoteVersion === currentVersion
+              ? `${remoteVersion} (${remoteCommitSha.substring(0, 7)})`
+              : remoteVersion;
+            changelog = commitData.commit.message || 'New updates committed to branch.';
+            publishedAt = commitData.commit.committer.date || null;
+            releaseUrl = commitData.html_url || '';
+          } else {
+            // Already up to date
+            latestVersion = currentVersion;
+            hasUpdate = false;
+          }
+        } catch (commitError) {
+          console.error('Failed to fetch commit info from GitHub:', commitError.message);
+          return res.json({
+            success: true,
+            currentVersion,
+            latestVersion: null,
+            hasUpdate: false,
+            changelog: '',
+            publishedAt: null,
+            releaseUrl: '',
+            error: 'Could not connect to GitHub. Check your internet connection.'
+          });
+        }
+      } else {
+        console.error('Failed to fetch release info and not a git repo:', releaseError.message);
+        return res.json({
+          success: true,
+          currentVersion,
+          latestVersion: null,
+          hasUpdate: false,
+          changelog: '',
+          publishedAt: null,
+          releaseUrl: '',
+          error: 'Could not connect to GitHub. Check your internet connection.'
+        });
+      }
     }
 
     res.json({
@@ -3320,6 +3401,14 @@ app.post('/api/update/install', isAuthenticated, csrfProtection, async (req, res
 
     sendLine('🔍 Checking git status...');
 
+    let gitBranch = 'main';
+    try {
+      const { execSync } = require('child_process');
+      gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim() || 'main';
+    } catch (e) {
+      console.log('Failed to detect current branch, defaulting to main.');
+    }
+
     // Step 1: git pull
     const runCommand = (cmd, args, cwd) => new Promise((resolve, reject) => {
       const proc = spawn(cmd, args, { cwd, shell: true });
@@ -3341,8 +3430,8 @@ app.post('/api/update/install', isAuthenticated, csrfProtection, async (req, res
     });
 
     try {
-      sendLine('📥 Running: git pull origin main...');
-      await runCommand('git', ['pull', 'origin', 'main'], appDir);
+      sendLine(`📥 Running: git pull origin ${gitBranch}...`);
+      await runCommand('git', ['pull', 'origin', gitBranch], appDir);
 
       sendLine('📦 Running: npm install --omit=dev...');
       await runCommand('npm', ['install', '--omit=dev'], appDir);
