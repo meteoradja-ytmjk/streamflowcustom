@@ -8,49 +8,49 @@
   </div>
   
   <div class="mb-6 border-b border-gray-700">
-    <div class="flex flex-wrap -mb-px">
-      <button class="settings-tab active mr-2 py-2 px-4 text-blue-600 border-b-2 border-primary font-medium hover:text-blue-600 hover:border-blue-600"
+    <div class="grid grid-cols-4 gap-2 w-full md:flex md:flex-wrap md:-mb-px md:gap-0">
+      <button class="settings-tab active flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-primary text-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="profile">
-        <i class="ti ti-user mr-2"></i>Profile
+        <i class="ti ti-user text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Profile</span>
       </button>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="security">
-        <i class="ti ti-shield-lock mr-2"></i>Security
+        <i class="ti ti-shield-lock text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Security</span>
       </button>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="integration">
-        <i class="ti ti-plug mr-2"></i>Integration
+        <i class="ti ti-plug text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Integration</span>
       </button>
       <% if (user.user_role === 'admin') { %>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="gemini">
-        <i class="ti ti-sparkles mr-2"></i>Gemini AI
+        <i class="ti ti-sparkles text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Gemini AI</span>
       </button>
       <% } %>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="backup">
-        <i class="ti ti-database mr-2"></i>Backup
+        <i class="ti ti-database text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Backup</span>
       </button>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="logs">
-        <i class="ti ti-file-text mr-2"></i>Logs
+        <i class="ti ti-file-text text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Logs</span>
       </button>
       <% if (user.user_role === 'admin') { %>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="update">
-        <i class="ti ti-cloud-download mr-2"></i>Update
+        <i class="ti ti-cloud-download text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">Update</span>
       </button>
       <% } %>
       <button
-        class="settings-tab mr-2 py-2 px-4 text-gray-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 font-medium"
+        class="settings-tab flex flex-col items-center justify-center py-2 px-1 text-xs border-b-2 border-transparent text-gray-400 hover:text-blue-600 hover:border-blue-600 font-medium md:flex-row md:py-2 md:px-4 md:mr-2"
         data-tab="about">
-        <i class="ti ti-info-circle mr-2"></i>About
+        <i class="ti ti-info-circle text-lg mb-1 md:mb-0 md:mr-2 md:text-base"></i><span class="text-[10px] sm:text-xs md:text-sm">About</span>
       </button>
     </div>
   </div>
