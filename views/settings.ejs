@@ -120,7 +120,7 @@
             </div>
             <div>
               <h3 class="text-base font-semibold">Application Update</h3>
-              <p class="text-gray-400 text-xs">Check for the latest version of LIVORA</p>
+              <p class="text-gray-400 text-xs">Check for the latest version of MONSTERLIVE</p>
             </div>
           </div>
           <button id="profile-check-update-btn"
@@ -706,22 +706,27 @@
       <div class="bg-gray-800 rounded-lg p-6 max-w-3xl space-y-6">
         <div>
           <h3 class="text-lg font-semibold">Application Update</h3>
-          <p class="text-gray-400 text-sm mt-1">Check and install the latest version of LIVORA directly from GitHub.</p>
+          <p class="text-gray-400 text-sm mt-1">Check and install the latest version of MONSTERLIVE directly from GitHub.</p>
         </div>
 
-        <!-- Version Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700">
+        <!-- Version & Check Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700 flex flex-col justify-between min-h-[90px]">
             <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Current Version</p>
             <p id="update-current-ver" class="text-2xl font-bold text-white">v<%= typeof appVersion !== 'undefined' ? appVersion : '?' %></p>
           </div>
-          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700">
+          <div class="bg-dark-900 rounded-lg p-4 border border-gray-700 flex flex-col justify-between min-h-[90px]">
             <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Latest Version</p>
             <div class="flex items-center gap-2">
               <p id="update-latest-ver" class="text-2xl font-bold text-gray-400">--</p>
               <span id="update-badge" class="hidden"></span>
             </div>
           </div>
+          <button id="update-check-btn"
+            class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-colors border border-gray-600 w-full min-h-[90px]">
+            <i class="ti ti-refresh text-xl"></i>
+            <span class="text-xs font-semibold uppercase tracking-wider">Check for Updates</span>
+          </button>
         </div>
 
         <!-- Status Area -->
@@ -731,7 +736,7 @@
             <i class="ti ti-circle-check text-green-400 text-2xl flex-shrink-0"></i>
             <div>
               <p class="text-green-400 font-medium">You're up to date!</p>
-              <p class="text-gray-400 text-sm">LIVORA is running the latest version.</p>
+              <p class="text-gray-400 text-sm">MONSTERLIVE is running the latest version.</p>
             </div>
           </div>
           <!-- Has update -->
@@ -780,48 +785,32 @@
           <div class="bg-dark-900 rounded-lg border border-gray-700 p-3 font-mono text-xs text-green-400 max-h-64 overflow-y-auto" id="update-log-container">
           </div>
         </div>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center gap-3">
-          <button id="update-check-btn"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
-            <i class="ti ti-refresh"></i>
-            <span>Check for Updates</span>
-          </button>
-          <a id="update-github-link" href="https://github.com/bangtutorial/streamflow/releases" target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm">
-            <i class="ti ti-brand-github"></i>
-            View on GitHub
-          </a>
-        </div>
-
-        <p class="text-xs text-gray-600">Updates are fetched from <a href="https://github.com/bangtutorial/streamflow" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-gray-400 underline">github.com/bangtutorial/streamflow</a>. Make sure your server is connected to the internet and has Git installed.</p>
       </div>
     </div>
     <% } %>
 
     <div id="about-tab" class="settings-content hidden">
       <div class="bg-gray-800 rounded-lg p-6 max-w-3xl">
-        <h3 class="text-lg font-semibold mb-6">About LIVORA</h3>
+        <h3 class="text-lg font-semibold mb-6">About MONSTERLIVE</h3>
         <div class="prose text-sm prose-invert prose-sm max-w-none text-gray-300 space-y-4">
           <p>
-            LIVORA is a high-performance, private live streaming application designed to help you 
+            MONSTERLIVE is a high-performance, private live streaming application designed to help you 
             broadcast pre-recorded video content to multiple social and streaming platforms simultaneously. 
-            Built with ease-of-use and peak rendering speed in mind, LIVORA runs securely on your own server infrastructure.
+            Built with ease-of-use and peak rendering speed in mind, MONSTERLIVE runs securely on your own server infrastructure.
           </p>
           <p>
-            With LIVORA, you can seamlessly stream pre-recorded videos to platforms like YouTube, Facebook, and any 
+            With MONSTERLIVE, you can seamlessly stream pre-recorded videos to platforms like YouTube, Facebook, and any 
             RTMP-compatible service. The application supports robust scheduled streaming, allowing you to queue your 
             broadcasts in advance and let the system handle the rest automatically.
           </p>
           <p>
-            LIVORA is built using Node.js and leverages FFmpeg for lightning-fast video rendering and processing. It uses SQLite for 
+            MONSTERLIVE is built using Node.js and leverages FFmpeg for lightning-fast video rendering and processing. It uses SQLite for 
             resilient data storage, making it lightweight and highly optimized for minimal VPS configurations.
           </p>
           <h4 class="text-white font-medium pt-4">Version</h4>
-          <p>LIVORA v<%= typeof appVersion !== 'undefined' ? appVersion : '2.1.0' %></p>
+          <p>MONSTERLIVE v<%= typeof appVersion !== 'undefined' ? appVersion : '2.1.0' %></p>
           <div class="border-t border-gray-700 pt-6 mt-6">
-            <p class="text-gray-500 text-sm">© 2026 LIVORA. All rights reserved.</p>
+            <p class="text-gray-500 text-sm">© 2026 MONSTERLIVE. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -1651,8 +1640,9 @@
               document.getElementById('update-changelog').textContent = data.changelog;
               document.getElementById('update-changelog-wrap').classList.remove('hidden');
             }
-            if (data.releaseUrl) {
-              document.getElementById('update-github-link').href = data.releaseUrl;
+            const githubLink = document.getElementById('update-github-link');
+            if (githubLink && data.releaseUrl) {
+              githubLink.href = data.releaseUrl;
             }
           } else {
             updateLatestVer.classList.add('text-green-400');
