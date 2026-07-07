@@ -2361,28 +2361,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  window.toggleItemSelection = function(item) {
-    const kind = item.dataset.kind || 'file';
-    if (kind !== 'file') return;
-
-    const id = item.dataset.id;
-    const checkbox = item.querySelector('.item-select-checkbox');
-    if (!checkbox) return;
-
-    checkbox.checked = !checkbox.checked;
-
-    if (checkbox.checked) {
-      if (!selectedMediaIds.includes(id)) {
-        selectedMediaIds.push(id);
-      }
-    } else {
-      selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-    }
-
-    syncCheckboxesState(id, checkbox.checked);
-    updateSelectionBar();
-  };
-
   function syncCheckboxesState(id, isChecked) {
     const elements = document.querySelectorAll(`[data-id="${id}"]`);
     elements.forEach(el => {
@@ -2396,20 +2374,56 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Intercept clicks during Selection Mode
+  // Intercept card clicks during Selection Mode
   const galleryContent = document.getElementById('galleryContent');
   if (galleryContent) {
     galleryContent.addEventListener('click', (e) => {
       if (!isSelectionModeActive) return;
 
+      // If clicked on the checkbox or its container, let the browser handle it natively (change event will trigger)
+      if (e.target.closest('.item-select-checkbox, .select-checkbox-container, .select-column-cell')) {
+        return;
+      }
+
       const item = e.target.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
       if (item) {
         e.preventDefault();
         e.stopPropagation();
-        toggleItemSelection(item);
+        
+        const checkbox = item.querySelector('.item-select-checkbox');
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          // Dispatch change event to trigger our listener
+          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
       }
-    }, true); // Capturing phase!
+    });
   }
+
+  // Handle select checkbox changes
+  document.body.addEventListener('change', (e) => {
+    if (e.target && e.target.classList.contains('item-select-checkbox')) {
+      const checkbox = e.target;
+      const item = checkbox.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
+      if (!item) return;
+
+      const id = item.dataset.id;
+      if (!id) return;
+
+      const isChecked = checkbox.checked;
+
+      if (isChecked) {
+        if (!selectedMediaIds.includes(id)) {
+          selectedMediaIds.push(id);
+        }
+      } else {
+        selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+      }
+
+      syncCheckboxesState(id, isChecked);
+      updateSelectionBar();
+    }
+  });
 
   // Select All functionality delegation
   document.body.addEventListener('change', (e) => {
@@ -2453,7 +2467,12 @@ document.addEventListener('DOMContentLoaded', function() {
           if (!isSelectionModeActive) {
             enterSelectionMode();
           }
-          toggleItemSelection(item);
+          
+          const checkbox = item.querySelector('.item-select-checkbox');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         }, 600);
       };
 
