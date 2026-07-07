@@ -2527,9 +2527,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const targetFolderId = result.value;
       showToast('info', `Moving ${selectedMediaIds.length} files...`);
 
+      const idsToMove = [...selectedMediaIds];
+
       try {
         const results = [];
-        for (const id of selectedMediaIds) {
+        for (const id of idsToMove) {
           const res = await fetch(`/api/videos/${id}/folder`, {
             method: 'PUT',
             headers: {
@@ -2550,7 +2552,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Realtime removal of successfully moved files from local state
-        const movedIds = selectedMediaIds.filter((id, index) => results[index] && results[index].success);
+        const movedIds = idsToMove.filter((id, index) => results[index] && results[index].success);
         galleryVideosState = galleryVideosState.filter(video => !movedIds.includes(video.id));
         renderGalleryContent();
 
@@ -2582,9 +2584,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (result.confirmed) {
       showToast('info', `Deleting ${selectedMediaIds.length} files...`);
 
+      const idsToDelete = [...selectedMediaIds];
+
       try {
         const results = [];
-        for (const id of selectedMediaIds) {
+        for (const id of idsToDelete) {
           const res = await fetch(`/api/videos/${id}`, {
             method: 'DELETE',
             headers: {
@@ -2603,7 +2607,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Realtime removal of successfully deleted files from local state
-        const deletedIds = selectedMediaIds.filter((id, index) => results[index] && results[index].success);
+        const deletedIds = idsToDelete.filter((id, index) => results[index] && results[index].success);
         galleryVideosState = galleryVideosState.filter(video => !deletedIds.includes(video.id));
         renderGalleryContent();
 
