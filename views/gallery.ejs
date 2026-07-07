@@ -2374,56 +2374,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Intercept card clicks during Selection Mode
+  // Intercept clicks during Selection Mode (Capturing phase to bypass click propagation blockers)
   const galleryContent = document.getElementById('galleryContent');
   if (galleryContent) {
     galleryContent.addEventListener('click', (e) => {
       if (!isSelectionModeActive) return;
 
-      // If clicked on the checkbox or its container, let the browser handle it natively (change event will trigger)
-      if (e.target.closest('.item-select-checkbox, .select-checkbox-container, .select-column-cell')) {
+      // Allow Select All checkbox interaction to work natively
+      if (e.target.id === 'selectAllCheckbox' || e.target.closest('#selectAllCheckbox')) {
         return;
       }
 
+      // Intercept click
+      e.preventDefault();
+      e.stopPropagation();
+
       const item = e.target.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
       if (item) {
-        e.preventDefault();
-        e.stopPropagation();
-        
         const checkbox = item.querySelector('.item-select-checkbox');
         if (checkbox) {
+          const id = item.dataset.id;
+          if (!id) return;
+
           checkbox.checked = !checkbox.checked;
-          // Dispatch change event to trigger our listener
-          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          const isChecked = checkbox.checked;
+
+          if (isChecked) {
+            if (!selectedMediaIds.includes(id)) {
+              selectedMediaIds.push(id);
+            }
+          } else {
+            selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+          }
+
+          syncCheckboxesState(id, isChecked);
+          updateSelectionBar();
         }
       }
-    });
+    }, true); // Use capture phase!
   }
-
-  // Handle select checkbox changes
-  document.body.addEventListener('change', (e) => {
-    if (e.target && e.target.classList.contains('item-select-checkbox')) {
-      const checkbox = e.target;
-      const item = checkbox.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
-      if (!item) return;
-
-      const id = item.dataset.id;
-      if (!id) return;
-
-      const isChecked = checkbox.checked;
-
-      if (isChecked) {
-        if (!selectedMediaIds.includes(id)) {
-          selectedMediaIds.push(id);
-        }
-      } else {
-        selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-      }
-
-      syncCheckboxesState(id, isChecked);
-      updateSelectionBar();
-    }
-  });
 
   // Select All functionality delegation
   document.body.addEventListener('change', (e) => {
@@ -2470,8 +2459,20 @@ document.addEventListener('DOMContentLoaded', function() {
           
           const checkbox = item.querySelector('.item-select-checkbox');
           if (checkbox) {
-            checkbox.checked = !checkbox.checked;
-            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+            const id = item.dataset.id;
+            if (id) {
+              checkbox.checked = !checkbox.checked;
+              const isChecked = checkbox.checked;
+              if (isChecked) {
+                if (!selectedMediaIds.includes(id)) {
+                  selectedMediaIds.push(id);
+                }
+              } else {
+                selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+              }
+              syncCheckboxesState(id, isChecked);
+              updateSelectionBar();
+            }
           }
         }, 600);
       };
