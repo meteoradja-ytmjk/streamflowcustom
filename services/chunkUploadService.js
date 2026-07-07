@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 
-const CHUNK_SIZE = 50 * 1024 * 1024;
+const CHUNK_SIZE = 10 * 1024 * 1024;
 const TEMP_DIR = path.join(__dirname, '../public/uploads/temp');
 const INFO_DIR = path.join(__dirname, '../public/uploads/temp/info');
 const VIDEOS_DIR = path.join(__dirname, '../public/uploads/videos');
@@ -121,17 +121,25 @@ async function mergeChunks(uploadId) {
   const random = Math.floor(Math.random() * 1000000);
   const finalFilename = `${basename}-${timestamp}-${random}${ext}`;
   const finalPath = path.join(VIDEOS_DIR, finalFilename);
+  
+  // Use memory-efficient and non-blocking streaming pipeline to merge files
   const writeStream = fs.createWriteStream(finalPath);
   for (let i = 0; i < info.totalChunks; i++) {
     const chunkPath = getChunkPath(uploadId, i);
-    const chunkData = await fs.readFile(chunkPath);
-    writeStream.write(chunkData);
+    await new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(chunkPath);
+      readStream.pipe(writeStream, { end: false });
+      readStream.on('end', resolve);
+      readStream.on('error', reject);
+    });
   }
+  writeStream.end();
+  
   await new Promise((resolve, reject) => {
     writeStream.on('finish', resolve);
     writeStream.on('error', reject);
-    writeStream.end();
   });
+  
   info.status = 'completed';
   info.finalFilename = finalFilename;
   await fs.writeJson(getInfoPath(uploadId), info);

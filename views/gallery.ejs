@@ -107,6 +107,9 @@ function formatDuration(seconds) {
       <!-- Controls Row (1 single row on mobile below Search, next to Search on desktop, nicely padded on mobile) -->
       <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-3 w-full sm:w-auto px-4 sm:px-0">
         <div class="flex items-center gap-1.5 sm:gap-2">
+          <button id="selectionModeBtn" onclick="toggleSelectionMode()" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white rounded-lg transition-colors" title="Select files" aria-label="Select files">
+            <i class="ti ti-checkbox text-lg"></i>
+          </button>
           <% if (!currentFolder) { %>
           <button onclick="openCreateFolderDialog()" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white rounded-lg transition-colors" title="Create folder" aria-label="Create folder">
             <i class="ti ti-folder-plus text-lg"></i>
@@ -175,6 +178,9 @@ function formatDuration(seconds) {
         draggable="true"
         onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
         <div class="aspect-video relative overflow-hidden bg-dark-900">
+          <div class="select-checkbox-container hidden absolute top-2 left-2 z-20">
+            <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" onclick="event.stopPropagation()">
+          </div>
           <% if (isAudio) { %>
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
             <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -221,6 +227,9 @@ function formatDuration(seconds) {
         <table class="min-w-full">
           <thead class="bg-gray-700">
             <tr>
+              <th class="select-column-header hidden px-4 py-3 text-left w-12">
+                <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
+              </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-24">Duration</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-28">Size</th>
@@ -234,6 +243,7 @@ function formatDuration(seconds) {
             <tr class="gallery-list-item folder-drop-target group hover:bg-dark-700 transition-colors cursor-pointer"
               data-folder-id="<%= folder.id %>" data-kind="folder" data-type="folder" data-title="<%= folder.name %>" data-date="<%= folder.updated_at || folder.created_at %>" data-size="0"
               onclick="window.location.href='/gallery?folder=<%= folder.id %>'">
+              <td class="select-column-cell hidden px-4 py-3 w-12" onclick="event.stopPropagation()"></td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-8 rounded bg-primary/15 text-primary flex-shrink-0 relative flex items-center justify-center">
@@ -270,6 +280,9 @@ function formatDuration(seconds) {
               data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
               draggable="true"
               onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
+              <td class="select-column-cell hidden px-4 py-3 w-12" onclick="event.stopPropagation()">
+                <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
+              </td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-8 rounded overflow-hidden bg-[#181818] flex-shrink-0 relative flex items-center justify-center">
@@ -497,6 +510,24 @@ function formatDuration(seconds) {
   data-user-role="<%= typeof user !== 'undefined' ? user.role : 'user' %>">
 </div>
 
+<!-- Floating Selection Action Bar -->
+<div id="selectionActionBar" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-dark-800 border border-gray-700 rounded-full shadow-2xl px-6 py-3 flex items-center gap-6 z-50 transition-all transform translate-y-24 opacity-0 pointer-events-none w-[90%] sm:w-auto max-w-md justify-between sm:justify-start">
+  <span id="selectedCountText" class="text-sm font-medium text-white flex-shrink-0">0 items selected</span>
+  <div class="h-6 w-px bg-gray-700 hidden sm:block"></div>
+  <div class="flex items-center gap-2">
+    <button onclick="openMoveSelectedModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-colors text-xs font-semibold">
+      <i class="ti ti-folder-share text-base"></i>
+      <span>Move</span>
+    </button>
+    <button onclick="deleteSelectedFiles()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-full transition-colors text-xs font-semibold">
+      <i class="ti ti-trash text-base"></i>
+      <span>Delete</span>
+    </button>
+    <button onclick="exitSelectionMode()" class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-colors text-xs font-semibold font-sans">
+      <span>Cancel</span>
+    </button>
+  </div>
+</div>
 
 <script>
   const initData = document.getElementById('gallery-init-data').dataset;
@@ -948,6 +979,11 @@ function createModalDialog(options) {
           ${options.hasInput ? `
           <input type="text" id="modal-input" class="mt-4 w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" value="${options.inputValue || ''}" autofocus>
           ` : ''}
+          ${options.hasSelect ? `
+          <select id="modal-select" class="mt-4 w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+            ${options.selectOptions.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join('')}
+          </select>
+          ` : ''}
         </div>
         <div class="flex justify-end gap-3 p-4 border-t border-gray-700">
           <button id="modal-cancel-btn" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg transition-colors">Cancel</button>
@@ -966,7 +1002,8 @@ function createModalDialog(options) {
       resolve({ confirmed, value });
     };
     document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-      const value = options.hasInput ? document.getElementById('modal-input').value : null;
+      const selectVal = options.hasSelect ? document.getElementById('modal-select').value : null;
+      const value = options.hasInput ? document.getElementById('modal-input').value : (options.hasSelect ? selectVal : null);
       close(true, value);
     });
     document.getElementById('modal-cancel-btn').addEventListener('click', () => close());
@@ -1442,7 +1479,7 @@ function navigateUp() {
 
 
 let selectedFiles = [];
-const CHUNK_SIZE = 50 * 1024 * 1024;
+const CHUNK_SIZE = 10 * 1024 * 1024;
 
 function isAudioFile(file) {
   const audioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/aac', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/flac', 'audio/x-flac'];
@@ -1798,11 +1835,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaType = isAudio ? 'audio' : 'video';
     const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
     const title = escapeHtml(video.title || '');
+    const isChecked = selectedMediaIds.includes(video.id);
     return `
-      <div class="gallery-grid-item file-item gallery-playable group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
+      <div class="gallery-grid-item file-item gallery-playable group bg-dark-700 rounded-lg overflow-hidden border ${isChecked ? 'border-primary bg-primary/5' : 'border-transparent'} hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
         data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
         <div class="aspect-video relative overflow-hidden bg-dark-900">
+          <div class="select-checkbox-container ${isSelectionModeActive ? '' : 'hidden'} absolute top-2 left-2 z-20">
+            <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" onclick="event.stopPropagation()" ${isChecked ? 'checked' : ''}>
+          </div>
           ${isAudio ? `
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
             <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -1839,6 +1880,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return `
       <tr class="gallery-list-item gallery-folder-link folder-drop-target group hover:bg-dark-700 transition-colors cursor-pointer"
         data-folder-id="${escapeHtml(folder.id)}" data-kind="folder" data-type="folder" data-title="${escapeHtml(folder.name)}" data-date="${escapeHtml(folder.updated_at || folder.created_at || '')}" data-size="0">
+        <td class="select-column-cell ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 w-12" onclick="event.stopPropagation()"></td>
         <td class="px-4 py-3">
           <div class="flex items-center gap-3">
             <div class="w-12 h-8 rounded bg-primary/15 text-primary flex-shrink-0 relative flex items-center justify-center">
@@ -1871,10 +1913,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaType = isAudio ? 'audio' : 'video';
     const title = escapeHtml(video.title || '');
     const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
+    const isChecked = selectedMediaIds.includes(video.id);
     return `
       <tr class="gallery-list-item file-item-row gallery-playable group hover:bg-dark-700 transition-colors cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
         data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
+        <td class="select-column-cell ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 w-12" onclick="event.stopPropagation()">
+          <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" ${isChecked ? 'checked' : ''}>
+        </td>
         <td class="px-4 py-3">
           <div class="flex items-center gap-3">
             <div class="w-12 h-8 rounded overflow-hidden bg-[#181818] flex-shrink-0 relative flex items-center justify-center">
@@ -1990,6 +2036,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       };
     }
+    if (window.bindLongPressInteractions) {
+      window.bindLongPressInteractions();
+    }
   }
 
   function renderGalleryContent() {
@@ -2033,6 +2082,9 @@ document.addEventListener('DOMContentLoaded', function() {
           <table class="min-w-full">
             <thead class="bg-gray-700">
               <tr>
+                <th class="select-column-header ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 text-left w-12">
+                  <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
+                </th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-24">Duration</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-28">Size</th>
@@ -2207,6 +2259,325 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('Error refreshing gallery:', error);
       showToast('error', error.message || 'Failed to refresh gallery');
+    }
+  };
+
+  // --- Selection Mode Logic ---
+  window.isSelectionModeActive = false;
+  window.selectedMediaIds = [];
+  let longPressTimer = null;
+  let longPressActive = false;
+
+  window.toggleSelectionMode = function() {
+    if (isSelectionModeActive) {
+      exitSelectionMode();
+    } else {
+      enterSelectionMode();
+    }
+  };
+
+  window.enterSelectionMode = function() {
+    isSelectionModeActive = true;
+    selectedMediaIds = [];
+
+    // Show checkboxes in grid view
+    document.querySelectorAll('.select-checkbox-container').forEach(el => {
+      el.classList.remove('hidden');
+    });
+
+    // Show select columns in list view
+    document.querySelectorAll('.select-column-header, .select-column-cell').forEach(el => {
+      el.classList.remove('hidden');
+    });
+
+    // Highlight selection button
+    const selectBtn = document.getElementById('selectionModeBtn');
+    if (selectBtn) {
+      selectBtn.classList.remove('bg-dark-700', 'text-white');
+      selectBtn.classList.add('bg-primary', 'text-white');
+    }
+
+    updateSelectionBar();
+  };
+
+  window.exitSelectionMode = function() {
+    isSelectionModeActive = false;
+    selectedMediaIds = [];
+
+    // Hide checkboxes
+    document.querySelectorAll('.select-checkbox-container').forEach(el => {
+      el.classList.add('hidden');
+      const cb = el.querySelector('.item-select-checkbox');
+      if (cb) cb.checked = false;
+    });
+
+    // Hide select columns in list view
+    document.querySelectorAll('.select-column-header, .select-column-cell').forEach(el => {
+      el.classList.add('hidden');
+      const cb = el.querySelector('.item-select-checkbox');
+      if (cb) cb.checked = false;
+    });
+
+    // Reset grid/list item highlights
+    document.querySelectorAll('.gallery-grid-item, .gallery-list-item').forEach(el => {
+      el.classList.remove('border-primary', 'bg-primary/5');
+    });
+
+    // Reset selection button
+    const selectBtn = document.getElementById('selectionModeBtn');
+    if (selectBtn) {
+      selectBtn.classList.add('bg-dark-700', 'text-white');
+      selectBtn.classList.remove('bg-primary', 'text-white');
+    }
+
+    // Reset select all checkbox if present
+    const selectAllCb = document.getElementById('selectAllCheckbox');
+    if (selectAllCb) selectAllCb.checked = false;
+
+    // Hide action bar
+    const bar = document.getElementById('selectionActionBar');
+    if (bar) {
+      bar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+      bar.classList.remove('translate-y-0', 'opacity-100');
+    }
+  };
+
+  function updateSelectionBar() {
+    const bar = document.getElementById('selectionActionBar');
+    const countText = document.getElementById('selectedCountText');
+    if (!bar || !countText) return;
+
+    countText.textContent = `${selectedMediaIds.length} item${selectedMediaIds.length === 1 ? '' : 's'} selected`;
+
+    if (selectedMediaIds.length > 0) {
+      bar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      bar.classList.add('translate-y-0', 'opacity-100');
+    } else {
+      bar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      bar.classList.add('translate-y-0', 'opacity-100');
+    }
+  }
+
+  window.toggleItemSelection = function(item) {
+    const kind = item.dataset.kind || 'file';
+    if (kind !== 'file') return;
+
+    const id = item.dataset.id;
+    const checkbox = item.querySelector('.item-select-checkbox');
+    if (!checkbox) return;
+
+    checkbox.checked = !checkbox.checked;
+
+    if (checkbox.checked) {
+      if (!selectedMediaIds.includes(id)) {
+        selectedMediaIds.push(id);
+      }
+    } else {
+      selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+    }
+
+    syncCheckboxesState(id, checkbox.checked);
+    updateSelectionBar();
+  };
+
+  function syncCheckboxesState(id, isChecked) {
+    const elements = document.querySelectorAll(`[data-id="${id}"]`);
+    elements.forEach(el => {
+      const cb = el.querySelector('.item-select-checkbox');
+      if (cb) cb.checked = isChecked;
+      if (isChecked) {
+        el.classList.add('border-primary', 'bg-primary/5');
+      } else {
+        el.classList.remove('border-primary', 'bg-primary/5');
+      }
+    });
+  }
+
+  // Intercept clicks during Selection Mode
+  const galleryContent = document.getElementById('galleryContent');
+  if (galleryContent) {
+    galleryContent.addEventListener('click', (e) => {
+      if (!isSelectionModeActive) return;
+
+      const item = e.target.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
+      if (item) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleItemSelection(item);
+      }
+    }, true); // Capturing phase!
+  }
+
+  // Select All functionality delegation
+  document.body.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'selectAllCheckbox') {
+      const isChecked = e.target.checked;
+      const visibleFiles = document.querySelectorAll('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
+      visibleFiles.forEach(item => {
+        const id = item.dataset.id;
+        if (!id) return;
+
+        const cb = item.querySelector('.item-select-checkbox');
+        if (cb) cb.checked = isChecked;
+
+        if (isChecked) {
+          if (!selectedMediaIds.includes(id)) {
+            selectedMediaIds.push(id);
+          }
+        } else {
+          selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+        }
+
+        syncCheckboxesState(id, isChecked);
+      });
+
+      updateSelectionBar();
+    }
+  });
+
+  // Long press bindings helper
+  window.bindLongPressInteractions = function() {
+    const items = document.querySelectorAll('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
+    items.forEach(item => {
+      const handleStart = (e) => {
+        if (item.dataset.kind !== 'file') return;
+        longPressActive = false;
+        longPressTimer = setTimeout(() => {
+          longPressActive = true;
+          if (typeof navigator.vibrate === 'function') {
+            navigator.vibrate(50);
+          }
+          if (!isSelectionModeActive) {
+            enterSelectionMode();
+          }
+          toggleItemSelection(item);
+        }, 600);
+      };
+
+      const handleEnd = (e) => {
+        clearTimeout(longPressTimer);
+        if (longPressActive) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+
+      const handleMove = () => {
+        clearTimeout(longPressTimer);
+      };
+
+      item.addEventListener('touchstart', handleStart, { passive: true });
+      item.addEventListener('touchend', handleEnd);
+      item.addEventListener('touchmove', handleMove, { passive: true });
+
+      item.addEventListener('mousedown', handleStart);
+      item.addEventListener('mouseup', handleEnd);
+      item.addEventListener('mousemove', handleMove);
+    });
+  };
+
+  // Move Selected Modal
+  window.openMoveSelectedModal = async function() {
+    if (selectedMediaIds.length === 0) {
+      showToast('error', 'No files selected');
+      return;
+    }
+
+    const selectOptions = [
+      { value: '', label: 'Root Folder' }
+    ];
+    galleryFoldersState.forEach(folder => {
+      selectOptions.push({ value: folder.id, label: folder.name });
+    });
+
+    const result = await createModalDialog({
+      type: 'info',
+      icon: 'ti-folder-share',
+      title: 'Move Selected Files',
+      message: `Move ${selectedMediaIds.length} selected files to:`,
+      hasSelect: true,
+      selectOptions: selectOptions,
+      confirmText: 'Move'
+    });
+
+    if (result.confirmed) {
+      const targetFolderId = result.value;
+      showToast('info', `Moving ${selectedMediaIds.length} files...`);
+
+      try {
+        const promises = selectedMediaIds.map(id => {
+          return fetch(`/api/videos/${id}/folder`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+            },
+            body: JSON.stringify({ folderId: targetFolderId || null })
+          }).then(res => res.json());
+        });
+
+        const results = await Promise.all(promises);
+        const errors = results.filter(r => !r.success);
+
+        if (errors.length === 0) {
+          showToast('success', 'All files moved successfully');
+        } else {
+          showToast('warning', `Moved files with ${errors.length} error(s)`);
+        }
+
+        exitSelectionMode();
+        await window.refreshGalleryData?.();
+      } catch (err) {
+        console.error(err);
+        showToast('error', 'An error occurred while moving the files');
+      }
+    }
+  };
+
+  // Delete Selected Files
+  window.deleteSelectedFiles = async function() {
+    if (selectedMediaIds.length === 0) {
+      showToast('error', 'No files selected');
+      return;
+    }
+
+    const result = await createModalDialog({
+      type: 'danger',
+      icon: 'ti-trash',
+      title: 'Delete Selected Files',
+      message: `Are you sure you want to delete ${selectedMediaIds.length} selected files? This action cannot be undone.`,
+      confirmText: 'Delete',
+      confirmClass: 'bg-red-500 hover:bg-red-600'
+    });
+
+    if (result.confirmed) {
+      showToast('info', `Deleting ${selectedMediaIds.length} files...`);
+
+      try {
+        const promises = selectedMediaIds.map(id => {
+          return fetch(`/api/videos/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+            }
+          }).then(res => res.json());
+        });
+
+        const results = await Promise.all(promises);
+        const errors = results.filter(r => !r.success);
+
+        if (errors.length === 0) {
+          showToast('success', 'All selected files deleted successfully');
+        } else {
+          showToast('warning', `Deleted files with ${errors.length} error(s)`);
+        }
+
+        exitSelectionMode();
+        await window.refreshGalleryData?.();
+      } catch (err) {
+        console.error(err);
+        showToast('error', 'An error occurred while deleting the files');
+      }
     }
   };
 
