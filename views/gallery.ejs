@@ -511,19 +511,20 @@ function formatDuration(seconds) {
 </div>
 
 <!-- Floating Selection Action Bar -->
-<div id="selectionActionBar" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-dark-800 border border-gray-700 rounded-full shadow-2xl px-6 py-3 flex items-center gap-6 z-50 transition-all transform translate-y-24 opacity-0 pointer-events-none w-[90%] sm:w-auto max-w-md justify-between sm:justify-start">
-  <span id="selectedCountText" class="text-sm font-medium text-white flex-shrink-0">0 items selected</span>
+<div id="selectionActionBar" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-dark-800 border border-gray-700 rounded-2xl sm:rounded-full shadow-2xl px-4 py-3 sm:px-6 sm:py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 z-50 transition-all transform translate-y-24 opacity-0 pointer-events-none w-[92%] sm:w-auto max-w-lg justify-between sm:justify-start">
+  <span id="selectedCountText" class="text-xs sm:text-sm font-medium text-white flex-shrink-0">0 items selected</span>
+  <div class="h-px w-full bg-gray-700 sm:hidden"></div>
   <div class="h-6 w-px bg-gray-700 hidden sm:block"></div>
-  <div class="flex items-center gap-2">
-    <button onclick="openMoveSelectedModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-colors text-xs font-semibold">
-      <i class="ti ti-folder-share text-base"></i>
+  <div class="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
+    <button onclick="openMoveSelectedModal()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
+      <i class="ti ti-folder-share text-sm sm:text-base"></i>
       <span>Move</span>
     </button>
-    <button onclick="deleteSelectedFiles()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-full transition-colors text-xs font-semibold">
-      <i class="ti ti-trash text-base"></i>
+    <button onclick="deleteSelectedFiles()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-red-600/90 hover:bg-red-600 text-white rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
+      <i class="ti ti-trash text-sm sm:text-base"></i>
       <span>Delete</span>
     </button>
-    <button onclick="exitSelectionMode()" class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-colors text-xs font-semibold font-sans">
+    <button onclick="exitSelectionMode()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-dark-600 hover:bg-dark-500 text-gray-300 rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
       <span>Cancel</span>
     </button>
   </div>
@@ -952,6 +953,15 @@ async function moveVideoToFolder(videoId, folderId) {
   } catch (error) {
     showToast('error', 'An error occurred while moving the file');
   }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function createModalDialog(options) {
@@ -1786,14 +1796,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
+
 
   function isAudioMediaItem(video) {
     const filepath = (video.filepath || '').toLowerCase();
