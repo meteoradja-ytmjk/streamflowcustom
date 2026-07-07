@@ -1628,10 +1628,13 @@ document.addEventListener('DOMContentLoaded', function() {
         else { failed.push(file.name); updateFileProgress(i, 'error', 0); }
       }
 
-      if (failed.length === 0) showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
-      else showToast('warning', `${success} uploaded, ${failed.length} failed`);
-      await window.refreshGalleryData?.();
       closeUploadModal();
+      if (failed.length === 0) {
+        showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
+      } else {
+        showToast('warning', `${success} uploaded, ${failed.length} failed`);
+      }
+      await window.refreshGalleryData?.();
       loadDiskUsage();
     });
   }
@@ -2525,8 +2528,9 @@ document.addEventListener('DOMContentLoaded', function() {
       showToast('info', `Moving ${selectedMediaIds.length} files...`);
 
       try {
-        const promises = selectedMediaIds.map(id => {
-          return fetch(`/api/videos/${id}/folder`, {
+        const results = [];
+        for (const id of selectedMediaIds) {
+          const res = await fetch(`/api/videos/${id}/folder`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -2534,9 +2538,9 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ folderId: targetFolderId || null })
           }).then(res => res.json());
-        });
+          results.push(res);
+        }
 
-        const results = await Promise.all(promises);
         const errors = results.filter(r => !r.success);
 
         if (errors.length === 0) {
@@ -2579,16 +2583,17 @@ document.addEventListener('DOMContentLoaded', function() {
       showToast('info', `Deleting ${selectedMediaIds.length} files...`);
 
       try {
-        const promises = selectedMediaIds.map(id => {
-          return fetch(`/api/videos/${id}`, {
+        const results = [];
+        for (const id of selectedMediaIds) {
+          const res = await fetch(`/api/videos/${id}`, {
             method: 'DELETE',
             headers: {
               'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
             }
           }).then(res => res.json());
-        });
+          results.push(res);
+        }
 
-        const results = await Promise.all(promises);
         const errors = results.filter(r => !r.success);
 
         if (errors.length === 0) {
