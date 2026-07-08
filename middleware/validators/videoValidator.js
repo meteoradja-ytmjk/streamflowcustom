@@ -25,7 +25,7 @@ const moveVideoValidation = [
     .isUUID()
     .withMessage('Invalid video ID format'),
   body('folderId')
-    .optional({ nullable: true })
+    .optional({ checkFalsy: true, nullable: true })
     .isUUID()
     .withMessage('Invalid folder ID format')
 ];
@@ -38,7 +38,7 @@ const importDriveValidation = [
     .matches(/drive\.google\.com/)
     .withMessage('Invalid Google Drive URL'),
   body('folderId')
-    .optional({ nullable: true })
+    .optional({ checkFalsy: true, nullable: true })
     .isUUID()
     .withMessage('Invalid folder ID format')
 ];

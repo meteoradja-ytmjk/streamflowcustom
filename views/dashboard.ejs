@@ -1,35 +1,35 @@
 <% layout('layout') -%>
   <div class="md:hidden mb-4" style="margin-top: -10px;">
-    <div class="bg-gray-800 rounded-lg px-3 py-2 shadow-md">
-      <div class="flex items-center justify-between gap-2 overflow-x-auto scrollbar-hide">
+    <div class="bg-gray-800 rounded-lg px-4 py-2.5 shadow-md">
+      <div class="flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide">
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <i class="ti ti-broadcast text-primary text-sm font-loaded"></i>
-          <span class="text-xs font-bold text-white">0</span>
-          <span class="text-[10px] text-gray-400">live</span>
+          <i class="ti ti-broadcast text-primary text-base font-loaded"></i>
+          <span class="text-sm font-bold text-white">0</span>
+          <span class="text-xs text-gray-400">live</span>
         </div>
-        <div class="w-px h-4 bg-gray-700 flex-shrink-0"></div>
+        <div class="w-px h-5 bg-gray-700 flex-shrink-0"></div>
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <i class="ti ti-cpu text-blue-400 text-sm font-loaded"></i>
-          <span id="cpu-usage-mobile" class="text-xs font-bold text-white">0</span>
-          <span class="text-[10px] text-gray-400">%</span>
+          <i class="ti ti-cpu text-blue-400 text-base font-loaded"></i>
+          <span id="cpu-usage-mobile" class="text-sm font-bold text-white">0</span>
+          <span class="text-xs text-gray-400">%</span>
         </div>
-        <div class="w-px h-4 bg-gray-700 flex-shrink-0"></div>
+        <div class="w-px h-5 bg-gray-700 flex-shrink-0"></div>
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <i class="ti ti-device-sd-card text-green-400 text-sm font-loaded"></i>
-          <span id="memory-usage-mobile" class="text-xs font-bold text-white">0</span>
-          <span id="memory-total-mobile" class="text-[10px] text-gray-400">/ 0</span>
+          <i class="ti ti-device-sd-card text-green-400 text-base font-loaded"></i>
+          <span id="memory-usage-mobile" class="text-sm font-bold text-white">0</span>
+          <span id="memory-total-mobile" class="text-xs text-gray-400">/ 0</span>
         </div>
-        <div class="w-px h-4 bg-gray-700 flex-shrink-0"></div>
+        <div class="w-px h-5 bg-gray-700 flex-shrink-0"></div>
         <div class="flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
           onclick="toggleNetworkDiskDisplay('mobile')">
-          <i class="ti ti-wifi text-yellow-400 text-sm font-loaded" id="toggle-icon-mobile"></i>
+          <i class="ti ti-wifi text-yellow-400 text-base font-loaded" id="toggle-icon-mobile"></i>
           <div id="network-content-mobile" class="flex items-center gap-1">
-            <span class="text-[10px] text-blue-400">↑<span id="upload-speed-mobile" class="font-bold">0</span></span>
-            <span class="text-[10px] text-green-400">↓<span id="download-speed-mobile" class="font-bold">0</span></span>
+            <span class="text-xs text-blue-400">↑<span id="upload-speed-mobile" class="font-bold">0</span></span>
+            <span class="text-xs text-green-400">↓<span id="download-speed-mobile" class="font-bold">0</span></span>
           </div>
           <div id="disk-content-mobile" class="items-center gap-1" style="display: none;">
-            <span id="disk-used-mobile" class="text-xs font-bold text-white">0</span>
-            <span id="disk-total-mobile" class="text-[10px] text-gray-400">/ 0</span>
+            <span id="disk-used-mobile" class="text-sm font-bold text-white">0</span>
+            <span id="disk-total-mobile" class="text-xs text-gray-400">/ 0</span>
           </div>
         </div>
       </div>
@@ -152,17 +152,19 @@
           <i class="ti ti-files"></i>
           <span>Export Selected (<span id="selected-streams-count">0</span>)</span>
         </button>
-        <button onclick="document.getElementById('import-stream-input').click()"
-          class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-          <i class="ti ti-download"></i>
-          <span>Import</span>
-        </button>
-        <input type="file" id="import-stream-input" class="hidden" accept=".json" onchange="handleImportStream(this)">
-        <button onclick="openNewStreamModal()"
-          class="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition-colors">
-          <i class="ti ti-plus"></i>
-          <span>New Stream</span>
-        </button>
+        <div class="grid grid-cols-2 gap-3 w-full sm:flex sm:w-auto">
+          <button onclick="document.getElementById('import-stream-input').click()"
+            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="ti ti-download"></i>
+            <span>Import</span>
+          </button>
+          <input type="file" id="import-stream-input" class="hidden" accept=".json" onchange="handleImportStream(this)">
+          <button onclick="openNewStreamModal()"
+            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="ti ti-plus"></i>
+            <span>New Stream</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="block md:hidden space-y-2">
@@ -1819,10 +1821,19 @@
           if (data.network) {
             document.getElementById('upload-speed').textContent = data.network.uploadFormatted;
             document.getElementById('download-speed').textContent = data.network.downloadFormatted;
+            const formatSpeedMobile = (speedStr) => {
+              if (!speedStr) return '0';
+              return speedStr
+                .replace(/\s+/g, '')
+                .replace(/Gbps/i, 'G')
+                .replace(/Mbps/i, 'M')
+                .replace(/Kbps/i, 'K')
+                .replace(/Bps/i, 'B');
+            };
             const uploadMobile = document.getElementById('upload-speed-mobile');
             const downloadMobile = document.getElementById('download-speed-mobile');
-            if (uploadMobile) uploadMobile.textContent = data.network.uploadFormatted.replace(' Mbps', '');
-            if (downloadMobile) downloadMobile.textContent = data.network.downloadFormatted.replace(' Mbps', '');
+            if (uploadMobile) uploadMobile.textContent = formatSpeedMobile(data.network.uploadFormatted);
+            if (downloadMobile) downloadMobile.textContent = formatSpeedMobile(data.network.downloadFormatted);
             const uploadWide = document.getElementById('upload-speed-wide');
             const downloadWide = document.getElementById('download-speed-wide');
             if (uploadWide) uploadWide.textContent = data.network.uploadFormatted;
@@ -4093,14 +4104,12 @@
       const desktopVideoContainer = document.getElementById('editVideoPreview');
       const mobileVideoContainer = document.getElementById('editVideoPreviewMobile');
       desktopVideoContainer.innerHTML = `
-    <video id="edit-native-preview-desktop" class="native-video-player rounded-lg" controls preload="metadata">
-      <source src="${video.url}" type="video/mp4">
+    <video id="edit-native-preview-desktop" class="native-video-player rounded-lg" src="${video.url}" controls preload="metadata">
       Your browser does not support the video tag.
     </video>
   `;
       mobileVideoContainer.innerHTML = `
-    <video id="edit-native-preview-mobile" class="native-video-player" controls preload="metadata">
-      <source src="${video.url}" type="video/mp4">
+    <video id="edit-native-preview-mobile" class="native-video-player" src="${video.url}" controls preload="metadata">
       Your browser does not support the video tag.
     </video>
   `;
