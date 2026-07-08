@@ -2531,16 +2531,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
       try {
         const results = [];
-        for (const id of idsToMove) {
-          const res = await fetch(`/api/videos/${id}/folder`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-            },
-            body: JSON.stringify({ folderId: targetFolderId || null })
-          }).then(res => res.json());
-          results.push(res);
+        for (let i = 0; i < idsToMove.length; i++) {
+          const id = idsToMove[i];
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+          try {
+            const res = await fetch(`/api/videos/${id}/folder`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+              },
+              body: JSON.stringify({ folderId: targetFolderId || null })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              results.push(data);
+            } else {
+              try {
+                const errData = await res.json();
+                results.push({ success: false, error: errData.error || `HTTP error ${res.status}` });
+              } catch {
+                results.push({ success: false, error: `HTTP error ${res.status}` });
+              }
+            }
+          } catch (err) {
+            console.error('Error moving file:', id, err);
+            results.push({ success: false, error: err.message || 'Network error' });
+          }
         }
 
         const errors = results.filter(r => !r.success);
@@ -2548,7 +2567,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (errors.length === 0) {
           showToast('success', 'All files moved successfully');
         } else {
-          showToast('warning', `Moved files with ${errors.length} error(s)`);
+          showToast('warning', `Moved files with ${errors.length} error(s): ${errors.map(e => e.error).join(', ')}`);
         }
 
         // Realtime removal of successfully moved files from local state
@@ -2588,14 +2607,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
       try {
         const results = [];
-        for (const id of idsToDelete) {
-          const res = await fetch(`/api/videos/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+        for (let i = 0; i < idsToDelete.length; i++) {
+          const id = idsToDelete[i];
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+          try {
+            const res = await fetch(`/api/videos/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+              }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              results.push(data);
+            } else {
+              try {
+                const errData = await res.json();
+                results.push({ success: false, error: errData.error || `HTTP error ${res.status}` });
+              } catch {
+                results.push({ success: false, error: `HTTP error ${res.status}` });
+              }
             }
-          }).then(res => res.json());
-          results.push(res);
+          } catch (err) {
+            console.error('Error deleting file:', id, err);
+            results.push({ success: false, error: err.message || 'Network error' });
+          }
         }
 
         const errors = results.filter(r => !r.success);
@@ -2603,7 +2641,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (errors.length === 0) {
           showToast('success', 'All selected files deleted successfully');
         } else {
-          showToast('warning', `Deleted files with ${errors.length} error(s)`);
+          showToast('warning', `Deleted files with ${errors.length} error(s): ${errors.map(e => e.error).join(', ')}`);
         }
 
         // Realtime removal of successfully deleted files from local state
