@@ -1566,19 +1566,37 @@ document.addEventListener('DOMContentLoaded', function() {
         updateFileProgress(i, 'uploading', 0);
         
         let result;
-        if (isAudio) {
-          result = await uploadAudioSimple(file, i, selectedFiles.length);
-        } else {
-          const useChunked = file.size > 50 * 1024 * 1024;
-          result = useChunked ? await uploadChunked(file, i, selectedFiles.length) : await uploadSimple(file, i, selectedFiles.length);
+        try {
+          if (isAudio) {
+            result = await uploadAudioSimple(file, i, selectedFiles.length);
+          } else {
+            const useChunked = file.size > 50 * 1024 * 1024;
+            result = useChunked ? await uploadChunked(file, i, selectedFiles.length) : await uploadSimple(file, i, selectedFiles.length);
+          }
+          
+          if (result.success) { 
+            success++; 
+            updateFileProgress(i, 'success', 100); 
+          } else { 
+            failed.push({ name: file.name, error: result.message || 'Upload failed' }); 
+            updateFileProgress(i, 'error', 0); 
+            console.error(`Upload failed for ${file.name}:`, result.message);
+          }
+        } catch (error) {
+          failed.push({ name: file.name, error: error.message || 'Unknown error' });
+          updateFileProgress(i, 'error', 0);
+          console.error(`Upload error for ${file.name}:`, error);
         }
-        
-        if (result.success) { success++; updateFileProgress(i, 'success', 100); }
-        else { failed.push(file.name); updateFileProgress(i, 'error', 0); }
       }
 
-      if (failed.length === 0) showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
-      else showToast('warning', `${success} uploaded, ${failed.length} failed`);
+      if (failed.length === 0) {
+        showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
+      } else {
+        const failedNames = failed.map(f => f.name).join(', ');
+        const firstError = failed[0].error;
+        showToast('warning', `${success} uploaded, ${failed.length} failed: ${firstError}`);
+        console.error('Failed uploads:', failed);
+      }
       await window.refreshGalleryData?.();
       closeUploadModal();
       loadDiskUsage();
@@ -1600,6 +1618,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const formData = new FormData();
       formData.append('video', file);
       formData.append('folderId', document.getElementById('uploadFolderId').value || '');
+      
+      // Add CSRF token if available
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      if (csrfInput) {
+        formData.append('_csrf', csrfInput.value);
+      }
+      
       const xhr = new XMLHttpRequest();
       xhr.timeout = 30 * 60 * 1000;
       xhr.upload.addEventListener('progress', (e) => {
@@ -1613,12 +1638,22 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
-          try { const r = JSON.parse(xhr.responseText); resolve({ success: r.success }); }
-          catch { resolve({ success: false }); }
-        } else resolve({ success: false });
+          try { 
+            const r = JSON.parse(xhr.responseText); 
+            resolve({ success: r.success, message: r.error }); 
+          }
+          catch { resolve({ success: false, message: 'Invalid server response' }); }
+        } else {
+          try {
+            const r = JSON.parse(xhr.responseText);
+            resolve({ success: false, message: r.error || `Server error ${xhr.status}` });
+          } catch {
+            resolve({ success: false, message: `Upload failed with status ${xhr.status}` });
+          }
+        }
       });
-      xhr.addEventListener('error', () => resolve({ success: false }));
-      xhr.addEventListener('timeout', () => resolve({ success: false }));
+      xhr.addEventListener('error', () => resolve({ success: false, message: 'Network error' }));
+      xhr.addEventListener('timeout', () => resolve({ success: false, message: 'Upload timeout' }));
       xhr.open('POST', '/api/videos/upload', true);
       xhr.send(formData);
     });
@@ -1629,6 +1664,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const formData = new FormData();
       formData.append('audio', file);
       formData.append('folderId', document.getElementById('uploadFolderId').value || '');
+      
+      // Add CSRF token if available
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      if (csrfInput) {
+        formData.append('_csrf', csrfInput.value);
+      }
+      
       const xhr = new XMLHttpRequest();
       xhr.timeout = 60 * 60 * 1000;
       xhr.upload.addEventListener('progress', (e) => {
@@ -1642,12 +1684,22 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
-          try { const r = JSON.parse(xhr.responseText); resolve({ success: r.success }); }
-          catch { resolve({ success: false }); }
-        } else resolve({ success: false });
+          try { 
+            const r = JSON.parse(xhr.responseText); 
+            resolve({ success: r.success, message: r.error }); 
+          }
+          catch { resolve({ success: false, message: 'Invalid server response' }); }
+        } else {
+          try {
+            const r = JSON.parse(xhr.responseText);
+            resolve({ success: false, message: r.error || `Server error ${xhr.status}` });
+          } catch {
+            resolve({ success: false, message: `Upload failed with status ${xhr.status}` });
+          }
+        }
       });
-      xhr.addEventListener('error', () => resolve({ success: false }));
-      xhr.addEventListener('timeout', () => resolve({ success: false }));
+      xhr.addEventListener('error', () => resolve({ success: false, message: 'Network error' }));
+      xhr.addEventListener('timeout', () => resolve({ success: false, message: 'Upload timeout' }));
       xhr.open('POST', '/api/audio/upload', true);
       xhr.send(formData);
     });
@@ -1656,13 +1708,31 @@ document.addEventListener('DOMContentLoaded', function() {
   async function uploadChunked(file, index, total) {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     try {
+      // Get CSRF token
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      const csrfToken = csrfInput ? csrfInput.value : '';
+      
       const init = await fetch('/api/videos/chunk/init', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, fileSize: file.size, totalChunks, folderId: document.getElementById('uploadFolderId').value || '' })
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ 
+          filename: file.name, 
+          fileSize: file.size, 
+          totalChunks, 
+          folderId: document.getElementById('uploadFolderId').value || '' 
+        })
       });
+      
+      if (!init.ok) {
+        const errorData = await init.json();
+        throw new Error(errorData.error || `Init failed with status ${init.status}`);
+      }
+      
       const initData = await init.json();
-      if (!initData.success) throw new Error(initData.error);
+      if (!initData.success) throw new Error(initData.error || 'Failed to initialize upload');
       const uploadId = initData.uploadId;
       let uploaded = initData.uploadedChunks || [];
 
@@ -1672,17 +1742,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const end = Math.min(start + CHUNK_SIZE, file.size);
         const chunk = file.slice(start, end);
         let retries = 3;
+        let lastError = null;
+        
         while (retries > 0) {
           try {
             const res = await fetch('/api/videos/chunk/upload', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Id': uploadId, 'X-Chunk-Index': i.toString() },
+              headers: { 
+                'Content-Type': 'application/octet-stream', 
+                'X-Upload-Id': uploadId, 
+                'X-Chunk-Index': i.toString(),
+                'X-CSRF-Token': csrfToken
+              },
               body: chunk
             });
+            
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.error || `Chunk upload failed with status ${res.status}`);
+            }
+            
             const data = await res.json();
-            if (data.success) { uploaded = data.uploadedChunks; break; }
-            throw new Error(data.error);
-          } catch { retries--; if (retries === 0) throw new Error('Upload failed'); await new Promise(r => setTimeout(r, 1000)); }
+            if (data.success) { 
+              uploaded = data.uploadedChunks; 
+              lastError = null;
+              break; 
+            }
+            throw new Error(data.error || 'Chunk upload failed');
+          } catch (err) { 
+            lastError = err.message;
+            retries--; 
+            if (retries === 0) throw new Error(`Chunk ${i} upload failed after 3 attempts: ${lastError}`);
+            await new Promise(r => setTimeout(r, 1000)); 
+          }
         }
         const bytes = Math.min((i + 1) * CHUNK_SIZE, file.size);
         const pct = Math.round((bytes / file.size) * 100);
@@ -1694,14 +1786,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const complete = await fetch('/api/videos/chunk/complete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
         body: JSON.stringify({ uploadId })
       });
+      
+      if (!complete.ok) {
+        const errorData = await complete.json();
+        throw new Error(errorData.error || `Complete failed with status ${complete.status}`);
+      }
+      
       const completeData = await complete.json();
-      return { success: completeData.success };
+      return { success: completeData.success, message: completeData.error || completeData.message };
     } catch (e) {
-      console.error(e);
-      return { success: false };
+      console.error('Chunked upload error:', e);
+      return { success: false, message: e.message || 'Chunked upload failed' };
     }
   }
 
