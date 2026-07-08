@@ -2385,10 +2385,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
-      // Intercept click
-      e.preventDefault();
-      e.stopPropagation();
-
       const item = e.target.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
       if (item) {
         const checkbox = item.querySelector('.item-select-checkbox');
@@ -2396,19 +2392,45 @@ document.addEventListener('DOMContentLoaded', function() {
           const id = item.dataset.id;
           if (!id) return;
 
-          checkbox.checked = !checkbox.checked;
-          const isChecked = checkbox.checked;
+          // Check if they clicked directly on the checkbox or its cell/container
+          const isCheckboxClick = e.target === checkbox || e.target.closest('.select-checkbox-container') || e.target.closest('.select-column-cell');
 
-          if (isChecked) {
-            if (!selectedMediaIds.includes(id)) {
-              selectedMediaIds.push(id);
-            }
+          if (isCheckboxClick) {
+            // Let the native checkbox action happen! Stop click propagation to bypass playMedia click listeners.
+            e.stopPropagation();
+            
+            // Wait for browser native toggle in next event loop tick
+            setTimeout(() => {
+              const isChecked = checkbox.checked;
+              if (isChecked) {
+                if (!selectedMediaIds.includes(id)) {
+                  selectedMediaIds.push(id);
+                }
+              } else {
+                selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+              }
+              syncCheckboxesState(id, isChecked);
+              updateSelectionBar();
+            }, 0);
           } else {
-            selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-          }
+            // They clicked elsewhere on the card: block card playMedia action and programmatically toggle checkbox state.
+            e.preventDefault();
+            e.stopPropagation();
 
-          syncCheckboxesState(id, isChecked);
-          updateSelectionBar();
+            checkbox.checked = !checkbox.checked;
+            const isChecked = checkbox.checked;
+
+            if (isChecked) {
+              if (!selectedMediaIds.includes(id)) {
+                selectedMediaIds.push(id);
+              }
+            } else {
+              selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
+            }
+
+            syncCheckboxesState(id, isChecked);
+            updateSelectionBar();
+          }
         }
       }
     }, true); // Use capture phase!
