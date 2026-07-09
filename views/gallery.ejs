@@ -36,12 +36,12 @@ function formatDuration(seconds) {
     
     <!-- Action Buttons - Justified -->
     <div class="flex justify-between sm:justify-end gap-2 w-full lg:w-auto">
-      <button onclick="openUploadModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 h-10 rounded-lg transition-colors text-sm font-medium flex-1 sm:flex-none">
+      <button onclick="openUploadModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-6 h-10 rounded-lg transition-colors text-sm font-medium flex-1 sm:flex-none sm:min-w-[140px]">
         <i class="ti ti-upload text-base"></i>
         <span>Upload Media</span>
       </button>
-      <div class="relative flex-1 sm:flex-none">
-        <button onclick="toggleCloudDropdown()" class="w-full flex items-center justify-center gap-2 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white px-4 h-10 rounded-lg transition-colors text-sm font-medium">
+      <div class="relative flex-1 sm:flex-none sm:min-w-[140px]">
+        <button onclick="toggleCloudDropdown()" class="w-full flex items-center justify-center gap-2 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white px-6 h-10 rounded-lg transition-colors text-sm font-medium">
           <i class="ti ti-cloud-download text-base"></i>
           <span>Import</span>
           <i class="ti ti-chevron-down text-xs"></i>
@@ -108,12 +108,12 @@ function formatDuration(seconds) {
     <div class="flex items-center justify-between gap-2">
       <!-- Left: Filters -->
       <div class="flex items-center gap-2">
-        <select id="typeFilter" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm min-w-[110px]">
+        <select id="typeFilter" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm w-[95px]">
           <option value="all">All Media</option>
           <option value="video">Video</option>
           <option value="audio">Audio</option>
         </select>
-        <select id="sortSelect" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm min-w-[110px]">
+        <select id="sortSelect" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm w-[95px]">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="name">Name</option>
@@ -128,11 +128,11 @@ function formatDuration(seconds) {
           <i class="ti ti-folder-plus text-lg"></i>
         </button>
         <% } %>
-        <div class="flex items-center bg-dark-700 border border-gray-600 rounded-lg overflow-hidden h-10">
-          <button id="gridViewBtn" class="px-3 h-full bg-primary text-white transition-colors" title="Grid view">
+        <div class="flex items-center border border-gray-600 rounded-lg overflow-hidden h-10">
+          <button id="gridViewBtn" class="px-3 h-full bg-primary text-white transition-colors border-r border-gray-600" title="Grid view">
             <i class="ti ti-layout-grid"></i>
           </button>
-          <button id="listViewBtn" class="px-3 h-full text-gray-400 hover:text-white hover:bg-dark-600 transition-colors" title="List view">
+          <button id="listViewBtn" class="px-3 h-full bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600 transition-colors" title="List view">
             <i class="ti ti-list"></i>
           </button>
         </div>
@@ -141,6 +141,28 @@ function formatDuration(seconds) {
   </div>
 
   <div id="galleryContent" class="p-4">
+    <!-- Selection Action Bar -->
+    <div id="selectionBar" class="hidden mb-4 p-3 bg-dark-700 rounded-lg border border-gray-600 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-300">
+          <span id="selectedCount">0</span> items selected
+        </span>
+        <button onclick="clearSelection()" class="text-xs text-gray-400 hover:text-white">Clear</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <% if (currentFolder || folders && folders.length > 0) { %>
+        <button onclick="showMoveSelectedDialog()" class="flex items-center gap-2 bg-dark-600 hover:bg-dark-500 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+          <i class="ti ti-folder-symlink"></i>
+          <span>Move</span>
+        </button>
+        <% } %>
+        <button onclick="showDeleteSelectedDialog()" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+          <i class="ti ti-trash"></i>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+
     <% if (hasGalleryItems) { %>
     <div id="gridView" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <% if (hasRootFolders) { %>
@@ -171,10 +193,17 @@ function formatDuration(seconds) {
         const isAudio = video.filepath && (video.filepath.includes('/audio/') || video.filepath.endsWith('.m4a') || video.filepath.endsWith('.aac') || video.filepath.endsWith('.mp3'));
         const mediaType = isAudio ? 'audio' : 'video';
       %>
-      <div class="gallery-grid-item file-item group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
+      <div class="gallery-grid-item file-item group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer relative"
         data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
         draggable="true"
         onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
+        <!-- Selection Checkbox -->
+        <div class="absolute top-2 left-2 z-10">
+          <input type="checkbox" class="file-checkbox w-5 h-5 rounded border-2 border-gray-600 bg-dark-800/80 checked:bg-primary checked:border-primary cursor-pointer"
+            data-id="<%= video.id %>"
+            onclick="event.stopPropagation(); toggleFileSelection('<%= video.id %>')"
+            onchange="event.stopPropagation()">
+        </div>
         <div class="aspect-video relative overflow-hidden bg-dark-900">
           <% if (isAudio) { %>
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
@@ -2428,6 +2457,170 @@ document.addEventListener('DOMContentLoaded', function() {
   syncGalleryCollections();
   if (gridItems.length > 0) filterAndSort();
 });
+
+// File Selection Management
+let selectedFileIds = new Set();
+
+function toggleFileSelection(fileId) {
+  const checkbox = document.querySelector(`.file-checkbox[data-id="${fileId}"]`);
+  if (!checkbox) return;
+  
+  if (checkbox.checked) {
+    selectedFileIds.add(fileId);
+  } else {
+    selectedFileIds.delete(fileId);
+  }
+  
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const selectionBar = document.getElementById('selectionBar');
+  const selectedCount = document.getElementById('selectedCount');
+  
+  if (selectedFileIds.size > 0) {
+    selectionBar.classList.remove('hidden');
+    selectedCount.textContent = selectedFileIds.size;
+  } else {
+    selectionBar.classList.add('hidden');
+  }
+}
+
+function clearSelection() {
+  selectedFileIds.clear();
+  document.querySelectorAll('.file-checkbox').forEach(cb => cb.checked = false);
+  updateSelectionUI();
+}
+
+async function showDeleteSelectedDialog() {
+  if (selectedFileIds.size === 0) return;
+  
+  const result = await createModalDialog({
+    type: 'danger',
+    icon: 'ti-trash',
+    title: 'Delete Files',
+    message: `Are you sure you want to delete ${selectedFileIds.size} selected file(s)? This action cannot be undone.`,
+    confirmText: 'Delete',
+    confirmClass: 'bg-red-500 hover:bg-red-600'
+  });
+  
+  if (!result.confirmed) return;
+  
+  let successCount = 0;
+  let failCount = 0;
+  
+  for (const fileId of selectedFileIds) {
+    try {
+      const response = await fetch(`/api/videos/${fileId}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    } catch (error) {
+      failCount++;
+    }
+  }
+  
+  if (successCount > 0) {
+    showToast('success', `${successCount} file(s) deleted successfully`);
+    await window.refreshGalleryData?.();
+    clearSelection();
+  }
+  
+  if (failCount > 0) {
+    showToast('error', `Failed to delete ${failCount} file(s)`);
+  }
+}
+
+async function showMoveSelectedDialog() {
+  if (selectedFileIds.size === 0) return;
+  
+  // Build folder options
+  let folderOptions = '<option value="">Root Folder</option>';
+  galleryFoldersState.forEach(folder => {
+    folderOptions += `<option value="${folder.id}">${folder.name}</option>`;
+  });
+  
+  const dialog = document.createElement('div');
+  dialog.id = 'move-files-modal';
+  dialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay';
+  dialog.innerHTML = `
+    <div class="max-w-md w-full mx-4">
+      <div class="bg-dark-800 rounded-lg shadow-xl overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <i class="ti ti-folder-symlink text-primary text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold">Move Files</h3>
+              <p class="text-gray-400 text-sm mt-1">Select destination folder for ${selectedFileIds.size} file(s)</p>
+            </div>
+          </div>
+          <select id="move-folder-select" class="w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+            ${folderOptions}
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t border-gray-700">
+          <button id="move-cancel-btn" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg transition-colors">Cancel</button>
+          <button id="move-confirm-btn" class="bg-primary hover:bg-rose-600 px-4 py-2 text-white rounded-lg transition-colors">Move Files</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+  document.body.classList.add('overflow-hidden');
+  
+  const close = () => {
+    document.body.classList.remove('overflow-hidden');
+    dialog.remove();
+  };
+  
+  document.getElementById('move-cancel-btn').addEventListener('click', close);
+  document.getElementById('move-confirm-btn').addEventListener('click', async () => {
+    const targetFolderId = document.getElementById('move-folder-select').value || null;
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const fileId of selectedFileIds) {
+      try {
+        const response = await fetch(`/api/videos/${fileId}/folder`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+          },
+          body: JSON.stringify({ folderId: targetFolderId })
+        });
+        const data = await response.json();
+        if (data.success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        failCount++;
+      }
+    }
+    
+    close();
+    
+    if (successCount > 0) {
+      showToast('success', `${successCount} file(s) moved successfully`);
+      await window.refreshGalleryData?.();
+      clearSelection();
+    }
+    
+    if (failCount > 0) {
+      showToast('error', `Failed to move ${failCount} file(s)`);
+    }
+  });
+  
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+}
 </script>
 
 <style>
