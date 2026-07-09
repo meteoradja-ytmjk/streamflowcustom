@@ -1440,15 +1440,40 @@ const CHUNK_SIZE = 50 * 1024 * 1024;
 function isAudioFile(file) {
   const audioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/aac', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/flac', 'audio/x-flac'];
   const audioExts = ['.mp3', '.wav', '.aac', '.m4a', '.ogg', '.flac'];
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  return audioTypes.includes(file.type) || audioExts.includes(ext);
+  const fileName = file.name.toLowerCase();
+  const ext = fileName.substring(fileName.lastIndexOf('.'));
+  
+  // Check MIME type first
+  if (file.type && audioTypes.includes(file.type.toLowerCase())) {
+    return true;
+  }
+  
+  // Fallback to extension check
+  if (audioExts.includes(ext)) {
+    return true;
+  }
+  
+  return false;
 }
 
 function isVideoFile(file) {
-  const videoTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo'];
-  const videoExts = ['.mp4', '.avi', '.mov'];
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  return videoTypes.includes(file.type) || videoExts.includes(ext);
+  const videoTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+  const videoExts = ['.mp4', '.avi', '.mov', '.mkv'];
+  const fileName = file.name.toLowerCase();
+  const ext = fileName.substring(fileName.lastIndexOf('.'));
+  
+  // Check MIME type first
+  if (file.type && videoTypes.includes(file.type.toLowerCase())) {
+    return true;
+  }
+  
+  // Fallback to extension check
+  if (videoExts.includes(ext)) {
+    return true;
+  }
+  
+  console.log('Video file check failed for:', file.name, 'Type:', file.type, 'Ext:', ext);
+  return false;
 }
 
 function switchUploadTab(type) {
@@ -1517,7 +1542,19 @@ document.addEventListener('DOMContentLoaded', function() {
   if (mediaFileInput) {
     mediaFileInput.addEventListener('change', function() {
       const newFiles = Array.from(this.files);
+      console.log('Files selected:', newFiles.length, 'Current type:', currentUploadType);
+      
       if (newFiles.length > 0) {
+        // Log file details for debugging
+        newFiles.forEach(f => {
+          console.log('File:', f.name, 'Type:', f.type, 'Size:', f.size);
+          if (currentUploadType === 'video') {
+            console.log('  isVideoFile:', isVideoFile(f));
+          } else {
+            console.log('  isAudioFile:', isAudioFile(f));
+          }
+        });
+        
         // Validate file types based on current upload type
         const invalidFiles = newFiles.filter(f => {
           if (currentUploadType === 'video') {
@@ -1526,6 +1563,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return !isAudioFile(f);
           }
         });
+        
+        console.log('Invalid files:', invalidFiles.length);
         
         if (invalidFiles.length > 0) {
           const fileTypeMsg = currentUploadType === 'video' 
@@ -1566,12 +1605,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateFilesList() {
+    console.log('updateFilesList called, selectedFiles:', selectedFiles.length);
     const totalSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
     selectedFileCount.textContent = `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected (${formatFileSize(totalSize)})`;
     selectedFilesList.innerHTML = '';
     selectedFiles.forEach((file, i) => {
       const isAudio = isAudioFile(file);
       const icon = isAudio ? 'ti-music' : 'ti-video';
+      console.log('Adding file to list:', file.name, 'isAudio:', isAudio);
       const div = document.createElement('div');
       div.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-dark-600 transition-colors';
       div.innerHTML = `
@@ -1595,6 +1636,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       selectedFilesList.appendChild(div);
     });
+    console.log('Files added to DOM, list innerHTML length:', selectedFilesList.innerHTML.length);
   }
 
   if (clearFileButton) clearFileButton.addEventListener('click', resetUploadForm);
