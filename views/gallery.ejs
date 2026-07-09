@@ -1451,6 +1451,53 @@ function isVideoFile(file) {
   return videoTypes.includes(file.type) || videoExts.includes(ext);
 }
 
+function switchUploadTab(type) {
+  currentUploadType = type;
+  const tabVideo = document.getElementById('tabVideo');
+  const tabAudio = document.getElementById('tabAudio');
+  const dropzoneText = document.getElementById('dropzoneText');
+  const dropzoneFormats = document.getElementById('dropzoneFormats');
+  const mediaFileInput = document.getElementById('mediaFileInput');
+  
+  if (type === 'video') {
+    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
+    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    dropzoneText.textContent = 'Drag and drop video files here';
+    dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
+    mediaFileInput.setAttribute('accept', 'video/mp4,video/avi,video/quicktime');
+  } else {
+    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
+    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    dropzoneText.textContent = 'Drag and drop audio files here';
+    dropzoneFormats.textContent = 'Supported formats: MP3, WAV, AAC, M4A, OGG, FLAC (max 50GB)';
+    mediaFileInput.setAttribute('accept', 'audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/x-m4a,audio/ogg,audio/flac');
+  }
+  
+  document.getElementById('uploadType').value = type;
+  
+  // Clear selected files when switching tabs
+  selectedFiles = [];
+  resetUploadForm();
+}
+
+function getRemainingSpace() {
+  if (userDiskLimit > 0) {
+    return Math.max(0, userDiskLimit - userDiskUsage);
+  }
+  return Infinity;
+}
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  bytes = Number(bytes);
+  if (isNaN(bytes)) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+  else if (bytes < 1099511627776) return (bytes / 1073741824).toFixed(2) + ' GB';
+  else return (bytes / 1099511627776).toFixed(2) + ' TB';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const mediaFileInput = document.getElementById('mediaFileInput');
   const selectedFileInfo = document.getElementById('selectedFileInfo');
@@ -1471,6 +1518,24 @@ document.addEventListener('DOMContentLoaded', function() {
     mediaFileInput.addEventListener('change', function() {
       const newFiles = Array.from(this.files);
       if (newFiles.length > 0) {
+        // Validate file types based on current upload type
+        const invalidFiles = newFiles.filter(f => {
+          if (currentUploadType === 'video') {
+            return !isVideoFile(f);
+          } else {
+            return !isAudioFile(f);
+          }
+        });
+        
+        if (invalidFiles.length > 0) {
+          const fileTypeMsg = currentUploadType === 'video' 
+            ? 'Please select valid video files (MP4, AVI, MOV)' 
+            : 'Please select valid audio files (MP3, WAV, AAC, M4A, OGG, FLAC)';
+          showToast('error', fileTypeMsg);
+          this.value = '';
+          return;
+        }
+        
         const maxSize = 50 * 1024 * 1024 * 1024;
         const large = newFiles.filter(f => f.size > maxSize);
         if (large.length > 0) {
@@ -1478,6 +1543,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.value = '';
           return;
         }
+        
         const totalNewSize = newFiles.reduce((sum, f) => sum + f.size, 0);
         const totalSelectedSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
         if (userDiskLimit > 0 && (userDiskUsage + totalSelectedSize + totalNewSize) > userDiskLimit) {
@@ -1486,6 +1552,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.value = '';
           return;
         }
+        
         newFiles.forEach(f => {
           if (!selectedFiles.some(e => e.name === f.name && e.size === f.size)) selectedFiles.push(f);
         });
@@ -1591,14 +1658,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (failed.length === 0) {
         showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
+        
+        // Auto-close and refresh after successful upload
+        setTimeout(async () => {
+          await window.refreshGalleryData?.();
+          await loadDiskUsage();
+          closeUploadModal();
+        }, 1000);
       } else {
         const failedNames = failed.map(f => f.name).join(', ');
         const firstError = failed[0].error;
         showToast('warning', `${success} uploaded, ${failed.length} failed: ${firstError}`);
         console.error('Failed uploads:', failed);
+        
+        // If some succeeded, still refresh
+        if (success > 0) {
+          await window.refreshGalleryData?.();
+          await loadDiskUsage();
+        }
+        
+        // Don't auto-close if there are failures, let user see what failed
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Retry Failed';
       }
-      await window.refreshGalleryData?.();
-      closeUploadModal();
       loadDiskUsage();
     });
   }
