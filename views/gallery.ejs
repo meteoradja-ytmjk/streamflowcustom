@@ -1556,6 +1556,17 @@ function formatFileSize(bytes) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Check for stored toast messages from previous page load (after upload refresh)
+  const successToast = sessionStorage.getItem('upload_success_toast');
+  const warningToast = sessionStorage.getItem('upload_warning_toast');
+  if (successToast) {
+    showToast('success', successToast);
+    sessionStorage.removeItem('upload_success_toast');
+  } else if (warningToast) {
+    showToast('warning', warningToast);
+    sessionStorage.removeItem('upload_warning_toast');
+  }
+
   const mediaFileInput = document.getElementById('mediaFileInput');
   const selectedFileInfo = document.getElementById('selectedFileInfo');
   const selectedFileCount = document.getElementById('selectedFileCount');
@@ -1730,32 +1741,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
+      // Store status in sessionStorage for display after page reload, then close and reload immediately
       if (failed.length === 0) {
-        showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
-        
-        // Auto-close and refresh after successful upload
-        setTimeout(async () => {
-          await window.refreshGalleryData?.();
-          await loadDiskUsage();
-          closeUploadModal();
-        }, 1000);
+        sessionStorage.setItem('upload_success_toast', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
       } else {
-        const failedNames = failed.map(f => f.name).join(', ');
         const firstError = failed[0].error;
-        showToast('warning', `${success} uploaded, ${failed.length} failed: ${firstError}`);
-        console.error('Failed uploads:', failed);
-        
-        // If some succeeded, still refresh
-        if (success > 0) {
-          await window.refreshGalleryData?.();
-          await loadDiskUsage();
-        }
-        
-        // Don't auto-close if there are failures, let user see what failed
-        uploadButton.disabled = false;
-        uploadButton.textContent = 'Retry Failed';
+        sessionStorage.setItem('upload_warning_toast', `${success} uploaded, ${failed.length} failed: ${firstError}`);
       }
-      loadDiskUsage();
+      
+      closeUploadModal();
+      window.location.reload();
     });
   }
 
