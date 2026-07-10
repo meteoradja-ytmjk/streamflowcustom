@@ -19,69 +19,66 @@ function formatDuration(seconds) {
 } %>
 
 <div id="galleryPageRoot">
-<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-  <div>
-    <h2 class="text-2xl font-bold">Media Gallery</h2>
-    <p class="text-gray-400 text-sm mt-1">
-      <span>Manage your videos and audio for streaming</span>
-      <span id="diskUsageInfoDesktop" class="hidden">
-        <span class="text-gray-500 mx-1">•</span>
-        <i class="ti ti-database text-xs"></i>
-        <span id="diskUsageTextDesktop" class="text-gray-400"></span>
-      </span>
-    </p>
-    <p id="diskUsageInfoMobile" class="hidden text-gray-400 text-sm mt-1">
-      <i class="ti ti-database text-xs mr-1"></i>
-      <span id="diskUsageTextMobile"></span>
-    </p>
-  </div>
-  <div class="grid grid-cols-2 sm:flex gap-3 w-full sm:w-auto">
-    <button onclick="openUploadModal()" class="w-full justify-center flex items-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 py-2.5 rounded-lg transition-colors text-sm font-semibold">
-      <i class="ti ti-upload text-base"></i>
-      <span>Upload Media</span>
-    </button>
-    <div class="relative w-full sm:w-auto">
-      <button onclick="toggleCloudDropdown()" class="w-full justify-center flex items-center gap-2 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white px-4 py-2.5 rounded-lg transition-colors text-sm font-semibold">
-        <i class="ti ti-cloud-download text-base"></i>
-        <span>Import from Cloud</span>
-        <i class="ti ti-chevron-down text-xs"></i>
+<!-- Header Section -->
+<div class="mb-6">
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+    <div>
+      <h2 class="text-2xl font-bold">Media Gallery</h2>
+      <p class="text-gray-400 text-sm mt-1">
+        <span>Manage your videos and audio for streaming</span>
+        <span id="diskUsageInfo" class="hidden">
+          <span class="text-gray-500 mx-1">•</span>
+          <i class="ti ti-database text-xs"></i>
+          <span id="diskUsageText" class="text-gray-400"></span>
+        </span>
+      </p>
+    </div>
+    
+    <!-- Action Buttons - Justified -->
+    <div class="flex justify-between sm:justify-end gap-2 w-full lg:w-auto">
+      <button onclick="openUploadModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white h-10 rounded-lg transition-colors text-sm font-medium flex-1 sm:flex-none sm:w-[150px]">
+        <i class="ti ti-upload text-base"></i>
+        <span>Upload Media</span>
       </button>
-      <div id="cloudDropdown" class="hidden absolute right-0 mt-2 w-48 bg-dark-800 border border-gray-700 rounded-lg shadow-xl z-50">
-        <button onclick="openCloudModal('gdrive')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors rounded-t-lg">
-          <img src="/images/google drive.png" alt="Google Drive" class="w-5 h-5">
-          <span>Google Drive</span>
+      <div class="relative flex-1 sm:flex-none sm:w-[150px]">
+        <button onclick="toggleCloudDropdown()" class="w-full flex items-center justify-center gap-2 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white h-10 rounded-lg transition-colors text-sm font-medium">
+          <i class="ti ti-cloud-download text-base"></i>
+          <span>Import</span>
+          <i class="ti ti-chevron-down text-xs"></i>
         </button>
-        <button onclick="openCloudModal('mediafire')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors">
-          <img src="/images/mediafire.png" alt="Mediafire" class="w-5 h-5">
-          <span>Mediafire</span>
-        </button>
-        <button onclick="openCloudModal('dropbox')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors">
-          <img src="/images/dropbox.png" alt="Dropbox" class="w-5 h-5">
-          <span>Dropbox</span>
-        </button>
-        <button onclick="openCloudModal('mega')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors">
-          <img src="/images/mega.png" alt="MEGA" class="w-5 h-5">
-          <span>MEGA</span>
-        </button>
-        <button onclick="openLocalImportModal()" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors rounded-b-lg border-t border-gray-700">
-          <i class="ti ti-device-floppy text-lg text-primary"></i>
-          <span>Local Path (RDP/PC)</span>
-        </button>
+        <div id="cloudDropdown" class="hidden absolute right-0 mt-2 w-52 bg-dark-800 border border-gray-700 rounded-lg shadow-xl z-50">
+          <button onclick="openCloudModal('gdrive')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors rounded-t-lg text-sm">
+            <img src="/images/google drive.png" alt="Google Drive" class="w-5 h-5">
+            <span>Google Drive</span>
+          </button>
+          <button onclick="openCloudModal('mediafire')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+            <img src="/images/mediafire.png" alt="Mediafire" class="w-5 h-5">
+            <span>Mediafire</span>
+          </button>
+          <button onclick="openCloudModal('dropbox')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+            <img src="/images/dropbox.png" alt="Dropbox" class="w-5 h-5">
+            <span>Dropbox</span>
+          </button>
+          <button onclick="openCloudModal('mega')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+            <img src="/images/mega.png" alt="MEGA" class="w-5 h-5">
+            <span>MEGA</span>
+          </button>
+          <button onclick="openLocalImportModal()" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors rounded-b-lg border-t border-gray-700 text-sm">
+            <i class="ti ti-device-floppy text-lg text-primary"></i>
+            <span>Local Path</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="space-y-4 mb-6">
-  <div class="flex items-center gap-2 text-sm text-gray-400">
+  <!-- Breadcrumb -->
+  <% if (currentFolder) { %>
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-3">
     <a href="/gallery" class="hover:text-white transition-colors">Gallery</a>
-    <% if (currentFolder) { %>
     <i class="ti ti-chevron-right text-xs"></i>
     <span class="text-white font-medium"><%= currentFolder.name %></span>
-    <% } %>
   </div>
-
-  <% if (currentFolder) { %>
   <div id="rootDropZone" class="border border-dashed border-gray-600 rounded-lg px-4 py-3 text-sm text-gray-400 bg-dark-800/50">
     Drag file here to move it back to root
   </div>
@@ -94,52 +91,78 @@ function formatDuration(seconds) {
   const hasGalleryItems = galleryItemCount > 0;
 %>
 
+<!-- Gallery Content -->
 <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden">
-  <div class="flex flex-col gap-3 py-4 px-0 sm:px-4 border-b border-gray-700">
-    <!-- Search Row (always full width on mobile, matching outer bounds of top buttons) -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
-      <div class="relative w-full sm:w-80">
+  <!-- Toolbar -->
+  <div class="p-4 border-b border-gray-700">
+    <!-- Search Bar - Full Width -->
+    <div class="mb-3">
+      <div class="relative w-full">
         <input type="text" id="searchInput" placeholder="Search files and folders..."
-          class="w-full h-10 bg-dark-700 border-t border-b border-l-0 border-r-0 sm:border border-gray-600 text-white pl-9 pr-4 rounded-none sm:rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-        <i class="ti ti-search absolute left-4 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          class="w-full bg-dark-700 border border-gray-600 text-white pl-10 pr-4 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm">
+        <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+    </div>
+    
+    <!-- Filters and Actions Row - Single Line with Same Height -->
+    <div class="flex items-center justify-between gap-2">
+      <!-- Left: Filters -->
+      <div class="flex items-center gap-2">
+        <select id="typeFilter" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm w-[95px]">
+          <option value="all">All Media</option>
+          <option value="video">Video</option>
+          <option value="audio">Audio</option>
+        </select>
+        <select id="sortSelect" class="bg-dark-700 border border-gray-600 text-white px-3 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm w-[95px]">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name">Name</option>
+          <option value="size">Size</option>
+        </select>
       </div>
       
-      <!-- Controls Row (1 single row on mobile below Search, next to Search on desktop, nicely padded on mobile) -->
-      <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-3 w-full sm:w-auto px-4 sm:px-0">
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <% if (!currentFolder) { %>
-          <button onclick="openCreateFolderDialog()" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white rounded-lg transition-colors" title="Create folder" aria-label="Create folder">
-            <i class="ti ti-folder-plus text-lg"></i>
+      <!-- Right: Actions -->
+      <div class="flex items-center gap-2">
+        <% if (!currentFolder) { %>
+        <button onclick="openCreateFolderDialog()" class="flex items-center justify-center w-10 h-10 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white rounded-lg transition-colors" title="Create folder">
+          <i class="ti ti-folder-plus text-lg"></i>
+        </button>
+        <% } %>
+        <div class="flex bg-dark-700 border border-gray-600 rounded-lg overflow-hidden flex-shrink-0 h-10">
+          <button id="gridViewBtn" class="px-3 h-full bg-primary text-white transition-colors flex items-center justify-center rounded-l-[7px] rounded-r-none" title="Grid view">
+            <i class="ti ti-layout-grid"></i>
           </button>
-          <% } %>
-          <div class="flex bg-dark-700 border border-gray-600 rounded-lg overflow-hidden flex-shrink-0 h-10">
-            <button id="gridViewBtn" class="px-2.5 sm:px-3 h-full bg-primary text-white flex items-center justify-center rounded-l-[7px] rounded-r-none" title="Grid view">
-              <i class="ti ti-layout-grid"></i>
-            </button>
-            <button id="listViewBtn" class="px-2.5 sm:px-3 h-full text-gray-400 hover:text-white transition-colors flex items-center justify-center rounded-r-[7px] rounded-l-none" title="List view">
-              <i class="ti ti-list"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <select id="typeFilter" class="h-10 bg-dark-700 border border-gray-600 text-white px-2 sm:px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs sm:text-sm flex-shrink-0">
-            <option value="all">All Media</option>
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-          </select>
-          <select id="sortSelect" class="h-10 bg-dark-700 border border-gray-600 text-white px-2 sm:px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs sm:text-sm flex-shrink-0">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="name">Name</option>
-            <option value="size">Size</option>
-          </select>
+          <button id="listViewBtn" class="px-3 h-full text-gray-400 hover:text-white transition-colors flex items-center justify-center rounded-r-[7px] rounded-l-none" title="List view">
+            <i class="ti ti-list"></i>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <div id="galleryContent" class="p-4">
+    <!-- Selection Action Bar -->
+    <div id="selectionBar" class="hidden mb-4 p-3 bg-dark-700 rounded-lg border border-gray-600 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium text-white">
+          <span id="selectedCount">0</span> items
+        </span>
+        <button onclick="clearSelection()" class="text-xs text-gray-400 hover:text-white transition-colors">Clear</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <% if (currentFolder || folders && folders.length > 0) { %>
+        <button onclick="showMoveSelectedDialog()" class="flex items-center gap-2 bg-dark-600 hover:bg-dark-500 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+          <i class="ti ti-folder-symlink"></i>
+          <span>Move</span>
+        </button>
+        <% } %>
+        <button onclick="showDeleteSelectedDialog()" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+          <i class="ti ti-trash"></i>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+
     <% if (hasGalleryItems) { %>
     <div id="gridView" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <% if (hasRootFolders) { %>
@@ -170,14 +193,18 @@ function formatDuration(seconds) {
         const isAudio = video.filepath && (video.filepath.includes('/audio/') || video.filepath.endsWith('.m4a') || video.filepath.endsWith('.aac') || video.filepath.endsWith('.mp3'));
         const mediaType = isAudio ? 'audio' : 'video';
       %>
-      <div class="gallery-grid-item file-item group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
+      <div class="gallery-grid-item file-item group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer relative"
         data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
         draggable="true"
         onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
+        <!-- Selection Checkbox -->
+        <div class="absolute top-2 left-2 z-10">
+          <input type="checkbox" class="file-checkbox w-5 h-5 rounded border-2 border-gray-600 bg-dark-800/80 checked:bg-primary checked:border-primary cursor-pointer"
+            data-id="<%= video.id %>"
+            onclick="event.stopPropagation(); toggleFileSelection('<%= video.id %>')"
+            onchange="event.stopPropagation()">
+        </div>
         <div class="aspect-video relative overflow-hidden bg-dark-900">
-          <div class="select-checkbox-container hidden absolute top-2 left-2 z-20">
-            <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" onclick="event.stopPropagation()">
-          </div>
           <% if (isAudio) { %>
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
             <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -224,9 +251,7 @@ function formatDuration(seconds) {
         <table class="min-w-full">
           <thead class="bg-gray-700">
             <tr>
-              <th class="select-column-header hidden px-4 py-3 text-left w-12">
-                <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
-              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-10"></th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-24">Duration</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-28">Size</th>
@@ -240,7 +265,7 @@ function formatDuration(seconds) {
             <tr class="gallery-list-item folder-drop-target group hover:bg-dark-700 transition-colors cursor-pointer"
               data-folder-id="<%= folder.id %>" data-kind="folder" data-type="folder" data-title="<%= folder.name %>" data-date="<%= folder.updated_at || folder.created_at %>" data-size="0"
               onclick="window.location.href='/gallery?folder=<%= folder.id %>'">
-              <td class="select-column-cell hidden px-4 py-3 w-12" onclick="event.stopPropagation()"></td>
+              <td class="px-4 py-3"></td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-8 rounded bg-primary/15 text-primary flex-shrink-0 relative flex items-center justify-center">
@@ -277,8 +302,11 @@ function formatDuration(seconds) {
               data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
               draggable="true"
               onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
-              <td class="select-column-cell hidden px-4 py-3 w-12" onclick="event.stopPropagation()">
-                <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
+              <td class="px-4 py-3" onclick="event.stopPropagation()">
+                <input type="checkbox" class="file-checkbox w-4 h-4 rounded border-2 border-gray-600 bg-dark-700 checked:bg-primary checked:border-primary cursor-pointer"
+                  data-id="<%= video.id %>"
+                  onclick="event.stopPropagation(); toggleFileSelection('<%= video.id %>')"
+                  onchange="event.stopPropagation()">
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
@@ -507,25 +535,6 @@ function formatDuration(seconds) {
   data-user-role="<%= typeof user !== 'undefined' ? user.role : 'user' %>">
 </div>
 
-<!-- Floating Selection Action Bar -->
-<div id="selectionActionBar" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-dark-800 border border-gray-700 rounded-2xl sm:rounded-full shadow-2xl px-4 py-3 sm:px-6 sm:py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 z-50 transition-all transform translate-y-24 opacity-0 pointer-events-none w-[92%] sm:w-auto max-w-lg justify-between sm:justify-start">
-  <span id="selectedCountText" class="text-xs sm:text-sm font-medium text-white flex-shrink-0">0 items selected</span>
-  <div class="h-px w-full bg-gray-700 sm:hidden"></div>
-  <div class="h-6 w-px bg-gray-700 hidden sm:block"></div>
-  <div class="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
-    <button onclick="openMoveSelectedModal()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
-      <i class="ti ti-folder-share text-sm sm:text-base"></i>
-      <span>Move</span>
-    </button>
-    <button onclick="deleteSelectedFiles()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-red-600/90 hover:bg-red-600 text-white rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
-      <i class="ti ti-trash text-sm sm:text-base"></i>
-      <span>Delete</span>
-    </button>
-    <button onclick="exitSelectionMode()" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 bg-dark-600 hover:bg-dark-500 text-gray-300 rounded-lg sm:rounded-full transition-colors text-xs font-semibold flex-1 sm:flex-none">
-      <span>Cancel</span>
-    </button>
-  </div>
-</div>
 
 <script>
   const initData = document.getElementById('gallery-init-data').dataset;
@@ -554,34 +563,20 @@ async function loadDiskUsage() {
 }
 
 function updateDiskUsageDisplay() {
-  const infoDesktop = document.getElementById('diskUsageInfoDesktop');
-  const textDesktop = document.getElementById('diskUsageTextDesktop');
-  const infoMobile = document.getElementById('diskUsageInfoMobile');
-  const textMobile = document.getElementById('diskUsageTextMobile');
+  const diskUsageInfo = document.getElementById('diskUsageInfo');
+  const diskUsageText = document.getElementById('diskUsageText');
+  
+  if (!diskUsageInfo || !diskUsageText) return;
   
   if (userDiskLimit > 0) {
     const usedText = formatFileSize(userDiskUsage);
     const limitText = formatFileSize(userDiskLimit);
-    const displayText = `${usedText} / ${limitText}`;
-    
-    textDesktop.textContent = displayText;
-    textMobile.textContent = displayText;
-    
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      infoDesktop.classList.add('hidden');
-      infoMobile.classList.remove('hidden');
-    } else {
-      infoDesktop.classList.remove('hidden');
-      infoMobile.classList.add('hidden');
-    }
+    diskUsageText.textContent = `${usedText} / ${limitText}`;
+    diskUsageInfo.classList.remove('hidden');
   } else {
-    infoDesktop.classList.add('hidden');
-    infoMobile.classList.add('hidden');
+    diskUsageInfo.classList.add('hidden');
   }
 }
-
-window.addEventListener('resize', updateDiskUsageDisplay);
 
 function checkDiskLimit(fileSize) {
   if (userDiskLimit === 0) return true;
@@ -725,7 +720,8 @@ function playMedia(mediaId, mediaTitle, mediaType) {
             </button>
           </div>
           <div class="p-6">
-            <audio id="audio-player" class="w-full" src="/stream/${mediaId}" controls autoplay>
+            <audio id="audio-player" class="w-full" controls autoplay>
+              <source src="/stream/${mediaId}" type="audio/mp4">
               Your browser does not support the audio element.
             </audio>
           </div>
@@ -743,8 +739,8 @@ function playMedia(mediaId, mediaTitle, mediaType) {
             </button>
           </div>
           <div class="bg-black aspect-video">
-            <video id="native-player" class="w-full h-full" src="/stream/${mediaId}" controls preload="auto" autoplay>
-              Your browser does not support the video element.
+            <video id="native-player" class="w-full h-full" controls preload="auto" autoplay>
+              <source src="/stream/${mediaId}" type="video/mp4">
             </video>
           </div>
         </div>
@@ -952,15 +948,6 @@ async function moveVideoToFolder(videoId, folderId) {
   }
 }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 function createModalDialog(options) {
   const dialog = document.createElement('div');
   dialog.id = 'custom-modal';
@@ -986,11 +973,6 @@ function createModalDialog(options) {
           ${options.hasInput ? `
           <input type="text" id="modal-input" class="mt-4 w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" value="${options.inputValue || ''}" autofocus>
           ` : ''}
-          ${options.hasSelect ? `
-          <select id="modal-select" class="mt-4 w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
-            ${options.selectOptions.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join('')}
-          </select>
-          ` : ''}
         </div>
         <div class="flex justify-end gap-3 p-4 border-t border-gray-700">
           <button id="modal-cancel-btn" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg transition-colors">Cancel</button>
@@ -1009,8 +991,7 @@ function createModalDialog(options) {
       resolve({ confirmed, value });
     };
     document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-      const selectVal = options.hasSelect ? document.getElementById('modal-select').value : null;
-      const value = options.hasInput ? document.getElementById('modal-input').value : (options.hasSelect ? selectVal : null);
+      const value = options.hasInput ? document.getElementById('modal-input').value : null;
       close(true, value);
     });
     document.getElementById('modal-cancel-btn').addEventListener('click', () => close());
@@ -1486,20 +1467,92 @@ function navigateUp() {
 
 
 let selectedFiles = [];
-const CHUNK_SIZE = 10 * 1024 * 1024;
+const CHUNK_SIZE = 50 * 1024 * 1024;
 
 function isAudioFile(file) {
   const audioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/aac', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/flac', 'audio/x-flac'];
   const audioExts = ['.mp3', '.wav', '.aac', '.m4a', '.ogg', '.flac'];
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  return audioTypes.includes(file.type) || audioExts.includes(ext);
+  const fileName = file.name.toLowerCase();
+  const ext = fileName.substring(fileName.lastIndexOf('.'));
+  
+  // Check MIME type first
+  if (file.type && audioTypes.includes(file.type.toLowerCase())) {
+    return true;
+  }
+  
+  // Fallback to extension check
+  if (audioExts.includes(ext)) {
+    return true;
+  }
+  
+  return false;
 }
 
 function isVideoFile(file) {
-  const videoTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo'];
-  const videoExts = ['.mp4', '.avi', '.mov'];
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  return videoTypes.includes(file.type) || videoExts.includes(ext);
+  const videoTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+  const videoExts = ['.mp4', '.avi', '.mov', '.mkv'];
+  const fileName = file.name.toLowerCase();
+  const ext = fileName.substring(fileName.lastIndexOf('.'));
+  
+  // Check MIME type first
+  if (file.type && videoTypes.includes(file.type.toLowerCase())) {
+    return true;
+  }
+  
+  // Fallback to extension check
+  if (videoExts.includes(ext)) {
+    return true;
+  }
+  
+  console.log('Video file check failed for:', file.name, 'Type:', file.type, 'Ext:', ext);
+  return false;
+}
+
+function switchUploadTab(type) {
+  currentUploadType = type;
+  const tabVideo = document.getElementById('tabVideo');
+  const tabAudio = document.getElementById('tabAudio');
+  const dropzoneText = document.getElementById('dropzoneText');
+  const dropzoneFormats = document.getElementById('dropzoneFormats');
+  const mediaFileInput = document.getElementById('mediaFileInput');
+  
+  if (type === 'video') {
+    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
+    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    dropzoneText.textContent = 'Drag and drop video files here';
+    dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
+    mediaFileInput.setAttribute('accept', 'video/mp4,video/avi,video/quicktime');
+  } else {
+    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
+    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    dropzoneText.textContent = 'Drag and drop audio files here';
+    dropzoneFormats.textContent = 'Supported formats: MP3, WAV, AAC, M4A, OGG, FLAC (max 50GB)';
+    mediaFileInput.setAttribute('accept', 'audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/x-m4a,audio/ogg,audio/flac');
+  }
+  
+  document.getElementById('uploadType').value = type;
+  
+  // Clear selected files when switching tabs
+  selectedFiles = [];
+  resetUploadForm();
+}
+
+function getRemainingSpace() {
+  if (userDiskLimit > 0) {
+    return Math.max(0, userDiskLimit - userDiskUsage);
+  }
+  return Infinity;
+}
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  bytes = Number(bytes);
+  if (isNaN(bytes)) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+  else if (bytes < 1099511627776) return (bytes / 1073741824).toFixed(2) + ' GB';
+  else return (bytes / 1099511627776).toFixed(2) + ' TB';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1521,7 +1574,39 @@ document.addEventListener('DOMContentLoaded', function() {
   if (mediaFileInput) {
     mediaFileInput.addEventListener('change', function() {
       const newFiles = Array.from(this.files);
+      console.log('Files selected:', newFiles.length, 'Current type:', currentUploadType);
+      
       if (newFiles.length > 0) {
+        // Log file details for debugging
+        newFiles.forEach(f => {
+          console.log('File:', f.name, 'Type:', f.type, 'Size:', f.size);
+          if (currentUploadType === 'video') {
+            console.log('  isVideoFile:', isVideoFile(f));
+          } else {
+            console.log('  isAudioFile:', isAudioFile(f));
+          }
+        });
+        
+        // Validate file types based on current upload type
+        const invalidFiles = newFiles.filter(f => {
+          if (currentUploadType === 'video') {
+            return !isVideoFile(f);
+          } else {
+            return !isAudioFile(f);
+          }
+        });
+        
+        console.log('Invalid files:', invalidFiles.length);
+        
+        if (invalidFiles.length > 0) {
+          const fileTypeMsg = currentUploadType === 'video' 
+            ? 'Please select valid video files (MP4, AVI, MOV)' 
+            : 'Please select valid audio files (MP3, WAV, AAC, M4A, OGG, FLAC)';
+          showToast('error', fileTypeMsg);
+          this.value = '';
+          return;
+        }
+        
         const maxSize = 50 * 1024 * 1024 * 1024;
         const large = newFiles.filter(f => f.size > maxSize);
         if (large.length > 0) {
@@ -1529,6 +1614,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.value = '';
           return;
         }
+        
         const totalNewSize = newFiles.reduce((sum, f) => sum + f.size, 0);
         const totalSelectedSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
         if (userDiskLimit > 0 && (userDiskUsage + totalSelectedSize + totalNewSize) > userDiskLimit) {
@@ -1537,6 +1623,7 @@ document.addEventListener('DOMContentLoaded', function() {
           this.value = '';
           return;
         }
+        
         newFiles.forEach(f => {
           if (!selectedFiles.some(e => e.name === f.name && e.size === f.size)) selectedFiles.push(f);
         });
@@ -1550,12 +1637,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateFilesList() {
+    console.log('updateFilesList called, selectedFiles:', selectedFiles.length);
     const totalSize = selectedFiles.reduce((sum, f) => sum + f.size, 0);
     selectedFileCount.textContent = `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected (${formatFileSize(totalSize)})`;
     selectedFilesList.innerHTML = '';
     selectedFiles.forEach((file, i) => {
       const isAudio = isAudioFile(file);
       const icon = isAudio ? 'ti-music' : 'ti-video';
+      console.log('Adding file to list:', file.name, 'isAudio:', isAudio);
       const div = document.createElement('div');
       div.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-dark-600 transition-colors';
       div.innerHTML = `
@@ -1579,6 +1668,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       selectedFilesList.appendChild(div);
     });
+    console.log('Files added to DOM, list innerHTML length:', selectedFilesList.innerHTML.length);
   }
 
   if (clearFileButton) clearFileButton.addEventListener('click', resetUploadForm);
@@ -1617,24 +1707,54 @@ document.addEventListener('DOMContentLoaded', function() {
         updateFileProgress(i, 'uploading', 0);
         
         let result;
-        if (isAudio) {
-          result = await uploadAudioSimple(file, i, selectedFiles.length);
-        } else {
-          const useChunked = file.size > 50 * 1024 * 1024;
-          result = useChunked ? await uploadChunked(file, i, selectedFiles.length) : await uploadSimple(file, i, selectedFiles.length);
+        try {
+          if (isAudio) {
+            result = await uploadAudioSimple(file, i, selectedFiles.length);
+          } else {
+            const useChunked = file.size > 50 * 1024 * 1024;
+            result = useChunked ? await uploadChunked(file, i, selectedFiles.length) : await uploadSimple(file, i, selectedFiles.length);
+          }
+          
+          if (result.success) { 
+            success++; 
+            updateFileProgress(i, 'success', 100); 
+          } else { 
+            failed.push({ name: file.name, error: result.message || 'Upload failed' }); 
+            updateFileProgress(i, 'error', 0); 
+            console.error(`Upload failed for ${file.name}:`, result.message);
+          }
+        } catch (error) {
+          failed.push({ name: file.name, error: error.message || 'Unknown error' });
+          updateFileProgress(i, 'error', 0);
+          console.error(`Upload error for ${file.name}:`, error);
         }
-        
-        if (result.success) { success++; updateFileProgress(i, 'success', 100); }
-        else { failed.push(file.name); updateFileProgress(i, 'error', 0); }
       }
 
-      closeUploadModal();
       if (failed.length === 0) {
         showToast('success', `${success} file${success > 1 ? 's' : ''} uploaded successfully`);
+        
+        // Auto-close and refresh after successful upload
+        setTimeout(async () => {
+          await window.refreshGalleryData?.();
+          await loadDiskUsage();
+          closeUploadModal();
+        }, 1000);
       } else {
-        showToast('warning', `${success} uploaded, ${failed.length} failed`);
+        const failedNames = failed.map(f => f.name).join(', ');
+        const firstError = failed[0].error;
+        showToast('warning', `${success} uploaded, ${failed.length} failed: ${firstError}`);
+        console.error('Failed uploads:', failed);
+        
+        // If some succeeded, still refresh
+        if (success > 0) {
+          await window.refreshGalleryData?.();
+          await loadDiskUsage();
+        }
+        
+        // Don't auto-close if there are failures, let user see what failed
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Retry Failed';
       }
-      await window.refreshGalleryData?.();
       loadDiskUsage();
     });
   }
@@ -1654,6 +1774,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const formData = new FormData();
       formData.append('video', file);
       formData.append('folderId', document.getElementById('uploadFolderId').value || '');
+      
+      // Add CSRF token if available
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      if (csrfInput) {
+        formData.append('_csrf', csrfInput.value);
+      }
+      
       const xhr = new XMLHttpRequest();
       xhr.timeout = 30 * 60 * 1000;
       xhr.upload.addEventListener('progress', (e) => {
@@ -1667,12 +1794,22 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
-          try { const r = JSON.parse(xhr.responseText); resolve({ success: r.success }); }
-          catch { resolve({ success: false }); }
-        } else resolve({ success: false });
+          try { 
+            const r = JSON.parse(xhr.responseText); 
+            resolve({ success: r.success, message: r.error }); 
+          }
+          catch { resolve({ success: false, message: 'Invalid server response' }); }
+        } else {
+          try {
+            const r = JSON.parse(xhr.responseText);
+            resolve({ success: false, message: r.error || `Server error ${xhr.status}` });
+          } catch {
+            resolve({ success: false, message: `Upload failed with status ${xhr.status}` });
+          }
+        }
       });
-      xhr.addEventListener('error', () => resolve({ success: false }));
-      xhr.addEventListener('timeout', () => resolve({ success: false }));
+      xhr.addEventListener('error', () => resolve({ success: false, message: 'Network error' }));
+      xhr.addEventListener('timeout', () => resolve({ success: false, message: 'Upload timeout' }));
       xhr.open('POST', '/api/videos/upload', true);
       xhr.send(formData);
     });
@@ -1683,6 +1820,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const formData = new FormData();
       formData.append('audio', file);
       formData.append('folderId', document.getElementById('uploadFolderId').value || '');
+      
+      // Add CSRF token if available
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      if (csrfInput) {
+        formData.append('_csrf', csrfInput.value);
+      }
+      
       const xhr = new XMLHttpRequest();
       xhr.timeout = 60 * 60 * 1000;
       xhr.upload.addEventListener('progress', (e) => {
@@ -1696,12 +1840,22 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
-          try { const r = JSON.parse(xhr.responseText); resolve({ success: r.success }); }
-          catch { resolve({ success: false }); }
-        } else resolve({ success: false });
+          try { 
+            const r = JSON.parse(xhr.responseText); 
+            resolve({ success: r.success, message: r.error }); 
+          }
+          catch { resolve({ success: false, message: 'Invalid server response' }); }
+        } else {
+          try {
+            const r = JSON.parse(xhr.responseText);
+            resolve({ success: false, message: r.error || `Server error ${xhr.status}` });
+          } catch {
+            resolve({ success: false, message: `Upload failed with status ${xhr.status}` });
+          }
+        }
       });
-      xhr.addEventListener('error', () => resolve({ success: false }));
-      xhr.addEventListener('timeout', () => resolve({ success: false }));
+      xhr.addEventListener('error', () => resolve({ success: false, message: 'Network error' }));
+      xhr.addEventListener('timeout', () => resolve({ success: false, message: 'Upload timeout' }));
       xhr.open('POST', '/api/audio/upload', true);
       xhr.send(formData);
     });
@@ -1710,13 +1864,31 @@ document.addEventListener('DOMContentLoaded', function() {
   async function uploadChunked(file, index, total) {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     try {
+      // Get CSRF token
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      const csrfToken = csrfInput ? csrfInput.value : '';
+      
       const init = await fetch('/api/videos/chunk/init', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, fileSize: file.size, totalChunks, folderId: document.getElementById('uploadFolderId').value || '' })
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ 
+          filename: file.name, 
+          fileSize: file.size, 
+          totalChunks, 
+          folderId: document.getElementById('uploadFolderId').value || '' 
+        })
       });
+      
+      if (!init.ok) {
+        const errorData = await init.json();
+        throw new Error(errorData.error || `Init failed with status ${init.status}`);
+      }
+      
       const initData = await init.json();
-      if (!initData.success) throw new Error(initData.error);
+      if (!initData.success) throw new Error(initData.error || 'Failed to initialize upload');
       const uploadId = initData.uploadId;
       let uploaded = initData.uploadedChunks || [];
 
@@ -1726,17 +1898,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const end = Math.min(start + CHUNK_SIZE, file.size);
         const chunk = file.slice(start, end);
         let retries = 3;
+        let lastError = null;
+        
         while (retries > 0) {
           try {
             const res = await fetch('/api/videos/chunk/upload', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Id': uploadId, 'X-Chunk-Index': i.toString() },
+              headers: { 
+                'Content-Type': 'application/octet-stream', 
+                'X-Upload-Id': uploadId, 
+                'X-Chunk-Index': i.toString(),
+                'X-CSRF-Token': csrfToken
+              },
               body: chunk
             });
+            
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.error || `Chunk upload failed with status ${res.status}`);
+            }
+            
             const data = await res.json();
-            if (data.success) { uploaded = data.uploadedChunks; break; }
-            throw new Error(data.error);
-          } catch { retries--; if (retries === 0) throw new Error('Upload failed'); await new Promise(r => setTimeout(r, 1000)); }
+            if (data.success) { 
+              uploaded = data.uploadedChunks; 
+              lastError = null;
+              break; 
+            }
+            throw new Error(data.error || 'Chunk upload failed');
+          } catch (err) { 
+            lastError = err.message;
+            retries--; 
+            if (retries === 0) throw new Error(`Chunk ${i} upload failed after 3 attempts: ${lastError}`);
+            await new Promise(r => setTimeout(r, 1000)); 
+          }
         }
         const bytes = Math.min((i + 1) * CHUNK_SIZE, file.size);
         const pct = Math.round((bytes / file.size) * 100);
@@ -1748,14 +1942,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const complete = await fetch('/api/videos/chunk/complete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
         body: JSON.stringify({ uploadId })
       });
+      
+      if (!complete.ok) {
+        const errorData = await complete.json();
+        throw new Error(errorData.error || `Complete failed with status ${complete.status}`);
+      }
+      
       const completeData = await complete.json();
-      return { success: completeData.success };
+      return { success: completeData.success, message: completeData.error || completeData.message };
     } catch (e) {
-      console.error(e);
-      return { success: false };
+      console.error('Chunked upload error:', e);
+      return { success: false, message: e.message || 'Chunked upload failed' };
     }
   }
 
@@ -1796,7 +1999,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function isAudioMediaItem(video) {
     const filepath = (video.filepath || '').toLowerCase();
@@ -1838,15 +2048,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaType = isAudio ? 'audio' : 'video';
     const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
     const title = escapeHtml(video.title || '');
-    const isChecked = selectedMediaIds.includes(video.id);
     return `
-      <div class="gallery-grid-item file-item gallery-playable group bg-dark-700 rounded-lg overflow-hidden border ${isChecked ? 'border-primary bg-primary/5' : 'border-transparent'} hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
+      <div class="gallery-grid-item file-item gallery-playable group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
         data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
         <div class="aspect-video relative overflow-hidden bg-dark-900">
-          <div class="select-checkbox-container ${isSelectionModeActive ? '' : 'hidden'} absolute top-2 left-2 z-20">
-            <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" onclick="event.stopPropagation()" ${isChecked ? 'checked' : ''}>
-          </div>
           ${isAudio ? `
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
             <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -1883,7 +2089,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return `
       <tr class="gallery-list-item gallery-folder-link folder-drop-target group hover:bg-dark-700 transition-colors cursor-pointer"
         data-folder-id="${escapeHtml(folder.id)}" data-kind="folder" data-type="folder" data-title="${escapeHtml(folder.name)}" data-date="${escapeHtml(folder.updated_at || folder.created_at || '')}" data-size="0">
-        <td class="select-column-cell ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 w-12" onclick="event.stopPropagation()"></td>
         <td class="px-4 py-3">
           <div class="flex items-center gap-3">
             <div class="w-12 h-8 rounded bg-primary/15 text-primary flex-shrink-0 relative flex items-center justify-center">
@@ -1916,14 +2121,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaType = isAudio ? 'audio' : 'video';
     const title = escapeHtml(video.title || '');
     const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
-    const isChecked = selectedMediaIds.includes(video.id);
     return `
       <tr class="gallery-list-item file-item-row gallery-playable group hover:bg-dark-700 transition-colors cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
         data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
-        <td class="select-column-cell ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 w-12" onclick="event.stopPropagation()">
-          <input type="checkbox" class="item-select-checkbox w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer" ${isChecked ? 'checked' : ''}>
-        </td>
         <td class="px-4 py-3">
           <div class="flex items-center gap-3">
             <div class="w-12 h-8 rounded overflow-hidden bg-[#181818] flex-shrink-0 relative flex items-center justify-center">
@@ -2039,9 +2240,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       };
     }
-    if (window.bindLongPressInteractions) {
-      window.bindLongPressInteractions();
-    }
   }
 
   function renderGalleryContent() {
@@ -2085,9 +2283,6 @@ document.addEventListener('DOMContentLoaded', function() {
           <table class="min-w-full">
             <thead class="bg-gray-700">
               <tr>
-                <th class="select-column-header ${isSelectionModeActive ? '' : 'hidden'} px-4 py-3 text-left w-12">
-                  <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 rounded border-gray-600 text-primary bg-dark-900 focus:ring-primary focus:ring-offset-0 cursor-pointer">
-                </th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-24">Duration</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-28">Size</th>
@@ -2265,426 +2460,175 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // --- Selection Mode Logic ---
-  window.isSelectionModeActive = false;
-  window.selectedMediaIds = [];
-  let longPressTimer = null;
-  let longPressActive = false;
-
-  window.toggleSelectionMode = function() {
-    if (isSelectionModeActive) {
-      exitSelectionMode();
-    } else {
-      enterSelectionMode();
-    }
-  };
-
-  window.enterSelectionMode = function() {
-    isSelectionModeActive = true;
-    selectedMediaIds = [];
-
-    // Show checkboxes in grid view
-    document.querySelectorAll('.select-checkbox-container').forEach(el => {
-      el.classList.remove('hidden');
-    });
-
-    // Show select columns in list view
-    document.querySelectorAll('.select-column-header, .select-column-cell').forEach(el => {
-      el.classList.remove('hidden');
-    });
-
-    // Highlight selection button
-    const selectBtn = document.getElementById('selectionModeBtn');
-    if (selectBtn) {
-      selectBtn.classList.remove('bg-dark-700', 'text-white');
-      selectBtn.classList.add('bg-primary', 'text-white');
-    }
-
-    updateSelectionBar();
-  };
-
-  window.exitSelectionMode = function() {
-    isSelectionModeActive = false;
-    selectedMediaIds = [];
-
-    // Hide checkboxes
-    document.querySelectorAll('.select-checkbox-container').forEach(el => {
-      el.classList.add('hidden');
-      const cb = el.querySelector('.item-select-checkbox');
-      if (cb) cb.checked = false;
-    });
-
-    // Hide select columns in list view
-    document.querySelectorAll('.select-column-header, .select-column-cell').forEach(el => {
-      el.classList.add('hidden');
-      const cb = el.querySelector('.item-select-checkbox');
-      if (cb) cb.checked = false;
-    });
-
-    // Reset grid/list item highlights
-    document.querySelectorAll('.gallery-grid-item, .gallery-list-item').forEach(el => {
-      el.classList.remove('border-primary', 'bg-primary/5');
-    });
-
-    // Reset selection button
-    const selectBtn = document.getElementById('selectionModeBtn');
-    if (selectBtn) {
-      selectBtn.classList.add('bg-dark-700', 'text-white');
-      selectBtn.classList.remove('bg-primary', 'text-white');
-    }
-
-    // Reset select all checkbox if present
-    const selectAllCb = document.getElementById('selectAllCheckbox');
-    if (selectAllCb) selectAllCb.checked = false;
-
-    // Hide action bar
-    const bar = document.getElementById('selectionActionBar');
-    if (bar) {
-      bar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
-      bar.classList.remove('translate-y-0', 'opacity-100');
-    }
-  };
-
-  function updateSelectionBar() {
-    const bar = document.getElementById('selectionActionBar');
-    const countText = document.getElementById('selectedCountText');
-    if (!bar || !countText) return;
-
-    countText.textContent = `${selectedMediaIds.length} item${selectedMediaIds.length === 1 ? '' : 's'} selected`;
-
-    if (selectedMediaIds.length > 0) {
-      bar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
-      bar.classList.add('translate-y-0', 'opacity-100');
-    } else {
-      bar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
-      bar.classList.add('translate-y-0', 'opacity-100');
-    }
-  }
-
-  function syncCheckboxesState(id, isChecked) {
-    const elements = document.querySelectorAll(`[data-id="${id}"]`);
-    elements.forEach(el => {
-      const cb = el.querySelector('.item-select-checkbox');
-      if (cb) cb.checked = isChecked;
-      if (isChecked) {
-        el.classList.add('border-primary', 'bg-primary/5');
-      } else {
-        el.classList.remove('border-primary', 'bg-primary/5');
-      }
-    });
-  }
-
-  // Intercept clicks during Selection Mode (Capturing phase to bypass click propagation blockers)
-  const galleryContent = document.getElementById('galleryContent');
-  if (galleryContent) {
-    galleryContent.addEventListener('click', (e) => {
-      if (!isSelectionModeActive) return;
-
-      // Allow Select All checkbox interaction to work natively
-      if (e.target.id === 'selectAllCheckbox' || e.target.closest('#selectAllCheckbox')) {
-        return;
-      }
-
-      const item = e.target.closest('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
-      if (item) {
-        const checkbox = item.querySelector('.item-select-checkbox');
-        if (checkbox) {
-          const id = item.dataset.id;
-          if (!id) return;
-
-          // Check if they clicked directly on the checkbox or its cell/container
-          const isCheckboxClick = e.target === checkbox || e.target.closest('.select-checkbox-container') || e.target.closest('.select-column-cell');
-
-          if (isCheckboxClick) {
-            // Let the native checkbox action happen! Stop click propagation to bypass playMedia click listeners.
-            e.stopPropagation();
-            
-            // Wait for browser native toggle in next event loop tick
-            setTimeout(() => {
-              const isChecked = checkbox.checked;
-              if (isChecked) {
-                if (!selectedMediaIds.includes(id)) {
-                  selectedMediaIds.push(id);
-                }
-              } else {
-                selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-              }
-              syncCheckboxesState(id, isChecked);
-              updateSelectionBar();
-            }, 0);
-          } else {
-            // They clicked elsewhere on the card: block card playMedia action and programmatically toggle checkbox state.
-            e.preventDefault();
-            e.stopPropagation();
-
-            checkbox.checked = !checkbox.checked;
-            const isChecked = checkbox.checked;
-
-            if (isChecked) {
-              if (!selectedMediaIds.includes(id)) {
-                selectedMediaIds.push(id);
-              }
-            } else {
-              selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-            }
-
-            syncCheckboxesState(id, isChecked);
-            updateSelectionBar();
-          }
-        }
-      }
-    }, true); // Use capture phase!
-  }
-
-  // Select All functionality delegation
-  document.body.addEventListener('change', (e) => {
-    if (e.target && e.target.id === 'selectAllCheckbox') {
-      const isChecked = e.target.checked;
-      const visibleFiles = document.querySelectorAll('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
-      visibleFiles.forEach(item => {
-        const id = item.dataset.id;
-        if (!id) return;
-
-        const cb = item.querySelector('.item-select-checkbox');
-        if (cb) cb.checked = isChecked;
-
-        if (isChecked) {
-          if (!selectedMediaIds.includes(id)) {
-            selectedMediaIds.push(id);
-          }
-        } else {
-          selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-        }
-
-        syncCheckboxesState(id, isChecked);
-      });
-
-      updateSelectionBar();
-    }
-  });
-
-  // Long press bindings helper
-  window.bindLongPressInteractions = function() {
-    const items = document.querySelectorAll('.gallery-grid-item.file-item, .gallery-list-item.file-item-row');
-    items.forEach(item => {
-      const handleStart = (e) => {
-        if (item.dataset.kind !== 'file') return;
-        longPressActive = false;
-        longPressTimer = setTimeout(() => {
-          longPressActive = true;
-          if (typeof navigator.vibrate === 'function') {
-            navigator.vibrate(50);
-          }
-          if (!isSelectionModeActive) {
-            enterSelectionMode();
-          }
-          
-          const checkbox = item.querySelector('.item-select-checkbox');
-          if (checkbox) {
-            const id = item.dataset.id;
-            if (id) {
-              checkbox.checked = !checkbox.checked;
-              const isChecked = checkbox.checked;
-              if (isChecked) {
-                if (!selectedMediaIds.includes(id)) {
-                  selectedMediaIds.push(id);
-                }
-              } else {
-                selectedMediaIds = selectedMediaIds.filter(fid => fid !== id);
-              }
-              syncCheckboxesState(id, isChecked);
-              updateSelectionBar();
-            }
-          }
-        }, 600);
-      };
-
-      const handleEnd = (e) => {
-        clearTimeout(longPressTimer);
-        if (longPressActive) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-
-      const handleMove = () => {
-        clearTimeout(longPressTimer);
-      };
-
-      item.addEventListener('touchstart', handleStart, { passive: true });
-      item.addEventListener('touchend', handleEnd);
-      item.addEventListener('touchmove', handleMove, { passive: true });
-
-      item.addEventListener('mousedown', handleStart);
-      item.addEventListener('mouseup', handleEnd);
-      item.addEventListener('mousemove', handleMove);
-    });
-  };
-
-  // Move Selected Modal
-  window.openMoveSelectedModal = async function() {
-    if (selectedMediaIds.length === 0) {
-      showToast('error', 'No files selected');
-      return;
-    }
-
-    const selectOptions = [
-      { value: '', label: 'Root Folder' }
-    ];
-    galleryFoldersState.forEach(folder => {
-      selectOptions.push({ value: folder.id, label: folder.name });
-    });
-
-    const result = await createModalDialog({
-      type: 'info',
-      icon: 'ti-folder-share',
-      title: 'Move Selected Files',
-      message: `Move ${selectedMediaIds.length} selected files to:`,
-      hasSelect: true,
-      selectOptions: selectOptions,
-      confirmText: 'Move'
-    });
-
-    if (result.confirmed) {
-      const targetFolderId = result.value;
-      showToast('info', `Moving ${selectedMediaIds.length} files...`);
-
-      const idsToMove = [...selectedMediaIds];
-
-      try {
-        const results = [];
-        for (let i = 0; i < idsToMove.length; i++) {
-          const id = idsToMove[i];
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-          try {
-            const res = await fetch(`/api/videos/${id}/folder`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-              },
-              body: JSON.stringify({ folderId: targetFolderId || null })
-            });
-            if (res.ok) {
-              const data = await res.json();
-              results.push(data);
-            } else {
-              try {
-                const errData = await res.json();
-                results.push({ success: false, error: errData.error || `HTTP error ${res.status}` });
-              } catch {
-                results.push({ success: false, error: `HTTP error ${res.status}` });
-              }
-            }
-          } catch (err) {
-            console.error('Error moving file:', id, err);
-            results.push({ success: false, error: err.message || 'Network error' });
-          }
-        }
-
-        const errors = results.filter(r => !r.success);
-
-        if (errors.length === 0) {
-          showToast('success', 'All files moved successfully');
-        } else {
-          showToast('warning', `Moved files with ${errors.length} error(s): ${errors.map(e => e.error).join(', ')}`);
-        }
-
-        // Realtime removal of successfully moved files from local state
-        const movedIds = idsToMove.filter((id, index) => results[index] && results[index].success);
-        galleryVideosState = galleryVideosState.filter(video => !movedIds.includes(video.id));
-        renderGalleryContent();
-
-        exitSelectionMode();
-        await window.refreshGalleryData?.();
-      } catch (err) {
-        console.error(err);
-        showToast('error', 'An error occurred while moving the files');
-      }
-    }
-  };
-
-  // Delete Selected Files
-  window.deleteSelectedFiles = async function() {
-    if (selectedMediaIds.length === 0) {
-      showToast('error', 'No files selected');
-      return;
-    }
-
-    const result = await createModalDialog({
-      type: 'danger',
-      icon: 'ti-trash',
-      title: 'Delete Selected Files',
-      message: `Are you sure you want to delete ${selectedMediaIds.length} selected files? This action cannot be undone.`,
-      confirmText: 'Delete',
-      confirmClass: 'bg-red-500 hover:bg-red-600'
-    });
-
-    if (result.confirmed) {
-      showToast('info', `Deleting ${selectedMediaIds.length} files...`);
-
-      const idsToDelete = [...selectedMediaIds];
-
-      try {
-        const results = [];
-        for (let i = 0; i < idsToDelete.length; i++) {
-          const id = idsToDelete[i];
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-          try {
-            const res = await fetch(`/api/videos/${id}`, {
-              method: 'DELETE',
-              headers: {
-                'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-              }
-            });
-            if (res.ok) {
-              const data = await res.json();
-              results.push(data);
-            } else {
-              try {
-                const errData = await res.json();
-                results.push({ success: false, error: errData.error || `HTTP error ${res.status}` });
-              } catch {
-                results.push({ success: false, error: `HTTP error ${res.status}` });
-              }
-            }
-          } catch (err) {
-            console.error('Error deleting file:', id, err);
-            results.push({ success: false, error: err.message || 'Network error' });
-          }
-        }
-
-        const errors = results.filter(r => !r.success);
-
-        if (errors.length === 0) {
-          showToast('success', 'All selected files deleted successfully');
-        } else {
-          showToast('warning', `Deleted files with ${errors.length} error(s): ${errors.map(e => e.error).join(', ')}`);
-        }
-
-        // Realtime removal of successfully deleted files from local state
-        const deletedIds = idsToDelete.filter((id, index) => results[index] && results[index].success);
-        galleryVideosState = galleryVideosState.filter(video => !deletedIds.includes(video.id));
-        renderGalleryContent();
-
-        exitSelectionMode();
-        await window.refreshGalleryData?.();
-      } catch (err) {
-        console.error(err);
-        showToast('error', 'An error occurred while deleting the files');
-      }
-    }
-  };
-
   initializeGalleryViewButtons();
   bindGalleryItemInteractions();
   syncGalleryCollections();
   if (gridItems.length > 0) filterAndSort();
 });
+
+// File Selection Management
+let selectedFileIds = new Set();
+
+function toggleFileSelection(fileId) {
+  const checkbox = document.querySelector(`.file-checkbox[data-id="${fileId}"]`);
+  if (!checkbox) return;
+  
+  if (checkbox.checked) {
+    selectedFileIds.add(fileId);
+  } else {
+    selectedFileIds.delete(fileId);
+  }
+  
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const selectionBar = document.getElementById('selectionBar');
+  const selectedCount = document.getElementById('selectedCount');
+  
+  if (selectedFileIds.size > 0) {
+    selectionBar.classList.remove('hidden');
+    selectedCount.textContent = selectedFileIds.size;
+  } else {
+    selectionBar.classList.add('hidden');
+  }
+}
+
+function clearSelection() {
+  selectedFileIds.clear();
+  document.querySelectorAll('.file-checkbox').forEach(cb => cb.checked = false);
+  updateSelectionUI();
+}
+
+async function showDeleteSelectedDialog() {
+  if (selectedFileIds.size === 0) return;
+  
+  const result = await createModalDialog({
+    type: 'danger',
+    icon: 'ti-trash',
+    title: 'Delete Files',
+    message: `Are you sure you want to delete ${selectedFileIds.size} selected file(s)? This action cannot be undone.`,
+    confirmText: 'Delete',
+    confirmClass: 'bg-red-500 hover:bg-red-600'
+  });
+  
+  if (!result.confirmed) return;
+  
+  let successCount = 0;
+  let failCount = 0;
+  
+  for (const fileId of selectedFileIds) {
+    try {
+      const response = await fetch(`/api/videos/${fileId}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    } catch (error) {
+      failCount++;
+    }
+  }
+  
+  if (successCount > 0) {
+    showToast('success', `${successCount} file(s) deleted successfully`);
+    await window.refreshGalleryData?.();
+    clearSelection();
+  }
+  
+  if (failCount > 0) {
+    showToast('error', `Failed to delete ${failCount} file(s)`);
+  }
+}
+
+async function showMoveSelectedDialog() {
+  if (selectedFileIds.size === 0) return;
+  
+  // Build folder options
+  let folderOptions = '<option value="">Root Folder</option>';
+  galleryFoldersState.forEach(folder => {
+    folderOptions += `<option value="${folder.id}">${folder.name}</option>`;
+  });
+  
+  const dialog = document.createElement('div');
+  dialog.id = 'move-files-modal';
+  dialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay';
+  dialog.innerHTML = `
+    <div class="max-w-md w-full mx-4">
+      <div class="bg-dark-800 rounded-lg shadow-xl overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <i class="ti ti-folder-symlink text-primary text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold">Move Files</h3>
+              <p class="text-gray-400 text-sm mt-1">Select destination folder for ${selectedFileIds.size} file(s)</p>
+            </div>
+          </div>
+          <select id="move-folder-select" class="w-full bg-dark-700 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+            ${folderOptions}
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t border-gray-700">
+          <button id="move-cancel-btn" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg transition-colors">Cancel</button>
+          <button id="move-confirm-btn" class="bg-primary hover:bg-rose-600 px-4 py-2 text-white rounded-lg transition-colors">Move Files</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+  document.body.classList.add('overflow-hidden');
+  
+  const close = () => {
+    document.body.classList.remove('overflow-hidden');
+    dialog.remove();
+  };
+  
+  document.getElementById('move-cancel-btn').addEventListener('click', close);
+  document.getElementById('move-confirm-btn').addEventListener('click', async () => {
+    const targetFolderId = document.getElementById('move-folder-select').value || null;
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const fileId of selectedFileIds) {
+      try {
+        const response = await fetch(`/api/videos/${fileId}/folder`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+          },
+          body: JSON.stringify({ folderId: targetFolderId })
+        });
+        const data = await response.json();
+        if (data.success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        failCount++;
+      }
+    }
+    
+    close();
+    
+    if (successCount > 0) {
+      showToast('success', `${successCount} file(s) moved successfully`);
+      await window.refreshGalleryData?.();
+      clearSelection();
+    }
+    
+    if (failCount > 0) {
+      showToast('error', `Failed to move ${failCount} file(s)`);
+    }
+  });
+  
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+}
 </script>
 
 <style>
