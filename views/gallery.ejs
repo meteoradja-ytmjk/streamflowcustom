@@ -529,9 +529,9 @@ function formatDuration(seconds) {
 
 <div id="gallery-init-data" class="hidden"
   data-current-folder-id="<%= currentFolderId || '' %>"
-  data-videos='<%- JSON.stringify(videos || []) %>'
-  data-folders='<%- JSON.stringify(folders || []) %>'
-  data-current-folder='<%- JSON.stringify(currentFolder || null) %>'
+  data-videos="<%= JSON.stringify(videos || []) %>"
+  data-folders="<%= JSON.stringify(folders || []) %>"
+  data-current-folder="<%= JSON.stringify(currentFolder || null) %>"
   data-user-role="<%= typeof user !== 'undefined' ? user.role : 'user' %>">
 </div>
 
