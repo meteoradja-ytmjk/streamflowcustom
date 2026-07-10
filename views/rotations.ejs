@@ -27,19 +27,19 @@
 </div>
 
 <% if (!youtubeConnected) { %>
-<div class="bg-yellow-500/[0.03] border border-yellow-500/15 rounded-xl p-4 mb-6 backdrop-blur-sm">
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 text-yellow-400">
-        <i class="ti ti-brand-youtube text-lg animate-pulse"></i>
+<div class="bg-yellow-500/[0.03] border border-yellow-500/15 rounded-2xl p-6 mb-8 backdrop-blur-sm shadow-lg shadow-yellow-950/5">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center flex-shrink-0 text-yellow-400 border border-yellow-500/10 shadow-inner">
+        <i class="ti ti-brand-youtube text-2xl animate-pulse"></i>
       </div>
       <div>
-        <h3 class="text-sm font-semibold text-yellow-200">YouTube Connection Required</h3>
-        <p class="text-xs text-gray-400 mt-0.5">To use Stream Rotations, you need to connect your YouTube account first.</p>
+        <h3 class="text-base font-semibold text-yellow-200 tracking-wide">YouTube Connection Required</h3>
+        <p class="text-sm text-gray-400 mt-1 leading-relaxed">To use Stream Rotations, you need to connect your YouTube account first.</p>
       </div>
     </div>
-    <a href="/settings?activeTab=integration" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 hover:text-yellow-300 border border-yellow-500/20 rounded-lg text-xs font-semibold transition-all duration-200 w-full sm:w-auto text-center">
-      <i class="ti ti-plug text-xs"></i>
+    <a href="/settings?activeTab=integration" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 hover:text-yellow-300 border border-yellow-500/20 rounded-xl text-sm font-semibold transition-all duration-300 w-full md:w-auto text-center hover:scale-[1.02] shadow-sm">
+      <i class="ti ti-plug text-sm"></i>
       <span>Connect YouTube</span>
     </a>
   </div>
