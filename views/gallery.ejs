@@ -612,7 +612,11 @@ function formatDuration(seconds) {
 
 function switchUploadTab(type) {
   currentUploadType = type;
-  document.getElementById('uploadType').value = type;
+  
+  // Clear selected files and reset form first
+  selectedFiles = [];
+  resetUploadForm();
+  
   const tabVideo = document.getElementById('tabVideo');
   const tabAudio = document.getElementById('tabAudio');
   const dropzoneIcon = document.getElementById('dropzoneIcon');
@@ -623,19 +627,20 @@ function switchUploadTab(type) {
   if (type === 'video') {
     tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
     tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
-    dropzoneIcon.className = 'ti ti-video text-2xl text-gray-400';
+    if (dropzoneIcon) dropzoneIcon.className = 'ti ti-video text-2xl text-gray-400';
     dropzoneText.textContent = 'Drag and drop video files here';
     dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
-    mediaFileInput.accept = 'video/mp4,video/avi,video/quicktime';
+    mediaFileInput.setAttribute('accept', 'video/*,.mp4,.avi,.mov,.mkv');
   } else {
-    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
     tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
-    dropzoneIcon.className = 'ti ti-music text-2xl text-gray-400';
+    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    if (dropzoneIcon) dropzoneIcon.className = 'ti ti-music text-2xl text-gray-400';
     dropzoneText.textContent = 'Drag and drop audio files here';
-    dropzoneFormats.textContent = 'Supported formats: MP3, WAV';
-    mediaFileInput.accept = 'audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/mp4,audio/x-m4a,audio/ogg,audio/flac';
+    dropzoneFormats.textContent = 'Supported formats: MP3, WAV, AAC, M4A, OGG, FLAC (max 50GB)';
+    mediaFileInput.setAttribute('accept', 'audio/*,.mp3,.wav,.aac,.m4a,.ogg,.flac');
   }
-  resetUploadForm();
+  
+  document.getElementById('uploadType').value = type;
 }
 
 function showToast(type, message) {
@@ -1508,34 +1513,7 @@ function isVideoFile(file) {
   return false;
 }
 
-function switchUploadTab(type) {
-  currentUploadType = type;
-  const tabVideo = document.getElementById('tabVideo');
-  const tabAudio = document.getElementById('tabAudio');
-  const dropzoneText = document.getElementById('dropzoneText');
-  const dropzoneFormats = document.getElementById('dropzoneFormats');
-  const mediaFileInput = document.getElementById('mediaFileInput');
-  
-  if (type === 'video') {
-    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
-    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
-    dropzoneText.textContent = 'Drag and drop video files here';
-    dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
-    mediaFileInput.setAttribute('accept', 'video/mp4,video/avi,video/quicktime');
-  } else {
-    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
-    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
-    dropzoneText.textContent = 'Drag and drop audio files here';
-    dropzoneFormats.textContent = 'Supported formats: MP3, WAV, AAC, M4A, OGG, FLAC (max 50GB)';
-    mediaFileInput.setAttribute('accept', 'audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/x-m4a,audio/ogg,audio/flac');
-  }
-  
-  document.getElementById('uploadType').value = type;
-  
-  // Clear selected files when switching tabs
-  selectedFiles = [];
-  resetUploadForm();
-}
+
 
 function getRemainingSpace() {
   if (userDiskLimit > 0) {
