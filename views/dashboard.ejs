@@ -303,9 +303,15 @@
                           placeholder="Enter stream title..." name="streamTitle" id="streamTitle" required>
                       </div>
                       <div class="space-y-4">
-                        <label class="text-sm font-medium text-white block">Stream Configuration</label>
+                        <div class="flex items-center justify-between">
+                          <label class="text-sm font-medium text-white block">Stream Configuration</label>
+                          <button type="button" id="toggleRtmpConfigBtn" onclick="toggleRtmpConfig()" class="text-xs text-primary hover:underline flex items-center gap-1">
+                            <i class="ti ti-settings"></i>
+                            <span>Show RTMP URL</span>
+                          </button>
+                        </div>
                         <div class="space-y-3">
-                          <div class="relative">
+                          <div id="rtmpUrlContainer" class="hidden relative">
                             <input type="text" id="rtmpUrl" name="rtmpUrl"
                               class="w-full pl-10 pr-12 py-2.5 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
                               placeholder="RTMP URL" value="rtmps://a.rtmp.youtube.com/live2" required>
@@ -428,14 +434,14 @@
                       <!-- Weekday Selector (Only visible when weekly recurrence is selected) -->
                       <div id="weeklyDaySelector" class="hidden col-span-1 sm:col-span-4 mt-2">
                         <label class="text-xs text-gray-400 block mb-2">Select Days of the Week</label>
-                        <div class="flex flex-wrap gap-2">
-                          <button type="button" data-day="1" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Mon</button>
-                          <button type="button" data-day="2" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Tue</button>
-                          <button type="button" data-day="3" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Wed</button>
-                          <button type="button" data-day="4" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Thu</button>
-                          <button type="button" data-day="5" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Fri</button>
-                          <button type="button" data-day="6" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sat</button>
-                          <button type="button" data-day="0" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sun</button>
+                        <div class="grid grid-cols-7 gap-1.5 w-full">
+                          <button type="button" data-day="1" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Mon</button>
+                          <button type="button" data-day="2" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Tue</button>
+                          <button type="button" data-day="3" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Wed</button>
+                          <button type="button" data-day="4" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Thu</button>
+                          <button type="button" data-day="5" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Fri</button>
+                          <button type="button" data-day="6" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Sat</button>
+                          <button type="button" data-day="0" class="weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Sun</button>
                         </div>
                       </div>
                     </div>
@@ -920,9 +926,15 @@
                       placeholder="Enter stream title..." name="streamTitle" id="editStreamTitle" required>
                   </div>
                   <div class="space-y-4">
-                    <label class="text-sm font-medium text-white block mb-3">Stream Configuration</label>
+                    <div class="flex items-center justify-between">
+                      <label class="text-sm font-medium text-white block">Stream Configuration</label>
+                      <button type="button" id="editToggleRtmpConfigBtn" onclick="toggleEditRtmpConfig()" class="text-xs text-primary hover:underline flex items-center gap-1">
+                        <i class="ti ti-settings"></i>
+                        <span>Show RTMP URL</span>
+                      </button>
+                    </div>
                     <div class="space-y-3">
-                      <div class="relative">
+                      <div id="editRtmpUrlContainer" class="hidden relative">
                         <input type="text" id="editRtmpUrl" name="rtmpUrl"
                           class="w-full pl-10 pr-12 py-2.5 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
                           placeholder="RTMP URL" required>
@@ -1045,14 +1057,14 @@
                   <!-- Weekday Selector (Only visible when weekly recurrence is selected) -->
                   <div id="editWeeklyDaySelector" class="hidden col-span-1 sm:col-span-4 mt-2">
                     <label class="text-xs text-gray-400 block mb-2">Select Days of the Week</label>
-                    <div class="flex flex-wrap gap-2">
-                      <button type="button" data-day="1" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Mon</button>
-                      <button type="button" data-day="2" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Tue</button>
-                      <button type="button" data-day="3" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Wed</button>
-                      <button type="button" data-day="4" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Thu</button>
-                      <button type="button" data-day="5" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Fri</button>
-                      <button type="button" data-day="6" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sat</button>
-                      <button type="button" data-day="0" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sun</button>
+                    <div class="grid grid-cols-7 gap-1.5 w-full">
+                      <button type="button" data-day="1" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Mon</button>
+                      <button type="button" data-day="2" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Tue</button>
+                      <button type="button" data-day="3" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Wed</button>
+                      <button type="button" data-day="4" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Thu</button>
+                      <button type="button" data-day="5" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Fri</button>
+                      <button type="button" data-day="6" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Sat</button>
+                      <button type="button" data-day="0" class="edit-weekday-btn w-full py-2 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors text-center">Sun</button>
                     </div>
                   </div>
                 </div>
@@ -2333,10 +2345,10 @@
 
       let scheduleHTML = '';
       if (stream.status === 'scheduled' && scheduleDate) {
-        scheduleHTML = `<span class="text-[10px] text-yellow-500">${scheduleDate} ${scheduleTime}${recurText}</span>`;
-        if (endDate) scheduleHTML += ` <span class="text-[10px] text-gray-500">→</span> <span class="text-[10px] text-green-500">${endDate} ${endTime}</span>`;
+        scheduleHTML = `<span class="text-[10px] text-yellow-500 font-medium">${scheduleDate}</span> <span class="text-[10px] text-gray-600">•</span> <span class="text-[10px] text-blue-400 font-semibold">${scheduleTime}</span><span class="text-[10px] text-gray-400">${recurText}</span>`;
+        if (endDate) scheduleHTML += ` <span class="text-[10px] text-gray-600">→</span> <span class="text-[10px] text-green-400 font-medium">${endDate}</span> <span class="text-[10px] text-gray-600">•</span> <span class="text-[10px] text-emerald-400 font-semibold">${endTime}</span>`;
       } else if (endDate) {
-        scheduleHTML = `<span class="text-[10px] text-green-500">End: ${endDate} ${endTime}</span>`;
+        scheduleHTML = `<span class="text-[10px] text-green-400 font-medium">End: ${endDate}</span> <span class="text-[10px] text-gray-600">•</span> <span class="text-[10px] text-emerald-400 font-semibold">${endTime}</span>`;
       }
       let youtubeInfoHTML = '';
       if (youtubeConnected && stream.youtube_channel_name) {
@@ -2526,14 +2538,14 @@
             }
           }
           if (scheduleDate && endDate) {
-            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}${recurText}</div>
-                    <div class="text-xs text-green-500 font-medium">End: ${formatDate(endDate)} ${formatTime(endDate)}</div>`;
+            return `<div class="text-xs font-medium"><span class="text-gray-400">Start: </span><span class="text-yellow-500">${formatDate(scheduleDate)}</span> <span class="text-gray-600">•</span> <span class="text-blue-400">${formatTime(scheduleDate)}</span><span class="text-gray-400">${recurText}</span></div>
+                    <div class="text-xs font-medium"><span class="text-gray-400">End: </span><span class="text-green-500">${formatDate(endDate)}</span> <span class="text-gray-600">•</span> <span class="text-emerald-400">${formatTime(endDate)}</span></div>`;
           } else if (scheduleDate) {
-            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}${recurText}</div>`;
+            return `<div class="text-xs font-medium"><span class="text-gray-400">Start: </span><span class="text-yellow-500">${formatDate(scheduleDate)}</span> <span class="text-gray-600">•</span> <span class="text-blue-400">${formatTime(scheduleDate)}</span><span class="text-gray-400">${recurText}</span></div>`;
           } else if (endDate) {
-            return `<div class="text-xs text-green-500 font-medium">End: ${formatDate(endDate)} ${formatTime(endDate)}</div>`;
+            return `<div class="text-xs font-medium"><span class="text-gray-400">End: </span><span class="text-green-500">${formatDate(endDate)}</span> <span class="text-gray-600">•</span> <span class="text-emerald-400">${formatTime(endDate)}</span></div>`;
           } else {
-            return `<div class="text-sm">--</div>`;
+            return `<div class="text-sm text-gray-500">--</div>`;
           }
         })()}
       </td>
@@ -3972,6 +3984,12 @@
         if (editWeeklyDaySelector) editWeeklyDaySelector.classList.add('hidden');
       }
 
+      // Reset edit RTMP URL toggle visibility
+      const editRtmpUrlContainer = document.getElementById('editRtmpUrlContainer');
+      if (editRtmpUrlContainer) editRtmpUrlContainer.classList.add('hidden');
+      const editToggleRtmpConfigBtn = document.getElementById('editToggleRtmpConfigBtn');
+      if (editToggleRtmpConfigBtn) editToggleRtmpConfigBtn.innerHTML = '<i class="ti ti-settings"></i><span>Show RTMP URL</span>';
+
       const advancedSettingsContent = document.getElementById('editAdvancedSettingsContent');
       const advancedSettingsCheckbox = document.getElementById('editAdvancedSettingsCheckbox');
       if (stream.use_advanced_settings) {
@@ -4596,6 +4614,34 @@
       badge.textContent = formatted;
       badge.classList.remove('hidden');
     }
+
+    window.toggleRtmpConfig = function() {
+      const container = document.getElementById('rtmpUrlContainer');
+      const btn = document.getElementById('toggleRtmpConfigBtn');
+      if (container) {
+        if (container.classList.contains('hidden')) {
+          container.classList.remove('hidden');
+          btn.innerHTML = '<i class="ti ti-settings"></i><span>Hide RTMP URL</span>';
+        } else {
+          container.classList.add('hidden');
+          btn.innerHTML = '<i class="ti ti-settings"></i><span>Show RTMP URL</span>';
+        }
+      }
+    };
+
+    window.toggleEditRtmpConfig = function() {
+      const container = document.getElementById('editRtmpUrlContainer');
+      const btn = document.getElementById('editToggleRtmpConfigBtn');
+      if (container) {
+        if (container.classList.contains('hidden')) {
+          container.classList.remove('hidden');
+          btn.innerHTML = '<i class="ti ti-settings"></i><span>Hide RTMP URL</span>';
+        } else {
+          container.classList.add('hidden');
+          btn.innerHTML = '<i class="ti ti-settings"></i><span>Show RTMP URL</span>';
+        }
+      }
+    };
 
     // Setup Weekly Day Selector Toggling and Clicking
     document.addEventListener('DOMContentLoaded', () => {

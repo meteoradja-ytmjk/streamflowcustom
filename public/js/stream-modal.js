@@ -260,6 +260,12 @@ function resetModalForm() {
   });
   const weeklyDaySelector = document.getElementById('weeklyDaySelector');
   if (weeklyDaySelector) weeklyDaySelector.classList.add('hidden');
+
+  // Reset RTMP URL toggle visibility
+  const rtmpUrlContainer = document.getElementById('rtmpUrlContainer');
+  if (rtmpUrlContainer) rtmpUrlContainer.classList.add('hidden');
+  const toggleRtmpConfigBtn = document.getElementById('toggleRtmpConfigBtn');
+  if (toggleRtmpConfigBtn) toggleRtmpConfigBtn.innerHTML = '<i class="ti ti-settings"></i><span>Show RTMP URL</span>';
 }
 
 function initModal() {
