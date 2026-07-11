@@ -400,7 +400,7 @@ function formatDuration(seconds) {
               </div>
               <label class="bg-primary hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition-colors inline-block cursor-pointer">
                 <span>Select files</span>
-                <input type="file" name="media" accept="video/mp4,video/avi,video/quicktime" multiple class="hidden" id="mediaFileInput">
+                <input type="file" name="media" accept="video/*,.mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.3gp,.ts,.mpeg,.mpg" multiple class="hidden" id="mediaFileInput">
               </label>
               <p id="dropzoneFormats" class="text-gray-500 text-xs">Supported formats: MP4, AVI, MOV (max 50GB)</p>
             </div>
@@ -636,7 +636,7 @@ function switchUploadTab(type) {
     if (dropzoneIcon) dropzoneIcon.className = 'ti ti-video text-2xl text-gray-400';
     dropzoneText.textContent = 'Drag and drop video files here';
     dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
-    mediaFileInput.setAttribute('accept', 'video/*,.mp4,.avi,.mov,.mkv');
+    mediaFileInput.setAttribute('accept', 'video/*,.mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.3gp,.ts,.mpeg,.mpg');
   } else {
     tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
     tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
@@ -1500,8 +1500,12 @@ function isAudioFile(file) {
 }
 
 function isVideoFile(file) {
-  const videoTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-  const videoExts = ['.mp4', '.avi', '.mov', '.mkv'];
+  const videoTypes = [
+    'video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 
+    'video/webm', 'video/x-flv', 'video/x-ms-wmv', 'video/x-m4v', 'video/3gpp', 
+    'video/mp2t', 'video/mpeg'
+  ];
+  const videoExts = ['.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv', '.wmv', '.m4v', '.3gp', '.ts', '.mpeg', '.mpg'];
   const fileName = file.name.toLowerCase();
   const ext = fileName.substring(fileName.lastIndexOf('.'));
   
