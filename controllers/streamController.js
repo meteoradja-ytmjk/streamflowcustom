@@ -87,6 +87,7 @@ class StreamController {
         scheduleTime = null,
         endTime = null,
         scheduleType = 'once',
+        scheduleWeekdays = null,
         useAdvancedSettings = false
       } = req.body;
 
@@ -128,6 +129,7 @@ class StreamController {
         schedule_time: scheduleTime,
         end_time: endTime,
         schedule_type: scheduleType,
+        schedule_weekdays: scheduleWeekdays,
         use_advanced_settings: useAdvancedSettings,
         status: scheduleTime ? 'scheduled' : 'offline',
         user_id: req.session.userId
@@ -347,6 +349,7 @@ class StreamController {
       if (req.body.scheduleTime !== undefined) updateData.schedule_time = req.body.scheduleTime;
       if (req.body.endTime !== undefined) updateData.end_time = req.body.endTime;
       if (req.body.scheduleType !== undefined) updateData.schedule_type = req.body.scheduleType;
+      if (req.body.scheduleWeekdays !== undefined) updateData.schedule_weekdays = req.body.scheduleWeekdays;
 
       await Stream.update(streamId, updateData, req.session.userId);
 

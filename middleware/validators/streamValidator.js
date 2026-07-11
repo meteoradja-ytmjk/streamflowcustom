@@ -33,6 +33,10 @@ const createStreamValidation = [
     .optional()
     .isIn(['once', 'daily', 'weekly'])
     .withMessage('Invalid schedule type'),
+  body('scheduleWeekdays')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('Invalid schedule weekdays format'),
   body('bitrate')
     .optional()
     .isInt({ min: 500, max: 50000 })
@@ -110,6 +114,10 @@ const updateStreamValidation = [
     .optional()
     .isIn(['once', 'daily', 'weekly'])
     .withMessage('Invalid schedule type'),
+  body('scheduleWeekdays')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('Invalid schedule weekdays format'),
   body('bitrate')
     .optional()
     .isInt({ min: 500, max: 50000 })

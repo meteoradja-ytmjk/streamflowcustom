@@ -252,6 +252,14 @@ function resetModalForm() {
   if (typeof updatePlatformIcon === 'function') {
     updatePlatformIcon('ti-brand-youtube text-red-500');
   }
+
+  // Reset weekday buttons and container
+  document.querySelectorAll('.weekday-btn').forEach(btn => {
+    btn.classList.remove('active-day', 'bg-primary', 'text-white', 'border-primary');
+    btn.classList.add('bg-dark-700', 'text-gray-300', 'border-gray-600');
+  });
+  const weeklyDaySelector = document.getElementById('weeklyDaySelector');
+  if (weeklyDaySelector) weeklyDaySelector.classList.add('hidden');
 }
 
 function initModal() {

@@ -72,6 +72,7 @@ function createTables() {
         loop_video BOOLEAN DEFAULT 1,
         schedule_time TIMESTAMP,
         schedule_type TEXT DEFAULT 'once',
+        schedule_weekdays TEXT,
         duration INTEGER,
         status TEXT DEFAULT 'offline',
         status_updated_at TIMESTAMP,
@@ -423,6 +424,12 @@ function createTables() {
       db.run(`ALTER TABLE streams ADD COLUMN schedule_type TEXT DEFAULT 'once'`, (err) => {
         if (err && !err.message.includes('duplicate column name')) {
           console.error('Error adding schedule_type column to streams:', err.message);
+        }
+      });
+
+      db.run(`ALTER TABLE streams ADD COLUMN schedule_weekdays TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate column name')) {
+          console.error('Error adding schedule_weekdays column to streams:', err.message);
         }
       });
 

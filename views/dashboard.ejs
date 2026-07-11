@@ -383,11 +383,12 @@
                     </div>
                   </div>
                   <div class="space-y-2 mt-4 mb-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                       <label class="text-sm font-medium text-white">Schedule Settings</label>
-                      <span id="serverTimeDisplay"
-                        class="mt-1 sm:mt-0 sm:ml-2 block sm:inline-block bg-gray-700 text-xs text-gray-300 px-2 py-0.5 rounded">
-                        Server time: loading...
+                      <span id="serverTimeDisplayContainer"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 bg-dark-700/60 border border-gray-600/50 text-sm font-semibold text-gray-200 rounded-full shadow-inner">
+                        <i class="ti ti-clock text-emerald-400 animate-pulse"></i>
+                        <span id="serverTimeDisplay">Server time: loading...</span>
                       </span>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -423,6 +424,19 @@
                         </label>
                         <input type="datetime-local" id="scheduleEndTime" name="scheduleEndTime"
                           class="w-full h-[42px] px-4 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm [color-scheme:dark]">
+                      </div>
+                      <!-- Weekday Selector (Only visible when weekly recurrence is selected) -->
+                      <div id="weeklyDaySelector" class="hidden col-span-1 sm:col-span-4 mt-2">
+                        <label class="text-xs text-gray-400 block mb-2">Select Days of the Week</label>
+                        <div class="flex flex-wrap gap-2">
+                          <button type="button" data-day="1" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Mon</button>
+                          <button type="button" data-day="2" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Tue</button>
+                          <button type="button" data-day="3" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Wed</button>
+                          <button type="button" data-day="4" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Thu</button>
+                          <button type="button" data-day="5" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Fri</button>
+                          <button type="button" data-day="6" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sat</button>
+                          <button type="button" data-day="0" class="weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sun</button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -709,11 +723,14 @@
                       </div>
 
                       <div class="h-[42px] flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                          <label class="text-sm text-gray-300">Enable Schedule</label>
-                          <span id="ytServerTimeDisplay"
-                            class="bg-gray-700 text-xs text-gray-300 px-2 py-0.5 rounded">loading...</span>
-                        </div>
+                         <div class="flex items-center gap-2">
+                           <label class="text-sm text-gray-300">Enable Schedule</label>
+                           <span id="ytServerTimeDisplayContainer"
+                             class="inline-flex items-center gap-1 bg-dark-600/80 border border-gray-600/50 text-[11px] font-semibold text-gray-300 px-2 py-0.5 rounded-full shadow-inner">
+                             <i class="ti ti-clock text-emerald-400 text-xs animate-pulse"></i>
+                             <span id="ytServerTimeDisplay">loading...</span>
+                           </span>
+                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                           <input type="checkbox" id="ytEnableSchedule" class="sr-only peer">
                           <div class="w-11 h-6 bg-dark-700 rounded-full peer peer-checked:bg-primary"></div>
@@ -983,11 +1000,12 @@
                 </div>
               </div>
               <div class="space-y-2 mt-4 mb-6">
-                <div class="flex flex-col sm:flex-row sm:items-center">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                   <label class="text-sm font-medium text-white">Schedule Settings</label>
-                  <span id="editServerTimeDisplay"
-                    class="mt-1 sm:mt-0 sm:ml-2 block sm:inline-block bg-gray-700 text-xs text-gray-300 px-2 py-0.5 rounded">
-                    Server time: loading...
+                  <span id="editServerTimeDisplayContainer"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-dark-700/60 border border-gray-600/50 text-sm font-semibold text-gray-200 rounded-full shadow-inner">
+                    <i class="ti ti-clock text-emerald-400 animate-pulse"></i>
+                    <span id="editServerTimeDisplay">Server time: loading...</span>
                   </span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -1023,6 +1041,19 @@
                     </label>
                     <input type="datetime-local" id="editScheduleEndTime" name="scheduleEndTime"
                       class="w-full h-[42px] px-4 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm [color-scheme:dark]">
+                  </div>
+                  <!-- Weekday Selector (Only visible when weekly recurrence is selected) -->
+                  <div id="editWeeklyDaySelector" class="hidden col-span-1 sm:col-span-4 mt-2">
+                    <label class="text-xs text-gray-400 block mb-2">Select Days of the Week</label>
+                    <div class="flex flex-wrap gap-2">
+                      <button type="button" data-day="1" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Mon</button>
+                      <button type="button" data-day="2" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Tue</button>
+                      <button type="button" data-day="3" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Wed</button>
+                      <button type="button" data-day="4" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Thu</button>
+                      <button type="button" data-day="5" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Fri</button>
+                      <button type="button" data-day="6" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sat</button>
+                      <button type="button" data-day="0" class="edit-weekday-btn px-3.5 py-1.5 bg-dark-700 hover:bg-dark-600 border border-gray-600 rounded-lg text-xs font-semibold text-gray-300 transition-colors">Sun</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1274,8 +1305,11 @@
                   <div class="h-[42px] flex items-center justify-between">
                     <div class="flex items-center gap-2">
                       <label class="text-sm text-gray-300">Enable Schedule</label>
-                      <span id="editYtServerTimeDisplay"
-                        class="bg-gray-700 text-xs text-gray-300 px-2 py-0.5 rounded">loading...</span>
+                      <span id="editYtServerTimeDisplayContainer"
+                        class="inline-flex items-center gap-1 bg-dark-600/80 border border-gray-600/50 text-[11px] font-semibold text-gray-300 px-2 py-0.5 rounded-full shadow-inner">
+                        <i class="ti ti-clock text-emerald-400 text-xs animate-pulse"></i>
+                        <span id="editYtServerTimeDisplay">loading...</span>
+                      </span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" id="editYtEnableSchedule" class="sr-only peer">
@@ -2043,6 +2077,7 @@
         orientation: currentOrientation,
         resolution: document.getElementById('currentResolution').textContent.split(' ')[0],
         scheduleType: document.getElementById('scheduleTypeSelect').value,
+        scheduleWeekdays: Array.from(document.querySelectorAll('.weekday-btn.active-day')).map(btn => btn.getAttribute('data-day')).join(','),
         useAdvancedSettings: !document.getElementById('advancedSettingsContent').classList.contains('hidden')
       };
       const scheduleStartTime = document.getElementById('scheduleStartTime').value;
@@ -2284,8 +2319,17 @@
         statusBadge = `<span class="flex items-center text-gray-400"><i class="ti ti-circle-dot text-[10px] mr-1"></i><span class="text-[10px] font-medium">Offline</span></span>`;
       }
       let recurText = '';
-      if (stream.schedule_type === 'daily') recurText = ' (Daily)';
-      else if (stream.schedule_type === 'weekly') recurText = ' (Weekly)';
+      if (stream.schedule_type === 'daily') {
+        recurText = ' (Daily)';
+      } else if (stream.schedule_type === 'weekly') {
+        if (stream.schedule_weekdays) {
+          const daysMap = { '1': 'Mon', '2': 'Tue', '3': 'Wed', '4': 'Thu', '5': 'Fri', '6': 'Sat', '0': 'Sun' };
+          const dayNames = stream.schedule_weekdays.split(',').map(d => daysMap[d] || d).join(', ');
+          recurText = ` (Weekly: ${dayNames})`;
+        } else {
+          recurText = ' (Weekly)';
+        }
+      }
 
       let scheduleHTML = '';
       if (stream.status === 'scheduled' && scheduleDate) {
@@ -2470,8 +2514,17 @@
         ${(() => {
           const endDate = stream.end_time ? new Date(stream.end_time) : null;
           let recurText = '';
-          if (stream.schedule_type === 'daily') recurText = ' (Daily)';
-          else if (stream.schedule_type === 'weekly') recurText = ' (Weekly)';
+          if (stream.schedule_type === 'daily') {
+            recurText = ' (Daily)';
+          } else if (stream.schedule_type === 'weekly') {
+            if (stream.schedule_weekdays) {
+              const daysMap = { '1': 'Mon', '2': 'Tue', '3': 'Wed', '4': 'Thu', '5': 'Fri', '6': 'Sat', '0': 'Sun' };
+              const dayNames = stream.schedule_weekdays.split(',').map(d => daysMap[d] || d).join(', ');
+              recurText = ` (Weekly: ${dayNames})`;
+            } else {
+              recurText = ' (Weekly)';
+            }
+          }
           if (scheduleDate && endDate) {
             return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}${recurText}</div>
                     <div class="text-xs text-green-500 font-medium">End: ${formatDate(endDate)} ${formatTime(endDate)}</div>`;
@@ -3895,6 +3948,30 @@
       if (document.getElementById('editScheduleTypeSelect')) {
         document.getElementById('editScheduleTypeSelect').value = stream.schedule_type || 'once';
       }
+      
+      // Reset edit weekday buttons
+      document.querySelectorAll('.edit-weekday-btn').forEach(btn => {
+        btn.classList.remove('active-day', 'bg-primary', 'text-white', 'border-primary');
+        btn.classList.add('bg-dark-700', 'text-gray-300', 'border-gray-600');
+      });
+      
+      const editWeeklyDaySelector = document.getElementById('editWeeklyDaySelector');
+      if (stream.schedule_type === 'weekly') {
+        if (editWeeklyDaySelector) editWeeklyDaySelector.classList.remove('hidden');
+        if (stream.schedule_weekdays) {
+          const days = stream.schedule_weekdays.split(',');
+          days.forEach(day => {
+            const btn = document.querySelector(`.edit-weekday-btn[data-day="${day}"]`);
+            if (btn) {
+              btn.classList.add('active-day', 'bg-primary', 'text-white', 'border-primary');
+              btn.classList.remove('bg-dark-700', 'text-gray-300', 'border-gray-600');
+            }
+          });
+        }
+      } else {
+        if (editWeeklyDaySelector) editWeeklyDaySelector.classList.add('hidden');
+      }
+
       const advancedSettingsContent = document.getElementById('editAdvancedSettingsContent');
       const advancedSettingsCheckbox = document.getElementById('editAdvancedSettingsCheckbox');
       if (stream.use_advanced_settings) {
@@ -4329,6 +4406,7 @@
             orientation: currentEditOrientation,
             resolution: document.getElementById('editCurrentResolution').textContent,
             scheduleType: document.getElementById('editScheduleTypeSelect').value,
+            scheduleWeekdays: Array.from(document.querySelectorAll('.edit-weekday-btn.active-day')).map(btn => btn.getAttribute('data-day')).join(','),
             useAdvancedSettings: !document.getElementById('editAdvancedSettingsContent').classList.contains('hidden')
           };
           const scheduleStartTime = document.getElementById('editScheduleStartTime').value;
@@ -4518,6 +4596,57 @@
       badge.textContent = formatted;
       badge.classList.remove('hidden');
     }
+
+    // Setup Weekly Day Selector Toggling and Clicking
+    document.addEventListener('DOMContentLoaded', () => {
+      const scheduleTypeSelect = document.getElementById('scheduleTypeSelect');
+      const weeklyDaySelector = document.getElementById('weeklyDaySelector');
+      if (scheduleTypeSelect && weeklyDaySelector) {
+        scheduleTypeSelect.addEventListener('change', function () {
+          if (this.value === 'weekly') {
+            weeklyDaySelector.classList.remove('hidden');
+          } else {
+            weeklyDaySelector.classList.add('hidden');
+          }
+        });
+      }
+
+      const editScheduleTypeSelect = document.getElementById('editScheduleTypeSelect');
+      const editWeeklyDaySelector = document.getElementById('editWeeklyDaySelector');
+      if (editScheduleTypeSelect && editWeeklyDaySelector) {
+        editScheduleTypeSelect.addEventListener('change', function () {
+          if (this.value === 'weekly') {
+            editWeeklyDaySelector.classList.remove('hidden');
+          } else {
+            editWeeklyDaySelector.classList.add('hidden');
+          }
+        });
+      }
+
+      document.querySelectorAll('.weekday-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          this.classList.toggle('active-day');
+          this.classList.toggle('bg-primary');
+          this.classList.toggle('text-white');
+          this.classList.toggle('border-primary');
+          this.classList.toggle('bg-dark-700');
+          this.classList.toggle('text-gray-300');
+          this.classList.toggle('border-gray-600');
+        });
+      });
+
+      document.querySelectorAll('.edit-weekday-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          this.classList.toggle('active-day');
+          this.classList.toggle('bg-primary');
+          this.classList.toggle('text-white');
+          this.classList.toggle('border-primary');
+          this.classList.toggle('bg-dark-700');
+          this.classList.toggle('text-gray-300');
+          this.classList.toggle('border-gray-600');
+        });
+      });
+    });
 
     function updateDurationBadge(isEdit = false) {
       const startInput = document.getElementById(isEdit ? 'editScheduleStartTime' : 'scheduleStartTime');

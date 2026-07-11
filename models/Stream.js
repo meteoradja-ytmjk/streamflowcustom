@@ -19,6 +19,7 @@ class Stream {
       schedule_time = null,
       end_time = null,
       schedule_type = 'once',
+      schedule_weekdays = null,
       duration = null,
       use_advanced_settings = false,
       status,
@@ -49,13 +50,13 @@ class Stream {
         `INSERT INTO streams (
           id, title, video_id, audio_id, rtmp_url, stream_key, platform, platform_icon,
           bitrate, resolution, fps, orientation, loop_video,
-          schedule_time, end_time, schedule_type, duration, status, status_updated_at, use_advanced_settings, user_id,
+          schedule_time, end_time, schedule_type, schedule_weekdays, duration, status, status_updated_at, use_advanced_settings, user_id,
           youtube_broadcast_id, youtube_stream_id, youtube_description, youtube_privacy, youtube_category, youtube_tags, youtube_thumbnail, youtube_channel_id, is_youtube_api, youtube_monetization, youtube_altered_content, youtube_made_for_kids
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id, title, video_id, audio_id, rtmp_url, stream_key, platform, platform_icon,
           bitrate, resolution, fps, orientation, loop_video_int,
-          schedule_time, end_time, schedule_type, duration, final_status, status_updated_at, use_advanced_settings_int, user_id,
+          schedule_time, end_time, schedule_type, schedule_weekdays, duration, final_status, status_updated_at, use_advanced_settings_int, user_id,
           youtube_broadcast_id, youtube_stream_id, youtube_description, youtube_privacy, youtube_category, youtube_tags, youtube_thumbnail, youtube_channel_id, is_youtube_api_int, youtube_monetization_int, youtube_altered_content_int, youtube_made_for_kids_int
         ],
         function (err) {
@@ -344,16 +345,50 @@ class Stream {
           if (stream && stream.schedule_time && (stream.schedule_type === 'daily' || stream.schedule_type === 'weekly')) {
             // Recalculate recurring schedule time
             const now = new Date();
-            const nextScheduleTime = new Date(stream.schedule_time);
-            const increment = stream.schedule_type === 'daily' ? 1 : 7;
+            let nextScheduleTime = new Date(stream.schedule_time);
             
             let durationMs = 0;
             if (stream.end_time) {
               durationMs = new Date(stream.end_time).getTime() - new Date(stream.schedule_time).getTime();
             }
             
-            while (nextScheduleTime <= now) {
-              nextScheduleTime.setDate(nextScheduleTime.getDate() + increment);
+            if (stream.schedule_type === 'daily') {
+              while (nextScheduleTime <= now) {
+                nextScheduleTime.setDate(nextScheduleTime.getDate() + 1);
+              }
+            } else if (stream.schedule_type === 'weekly') {
+              let activeDays = [];
+              if (stream.schedule_weekdays) {
+                activeDays = stream.schedule_weekdays.split(',').map(Number);
+              } else {
+                activeDays = [new Date(stream.schedule_time).getDay()];
+              }
+
+              const targetHours = nextScheduleTime.getHours();
+              const targetMinutes = nextScheduleTime.getMinutes();
+              const targetSeconds = nextScheduleTime.getSeconds();
+              const targetMs = nextScheduleTime.getMilliseconds();
+
+              let walker = new Date(now.getTime());
+              walker.setHours(targetHours, targetMinutes, targetSeconds, targetMs);
+
+              if (walker <= now) {
+                walker.setDate(walker.getDate() + 1);
+              }
+
+              let found = false;
+              for (let i = 0; i < 365; i++) {
+                const dayOfWeek = walker.getDay();
+                if (activeDays.includes(dayOfWeek)) {
+                  nextScheduleTime = new Date(walker.getTime());
+                  found = true;
+                  break;
+                }
+                walker.setDate(walker.getDate() + 1);
+              }
+              if (!found) {
+                nextScheduleTime.setDate(nextScheduleTime.getDate() + 7);
+              }
             }
             
             let nextEndTime = null;
