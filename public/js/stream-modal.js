@@ -116,14 +116,41 @@ function selectVideo(video) {
 async function loadGalleryVideos() {
   try {
     const container = document.getElementById('videoListContainer');
-    if (!container) return;
-    container.innerHTML = '<div class="text-center py-3"><i class="ti ti-loader animate-spin mr-2"></i>Loading content...</div>';
+    if (container) {
+      container.innerHTML = '<div class="text-center py-3"><i class="ti ti-loader animate-spin mr-2"></i>Loading content...</div>';
+    }
     const response = await fetch('/api/stream/content');
     const content = await response.json();
     window.allStreamVideos = content;
-    displayFilteredVideos(content);
+    if (container) {
+      displayFilteredVideos(content);
+    }
+
+    // Populate audio selects
+    const audios = content.audios || [];
+    const audioSelect = document.getElementById('selectedAudioId');
+    if (audioSelect) {
+      audioSelect.innerHTML = '<option value="">No separate audio (use video audio)</option>';
+      audios.forEach(audio => {
+        const option = document.createElement('option');
+        option.value = audio.id;
+        option.textContent = audio.title || audio.name;
+        audioSelect.appendChild(option);
+      });
+    }
+    const editAudioSelect = document.getElementById('editSelectedAudioId');
+    if (editAudioSelect) {
+      editAudioSelect.innerHTML = '<option value="">No separate audio (use video audio)</option>';
+      audios.forEach(audio => {
+        const option = document.createElement('option');
+        option.value = audio.id;
+        option.textContent = audio.title || audio.name;
+        editAudioSelect.appendChild(option);
+      });
+    }
+
     const searchInput = document.getElementById('videoSearchInput');
-    if (searchInput) { searchInput.removeEventListener('input', handleVideoSearch); searchInput.addEventListener('input', handleVideoSearch); setTimeout(() => searchInput.focus(), 10); }
+    if (searchInput) { searchInput.removeEventListener('input', handleVideoSearch); searchInput.addEventListener('input', handleVideoSearch); }
   } catch (error) {
     const container = document.getElementById('videoListContainer');
     if (container) container.innerHTML = `<div class="text-center py-5 text-red-400"><i class="ti ti-alert-circle text-2xl mb-2"></i><p>Failed to load content</p><p class="text-xs text-gray-500 mt-1">Please try again</p></div>`;
@@ -218,7 +245,13 @@ function resetModalForm() {
   if (ytScheduleSettings) ytScheduleSettings.classList.add('hidden');
   if (typeof resetYtTags === 'function') resetYtTags();
   const ytEnableSchedule = document.getElementById('ytEnableSchedule');
-  if (ytEnableSchedule) ytEnableSchedule.checked = false;
+  const rtmpInput = document.getElementById('rtmpUrl');
+  if (rtmpInput) {
+    rtmpInput.value = 'rtmps://a.rtmp.youtube.com/live2';
+  }
+  if (typeof updatePlatformIcon === 'function') {
+    updatePlatformIcon('ti-brand-youtube text-red-500');
+  }
 }
 
 function initModal() {
@@ -257,6 +290,16 @@ function updateResolutionDisplay() {
 document.addEventListener('DOMContentLoaded', () => {
   const resolutionSelect = document.getElementById('resolutionSelect');
   if (resolutionSelect) { resolutionSelect.addEventListener('change', updateResolutionDisplay); setVideoOrientation('horizontal'); }
+  loadGalleryVideos();
+  
+  // Set default RTMP URL and platform icon to YouTube on load
+  const rtmpInput = document.getElementById('rtmpUrl');
+  if (rtmpInput) {
+    rtmpInput.value = 'rtmps://a.rtmp.youtube.com/live2';
+  }
+  setTimeout(() => {
+    updatePlatformIcon('ti-brand-youtube text-red-500');
+  }, 100);
 });
 
 function toggleStreamKeyVisibility() {
@@ -264,6 +307,23 @@ function toggleStreamKeyVisibility() {
   const streamKeyToggle = document.getElementById('streamKeyToggle');
   if (streamKeyInput.type === 'password') { streamKeyInput.type = 'text'; streamKeyToggle.className = 'ti ti-eye-off'; }
   else { streamKeyInput.type = 'password'; streamKeyToggle.className = 'ti ti-eye'; }
+}
+
+function updatePlatformIcon(iconClass) {
+  const platformSelector = document.getElementById('platformSelector');
+  if (!platformSelector) return;
+  const currentIcon = platformSelector.querySelector('i');
+  if (!currentIcon) return;
+  const iconParts = iconClass.split(' ');
+  const brandIconPart = iconParts.filter(part => part.startsWith('ti-'))[0] || iconClass;
+  currentIcon.className = `ti ${brandIconPart} text-center`;
+  if (brandIconPart.includes('youtube')) currentIcon.classList.add('text-red-500');
+  else if (brandIconPart.includes('twitch')) currentIcon.classList.add('text-purple-500');
+  else if (brandIconPart.includes('facebook')) currentIcon.classList.add('text-blue-500');
+  else if (brandIconPart.includes('instagram')) currentIcon.classList.add('text-pink-500');
+  else if (brandIconPart.includes('tiktok')) currentIcon.classList.add('text-white');
+  else if (brandIconPart.includes('shopee')) currentIcon.classList.add('text-orange-500');
+  else if (brandIconPart.includes('live-photo')) currentIcon.classList.add('text-teal-500');
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -283,19 +343,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.addEventListener('click', function (e) { if (platformDropdown && !platformDropdown.contains(e.target) && !platformSelector.contains(e.target)) platformDropdown.classList.add('hidden'); });
-  function updatePlatformIcon(iconClass) {
-    const currentIcon = platformSelector.querySelector('i');
-    const iconParts = iconClass.split(' ');
-    const brandIconPart = iconParts.filter(part => part.startsWith('ti-'))[0];
-    currentIcon.className = `ti ${brandIconPart} text-center`;
-    if (brandIconPart.includes('youtube')) currentIcon.classList.add('text-red-500');
-    else if (brandIconPart.includes('twitch')) currentIcon.classList.add('text-purple-500');
-    else if (brandIconPart.includes('facebook')) currentIcon.classList.add('text-blue-500');
-    else if (brandIconPart.includes('instagram')) currentIcon.classList.add('text-pink-500');
-    else if (brandIconPart.includes('tiktok')) currentIcon.classList.add('text-white');
-    else if (brandIconPart.includes('shopee')) currentIcon.classList.add('text-orange-500');
-    else if (brandIconPart.includes('live-photo')) currentIcon.classList.add('text-teal-500');
-  }
   if (typeof showToast !== 'function') window.showToast = function () {};
   const streamKeyInput = document.getElementById('streamKey');
   if (streamKeyInput && rtmpInput) {

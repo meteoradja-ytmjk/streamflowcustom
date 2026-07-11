@@ -6,6 +6,7 @@ class Stream {
     const {
       title,
       video_id,
+      audio_id = null,
       rtmp_url,
       stream_key,
       platform,
@@ -17,6 +18,7 @@ class Stream {
       loop_video = true,
       schedule_time = null,
       end_time = null,
+      schedule_type = 'once',
       duration = null,
       use_advanced_settings = false,
       status,
@@ -45,15 +47,15 @@ class Stream {
     return new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO streams (
-          id, title, video_id, rtmp_url, stream_key, platform, platform_icon,
+          id, title, video_id, audio_id, rtmp_url, stream_key, platform, platform_icon,
           bitrate, resolution, fps, orientation, loop_video,
-          schedule_time, end_time, duration, status, status_updated_at, use_advanced_settings, user_id,
+          schedule_time, end_time, schedule_type, duration, status, status_updated_at, use_advanced_settings, user_id,
           youtube_broadcast_id, youtube_stream_id, youtube_description, youtube_privacy, youtube_category, youtube_tags, youtube_thumbnail, youtube_channel_id, is_youtube_api, youtube_monetization, youtube_altered_content, youtube_made_for_kids
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          id, title, video_id, rtmp_url, stream_key, platform, platform_icon,
+          id, title, video_id, audio_id, rtmp_url, stream_key, platform, platform_icon,
           bitrate, resolution, fps, orientation, loop_video_int,
-          schedule_time, end_time, duration, final_status, status_updated_at, use_advanced_settings_int, user_id,
+          schedule_time, end_time, schedule_type, duration, final_status, status_updated_at, use_advanced_settings_int, user_id,
           youtube_broadcast_id, youtube_stream_id, youtube_description, youtube_privacy, youtube_category, youtube_tags, youtube_thumbnail, youtube_channel_id, is_youtube_api_int, youtube_monetization_int, youtube_altered_content_int, youtube_made_for_kids_int
         ],
         function (err) {
@@ -96,6 +98,8 @@ class Stream {
                v.resolution AS video_resolution,  
                v.bitrate AS video_bitrate,        
                v.fps AS video_fps,
+               av.title AS audio_title,
+               av.filepath AS audio_filepath,
                p.name AS playlist_name,
                CASE 
                  WHEN p.id IS NOT NULL THEN 'playlist'
@@ -107,6 +111,7 @@ class Stream {
                yc.channel_id AS youtube_channel_external_id
         FROM streams s
         LEFT JOIN videos v ON s.video_id = v.id
+        LEFT JOIN videos av ON s.audio_id = av.id
         LEFT JOIN playlists p ON s.video_id = p.id
         LEFT JOIN youtube_channels yc ON s.youtube_channel_id = yc.id
       `;
@@ -164,6 +169,7 @@ class Stream {
       let baseQuery = `
         FROM streams s
         LEFT JOIN videos v ON s.video_id = v.id
+        LEFT JOIN videos av ON s.audio_id = av.id
         LEFT JOIN playlists p ON s.video_id = p.id
         LEFT JOIN youtube_channels yc ON s.youtube_channel_id = yc.id
       `;
@@ -206,6 +212,8 @@ class Stream {
                  v.resolution AS video_resolution,  
                  v.bitrate AS video_bitrate,        
                  v.fps AS video_fps,
+                 av.title AS audio_title,
+                 av.filepath AS audio_filepath,
                  p.name AS playlist_name,
                  CASE 
                    WHEN p.id IS NOT NULL THEN 'playlist'
@@ -313,54 +321,97 @@ class Stream {
     const status_updated_at = new Date().toISOString();
     const { startTimeOverride = null, preserveEndTime = false } = options;
     
-    return new Promise((resolve, reject) => {
-      let query;
-      let params;
-      
-      if (status === 'live') {
-        const start_time = startTimeOverride || new Date().toISOString();
-        query = `UPDATE streams SET 
-            status = ?, 
-            status_updated_at = ?, 
-            start_time = ?,
-            updated_at = CURRENT_TIMESTAMP
-           WHERE id = ?`;
-        params = [status, status_updated_at, start_time, id];
-      } else if (status === 'offline') {
-        if (preserveEndTime) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let stream = null;
+        if (status === 'offline') {
+          stream = await Stream.findById(id);
+        }
+
+        let query;
+        let params;
+        
+        if (status === 'live') {
+          const start_time = startTimeOverride || new Date().toISOString();
           query = `UPDATE streams SET 
               status = ?, 
-              status_updated_at = ?,
-              schedule_time = NULL,
+              status_updated_at = ?, 
+              start_time = ?,
               updated_at = CURRENT_TIMESTAMP
              WHERE id = ?`;
-          params = [status, status_updated_at, id];
+          params = [status, status_updated_at, start_time, id];
+        } else if (status === 'offline') {
+          if (stream && stream.schedule_time && (stream.schedule_type === 'daily' || stream.schedule_type === 'weekly')) {
+            // Recalculate recurring schedule time
+            const now = new Date();
+            const nextScheduleTime = new Date(stream.schedule_time);
+            const increment = stream.schedule_type === 'daily' ? 1 : 7;
+            
+            let durationMs = 0;
+            if (stream.end_time) {
+              durationMs = new Date(stream.end_time).getTime() - new Date(stream.schedule_time).getTime();
+            }
+            
+            while (nextScheduleTime <= now) {
+              nextScheduleTime.setDate(nextScheduleTime.getDate() + increment);
+            }
+            
+            let nextEndTime = null;
+            if (stream.end_time) {
+              nextEndTime = new Date(nextScheduleTime.getTime() + durationMs);
+            }
+
+            query = `UPDATE streams SET 
+                status = 'scheduled', 
+                status_updated_at = ?,
+                schedule_time = ?,
+                end_time = ?,
+                start_time = NULL,
+                updated_at = CURRENT_TIMESTAMP
+               WHERE id = ?`;
+            params = [
+              status_updated_at,
+              nextScheduleTime.toISOString(),
+              nextEndTime ? nextEndTime.toISOString() : null,
+              id
+            ];
+            status = 'scheduled'; // Make return value reflect 'scheduled'
+          } else {
+            if (preserveEndTime) {
+              query = `UPDATE streams SET 
+                  status = ?, 
+                  status_updated_at = ?,
+                  schedule_time = NULL,
+                  updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`;
+              params = [status, status_updated_at, id];
+            } else {
+              query = `UPDATE streams SET 
+                  status = ?, 
+                  status_updated_at = ?,
+                  schedule_time = NULL,
+                  end_time = NULL,
+                  start_time = NULL,
+                  updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`;
+              params = [status, status_updated_at, id];
+            }
+          }
         } else {
           query = `UPDATE streams SET 
               status = ?, 
               status_updated_at = ?,
-              schedule_time = NULL,
-              end_time = NULL,
-              start_time = NULL,
               updated_at = CURRENT_TIMESTAMP
              WHERE id = ?`;
           params = [status, status_updated_at, id];
         }
-      } else {
-        query = `UPDATE streams SET 
-            status = ?, 
-            status_updated_at = ?,
-            updated_at = CURRENT_TIMESTAMP
-           WHERE id = ?`;
-        params = [status, status_updated_at, id];
-      }
-      
-      if (userId) {
-        query = query.replace(' WHERE id = ?', ' WHERE id = ? AND user_id = ?');
-        params.push(userId);
-      }
-      
-      db.run(query, params, function (err) {
+        
+        if (userId) {
+          query = query.replace(' WHERE id = ?', ' WHERE id = ? AND user_id = ?');
+          params.push(userId);
+        }
+        
+        db.run(query, params, function (err) {
           if (err) {
             console.error('Error updating stream status:', err.message);
             return reject(err);
@@ -371,8 +422,10 @@ class Stream {
             status_updated_at,
             updated: this.changes > 0
           });
-        }
-      );
+        });
+      } catch (err) {
+        reject(err);
+      }
     });
   }
   
@@ -420,6 +473,8 @@ class Stream {
                 v.filepath AS video_filepath, 
                 v.thumbnail_path AS video_thumbnail, 
                 v.duration AS video_duration,
+                av.title AS audio_title,
+                av.filepath AS audio_filepath,
                 p.name AS playlist_name,
                 CASE 
                   WHEN p.id IS NOT NULL THEN 'playlist'
@@ -432,6 +487,7 @@ class Stream {
                 yc.subscriber_count AS youtube_subscriber_count
          FROM streams s
          LEFT JOIN videos v ON s.video_id = v.id
+         LEFT JOIN videos av ON s.audio_id = av.id
          LEFT JOIN playlists p ON s.video_id = p.id
          LEFT JOIN youtube_channels yc ON s.youtube_channel_id = yc.id
          WHERE s.id = ?`,

@@ -224,11 +224,6 @@
         <div class="flex-shrink-0 flex items-center justify-between p-4 sm:px-6 sm:py-4 border-b border-gray-700">
           <h3 class="text-lg font-semibold">Create New Stream</h3>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="openTipsStreaming()"
-              class="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors shadow-sm">
-              <i class="ti ti-bulb"></i>
-              <span class="text-sm">Tips</span>
-            </button>
             <button onclick="closeNewStreamModal()" class="text-gray-400 hover:text-whifte">
               <i class="ti ti-x text-xl"></i>
             </button>
@@ -280,6 +275,13 @@
                           </div>
                         </div>
                       </div>
+                      <div class="relative">
+                        <label class="text-sm font-medium text-white block mb-2">Select Audio (Optional)</label>
+                        <select name="audioId" id="selectedAudioId"
+                          class="w-full px-4 py-2.5 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm text-gray-300">
+                          <option value="">No separate audio (use video audio)</option>
+                        </select>
+                      </div>
                       <div class="lg:hidden bg-dark-900 rounded-lg overflow-hidden">
                         <div class="aspect-video bg-dark-900">
                           <div id="videoPreviewMobile" class="hidden w-full h-full">
@@ -306,7 +308,7 @@
                           <div class="relative">
                             <input type="text" id="rtmpUrl" name="rtmpUrl"
                               class="w-full pl-10 pr-12 py-2.5 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
-                              placeholder="RTMP URL" required>
+                              placeholder="RTMP URL" value="rtmps://a.rtmp.youtube.com/live2" required>
                             <i class="ti ti-link absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                             <button type="button" id="platformSelector"
                               class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full hover:bg-dark-600 transition-colors"
@@ -388,7 +390,7 @@
                         Server time: loading...
                       </span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <div class="h-[42px] mt-3 flex items-center justify-between">
                         <label class="text-sm text-gray-300">Loop Video</label>
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -398,6 +400,15 @@
                             class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-5">
                           </div>
                         </label>
+                      </div>
+                      <div>
+                        <label class="text-xs text-gray-400 block mb-1">Schedule Type</label>
+                        <select id="scheduleTypeSelect" name="scheduleType"
+                          class="w-full h-[42px] px-4 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm text-gray-300">
+                          <option value="once" selected>Once (No Repeat)</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                        </select>
                       </div>
                       <div>
                         <label class="text-xs text-gray-400 block mb-1">Start Stream</label>
@@ -812,11 +823,6 @@
         <div class="flex-shrink-0 flex items-center justify-between p-4 sm:px-6 sm:py-4 border-b border-gray-700">
           <h3 class="text-lg font-semibold">Edit Stream</h3>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="openTipsStreaming()"
-              class="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors shadow-sm">
-              <i class="ti ti-bulb"></i>
-              <span class="text-sm">Tips</span>
-            </button>
             <button onclick="closeEditStreamModal()" class="text-gray-400 hover:text-white">
               <i class="ti ti-x text-xl"></i>
             </button>
@@ -868,6 +874,13 @@
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <div class="relative">
+                    <label class="text-sm font-medium text-white block mb-2">Select Audio (Optional)</label>
+                    <select name="audioId" id="editSelectedAudioId"
+                      class="w-full px-4 py-2.5 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm text-gray-300">
+                      <option value="">No separate audio (use video audio)</option>
+                    </select>
                   </div>
                   <div class="lg:hidden bg-dark-900 rounded-lg overflow-hidden">
                     <div class="aspect-video bg-dark-900">
@@ -977,7 +990,7 @@
                     Server time: loading...
                   </span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div class="h-[42px] flex items-center justify-between">
                     <label class="text-sm text-gray-300">Loop Video</label>
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -987,6 +1000,15 @@
                         class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-5">
                       </div>
                     </label>
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">Schedule Type</label>
+                    <select id="editScheduleTypeSelect" name="scheduleType"
+                      class="w-full h-[42px] px-4 bg-dark-700 border border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary text-sm text-gray-300">
+                      <option value="once" selected>Once (No Repeat)</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                    </select>
                   </div>
                   <div>
                     <label class="text-xs text-gray-400 block mb-1">Start Stream</label>
@@ -2012,6 +2034,7 @@
       const formData = {
         streamTitle: document.getElementById('streamTitle').value,
         videoId: document.getElementById('selectedVideoId').value,
+        audioId: document.getElementById('selectedAudioId').value,
         rtmpUrl: document.getElementById('rtmpUrl').value,
         streamKey: document.getElementById('streamKey').value,
         bitrate: document.querySelector('select[name="bitrate"]').value,
@@ -2019,6 +2042,7 @@
         loopVideo: document.querySelector('input[name="loopVideo"]').checked,
         orientation: currentOrientation,
         resolution: document.getElementById('currentResolution').textContent.split(' ')[0],
+        scheduleType: document.getElementById('scheduleTypeSelect').value,
         useAdvancedSettings: !document.getElementById('advancedSettingsContent').classList.contains('hidden')
       };
       const scheduleStartTime = document.getElementById('scheduleStartTime').value;
@@ -2259,9 +2283,13 @@
       } else {
         statusBadge = `<span class="flex items-center text-gray-400"><i class="ti ti-circle-dot text-[10px] mr-1"></i><span class="text-[10px] font-medium">Offline</span></span>`;
       }
+      let recurText = '';
+      if (stream.schedule_type === 'daily') recurText = ' (Daily)';
+      else if (stream.schedule_type === 'weekly') recurText = ' (Weekly)';
+
       let scheduleHTML = '';
       if (stream.status === 'scheduled' && scheduleDate) {
-        scheduleHTML = `<span class="text-[10px] text-yellow-500">${scheduleDate} ${scheduleTime}</span>`;
+        scheduleHTML = `<span class="text-[10px] text-yellow-500">${scheduleDate} ${scheduleTime}${recurText}</span>`;
         if (endDate) scheduleHTML += ` <span class="text-[10px] text-gray-500">→</span> <span class="text-[10px] text-green-500">${endDate} ${endTime}</span>`;
       } else if (endDate) {
         scheduleHTML = `<span class="text-[10px] text-green-500">End: ${endDate} ${endTime}</span>`;
@@ -2441,11 +2469,14 @@
       <td class="px-6 py-4 whitespace-nowrap">
         ${(() => {
           const endDate = stream.end_time ? new Date(stream.end_time) : null;
+          let recurText = '';
+          if (stream.schedule_type === 'daily') recurText = ' (Daily)';
+          else if (stream.schedule_type === 'weekly') recurText = ' (Weekly)';
           if (scheduleDate && endDate) {
-            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}</div>
+            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}${recurText}</div>
                     <div class="text-xs text-green-500 font-medium">End: ${formatDate(endDate)} ${formatTime(endDate)}</div>`;
           } else if (scheduleDate) {
-            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}</div>`;
+            return `<div class="text-xs text-yellow-500 font-medium">Start: ${formatDate(scheduleDate)} ${formatTime(scheduleDate)}${recurText}</div>`;
           } else if (endDate) {
             return `<div class="text-xs text-green-500 font-medium">End: ${formatDate(endDate)} ${formatTime(endDate)}</div>`;
           } else {
@@ -3593,6 +3624,13 @@
               
               document.querySelector('input[name="loopVideo"]').checked = stream.loop_video;
               
+              if (document.getElementById('selectedAudioId')) {
+                document.getElementById('selectedAudioId').value = stream.audio_id || '';
+              }
+              if (document.getElementById('scheduleTypeSelect')) {
+                document.getElementById('scheduleTypeSelect').value = stream.schedule_type || 'once';
+              }
+              
               if (stream.use_advanced_settings) {
                 const advancedSettingsContent = document.getElementById('advancedSettingsContent');
                 const advancedSettingsCheckbox = document.getElementById('advancedSettingsCheckbox');
@@ -3850,6 +3888,12 @@
         document.getElementById('editScheduleEndTime').value = formatDateTimeLocal(endDate);
       } else {
         document.getElementById('editScheduleEndTime').value = '';
+      }
+      if (document.getElementById('editSelectedAudioId')) {
+        document.getElementById('editSelectedAudioId').value = stream.audio_id || '';
+      }
+      if (document.getElementById('editScheduleTypeSelect')) {
+        document.getElementById('editScheduleTypeSelect').value = stream.schedule_type || 'once';
       }
       const advancedSettingsContent = document.getElementById('editAdvancedSettingsContent');
       const advancedSettingsCheckbox = document.getElementById('editAdvancedSettingsCheckbox');
@@ -4276,6 +4320,7 @@
           const formData = {
             streamTitle: document.getElementById('editStreamTitle').value,
             videoId: videoId,
+            audioId: document.getElementById('editSelectedAudioId').value,
             rtmpUrl: document.getElementById('editRtmpUrl').value,
             streamKey: document.getElementById('editStreamKey').value,
             bitrate: document.getElementById('editBitrate').value,
@@ -4283,6 +4328,7 @@
             loopVideo: document.getElementById('editLoopVideo').checked,
             orientation: currentEditOrientation,
             resolution: document.getElementById('editCurrentResolution').textContent,
+            scheduleType: document.getElementById('editScheduleTypeSelect').value,
             useAdvancedSettings: !document.getElementById('editAdvancedSettingsContent').classList.contains('hidden')
           };
           const scheduleStartTime = document.getElementById('editScheduleStartTime').value;

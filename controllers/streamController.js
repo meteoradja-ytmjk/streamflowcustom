@@ -76,6 +76,7 @@ class StreamController {
         rtmpUrl,
         streamKey,
         videoId,
+        audioId = null,
         platform = 'Custom',
         platformIcon = '',
         bitrate = 2500,
@@ -85,6 +86,7 @@ class StreamController {
         loopVideo = true,
         scheduleTime = null,
         endTime = null,
+        scheduleType = 'once',
         useAdvancedSettings = false
       } = req.body;
 
@@ -113,6 +115,7 @@ class StreamController {
       const streamData = {
         title: streamTitle,
         video_id: videoId,
+        audio_id: audioId,
         rtmp_url: rtmpUrl,
         stream_key: streamKey,
         platform,
@@ -124,6 +127,7 @@ class StreamController {
         loop_video: loopVideo,
         schedule_time: scheduleTime,
         end_time: endTime,
+        schedule_type: scheduleType,
         use_advanced_settings: useAdvancedSettings,
         status: scheduleTime ? 'scheduled' : 'offline',
         user_id: req.session.userId
@@ -334,6 +338,7 @@ class StreamController {
       if (req.body.rtmpUrl) updateData.rtmp_url = req.body.rtmpUrl;
       if (req.body.streamKey !== undefined) updateData.stream_key = req.body.streamKey;
       if (req.body.videoId !== undefined) updateData.video_id = req.body.videoId;
+      if (req.body.audioId !== undefined) updateData.audio_id = req.body.audioId;
       if (req.body.bitrate) updateData.bitrate = req.body.bitrate;
       if (req.body.fps) updateData.fps = req.body.fps;
       if (req.body.resolution) updateData.resolution = req.body.resolution;
@@ -341,6 +346,7 @@ class StreamController {
       if (req.body.loopVideo !== undefined) updateData.loop_video = req.body.loopVideo;
       if (req.body.scheduleTime !== undefined) updateData.schedule_time = req.body.scheduleTime;
       if (req.body.endTime !== undefined) updateData.end_time = req.body.endTime;
+      if (req.body.scheduleType !== undefined) updateData.schedule_type = req.body.scheduleType;
 
       await Stream.update(streamId, updateData, req.session.userId);
 
@@ -482,9 +488,15 @@ class StreamController {
         return true;
       });
 
+      // Filter in audio files
+      const audios = allVideos.filter(video => {
+        const filepath = (video.filepath || '').toLowerCase();
+        return filepath.includes('/audio/') || filepath.endsWith('.m4a') || filepath.endsWith('.aac') || filepath.endsWith('.mp3');
+      });
+
       const playlists = await Playlist.findAll(req.session.userId);
 
-      res.json({ success: true, videos, playlists });
+      res.json({ success: true, videos, playlists, audios });
     } catch (error) {
       console.error('Error fetching content:', error);
       res.status(500).json({ success: false, error: 'Failed to fetch content' });

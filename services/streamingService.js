@@ -625,10 +625,43 @@ async function buildFFmpegArgs(stream) {
     throw new Error(`Video file not found: ${videoPath}`);
   }
 
+  let audioPath = null;
+  if (stream.audio_id) {
+    const audio = await Video.findById(stream.audio_id);
+    if (audio) {
+      const ap = resolvePublicFilePath(audio.filepath);
+      if (fs.existsSync(ap)) {
+        audioPath = ap;
+      }
+    }
+  }
+
   const rtmpUrl = `${stream.rtmp_url.replace(/\/$/, '')}/${stream.stream_key}`;
   const loopValue = stream.loop_video ? '-1' : '0';
 
   if (!stream.use_advanced_settings) {
+    if (audioPath) {
+      return [
+        '-nostdin',
+        '-loglevel', 'warning',
+        '-stats',
+        '-re',
+        '-fflags', '+genpts+igndts+discardcorrupt',
+        '-avoid_negative_ts', 'make_zero',
+        '-stream_loop', loopValue,
+        '-i', videoPath,
+        '-stream_loop', loopValue,
+        '-i', audioPath,
+        '-map', '0:v:0',
+        '-map', '1:a:0',
+        '-c:v', 'copy',
+        '-c:a', 'copy',
+        '-bsf:a', 'aac_adtstoasc',
+        '-f', 'flv',
+        '-flvflags', 'no_duration_filesize',
+        rtmpUrl
+      ];
+    }
     return [
       '-nostdin',
       '-loglevel', 'warning',
@@ -650,6 +683,44 @@ async function buildFFmpegArgs(stream) {
   const resolution = stream.resolution || '1280x720';
   const bitrate = stream.bitrate || 2500;
   const fps = stream.fps || 30;
+
+  if (audioPath) {
+    return [
+      '-nostdin',
+      '-loglevel', 'warning',
+      '-stats',
+      '-re',
+      '-fflags', '+genpts+igndts+discardcorrupt',
+      '-avoid_negative_ts', 'make_zero',
+      '-stream_loop', loopValue,
+      '-i', videoPath,
+      '-stream_loop', loopValue,
+      '-i', audioPath,
+      '-map', '0:v:0',
+      '-map', '1:a:0',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-tune', 'zerolatency',
+      '-profile:v', 'high',
+      '-level', '4.1',
+      '-b:v', `${bitrate}k`,
+      '-maxrate', `${Math.round(bitrate * 1.1)}k`,
+      '-bufsize', `${bitrate * 2}k`,
+      '-pix_fmt', 'yuv420p',
+      '-g', String(fps * 2),
+      '-keyint_min', String(fps),
+      '-sc_threshold', '0',
+      '-s', resolution,
+      '-r', String(fps),
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-ar', '44100',
+      '-ac', '2',
+      '-f', 'flv',
+      '-flvflags', 'no_duration_filesize',
+      rtmpUrl
+    ];
+  }
 
   return [
     '-nostdin',

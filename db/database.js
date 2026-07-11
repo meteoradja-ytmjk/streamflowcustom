@@ -60,6 +60,7 @@ function createTables() {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         video_id TEXT,
+        audio_id TEXT,
         rtmp_url TEXT NOT NULL,
         stream_key TEXT NOT NULL,
         platform TEXT,
@@ -70,6 +71,7 @@ function createTables() {
         orientation TEXT DEFAULT 'horizontal',
         loop_video BOOLEAN DEFAULT 1,
         schedule_time TIMESTAMP,
+        schedule_type TEXT DEFAULT 'once',
         duration INTEGER,
         status TEXT DEFAULT 'offline',
         status_updated_at TIMESTAMP,
@@ -409,6 +411,18 @@ function createTables() {
       db.run(`ALTER TABLE users ADD COLUMN disk_limit INTEGER DEFAULT 0`, (err) => {
         if (err && !err.message.includes('duplicate column name')) {
           console.error('Error adding disk_limit column to users:', err.message);
+        }
+      });
+
+      db.run(`ALTER TABLE streams ADD COLUMN audio_id TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate column name')) {
+          console.error('Error adding audio_id column to streams:', err.message);
+        }
+      });
+
+      db.run(`ALTER TABLE streams ADD COLUMN schedule_type TEXT DEFAULT 'once'`, (err) => {
+        if (err && !err.message.includes('duplicate column name')) {
+          console.error('Error adding schedule_type column to streams:', err.message);
         }
       });
 

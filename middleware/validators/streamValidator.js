@@ -25,6 +25,14 @@ const createStreamValidation = [
     .optional({ nullable: true })
     .isUUID()
     .withMessage('Invalid video ID format'),
+  body('audioId')
+    .optional({ nullable: true })
+    .isUUID()
+    .withMessage('Invalid audio ID format'),
+  body('scheduleType')
+    .optional()
+    .isIn(['once', 'daily', 'weekly'])
+    .withMessage('Invalid schedule type'),
   body('bitrate')
     .optional()
     .isInt({ min: 500, max: 50000 })
@@ -94,6 +102,14 @@ const updateStreamValidation = [
     .trim()
     .matches(/^rtmp(s)?:\/\//)
     .withMessage('Invalid RTMP URL format'),
+  body('audioId')
+    .optional({ nullable: true })
+    .isUUID()
+    .withMessage('Invalid audio ID format'),
+  body('scheduleType')
+    .optional()
+    .isIn(['once', 'daily', 'weekly'])
+    .withMessage('Invalid schedule type'),
   body('bitrate')
     .optional()
     .isInt({ min: 500, max: 50000 })
