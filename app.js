@@ -2136,6 +2136,105 @@ app.post('/api/audio/upload', isAuthenticated, (req, res, next) => {
   }
 });
 
+app.post('/api/images/upload', isAuthenticated, (req, res, next) => {
+  uploadThumbnail.single('image')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, error: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No image file provided' });
+    }
+
+    const folderId = normalizeFolderId(req.body.folderId);
+    if (folderId) {
+      const folder = await MediaFolder.findById(folderId, req.session.userId);
+      if (!folder) {
+        return res.status(404).json({ success: false, error: 'Folder not found' });
+      }
+    }
+
+    const user = await User.findById(req.session.userId);
+    if (user.disk_limit > 0) {
+      const currentUsage = await User.getDiskUsage(req.session.userId);
+      const newTotal = currentUsage + req.file.size;
+      if (newTotal > user.disk_limit) {
+        const uploadedPath = path.join(__dirname, 'public', 'uploads', 'thumbnails', req.file.filename);
+        if (fs.existsSync(uploadedPath)) {
+          fs.unlinkSync(uploadedPath);
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Disk limit exceeded. Please delete some files or contact admin.'
+        });
+      }
+    }
+
+    let title = path.parse(req.file.originalname).name;
+    const filePath = `/uploads/thumbnails/${req.file.filename}`;
+    
+    let resolution = null;
+    try {
+      resolution = await new Promise((resolve) => {
+        ffmpeg.ffprobe(req.file.path, (err, metadata) => {
+          if (err || !metadata.streams || metadata.streams.length === 0) {
+            return resolve(null);
+          }
+          const stream = metadata.streams[0];
+          if (stream.width && stream.height) {
+            resolve(`${stream.width}x${stream.height}`);
+          } else {
+            resolve(null);
+          }
+        });
+      });
+    } catch (e) {
+      console.log('Error reading image dimensions:', e.message);
+    }
+
+    const videoData = {
+      title,
+      filepath: filePath,
+      thumbnail_path: filePath,
+      file_size: req.file.size,
+      duration: null,
+      format: 'image',
+      resolution: resolution,
+      bitrate: null,
+      fps: null,
+      user_id: req.session.userId,
+      folder_id: folderId
+    };
+    const video = await Video.create(videoData);
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      video
+    });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to upload image',
+      details: error.message
+    });
+  }
+});
+
+// ─── Gallery Media Inspector: List stream configurations ─────────────────────
+app.get('/api/streams', isAuthenticated, async (req, res) => {
+  try {
+    const streams = await Stream.findAll(req.session.userId);
+    res.json({ success: true, streams });
+  } catch (error) {
+    console.error('Error fetching streams:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch stream configurations' });
+  }
+});
+
 app.post('/api/videos/chunk/init', isAuthenticated, async (req, res) => {
   try {
     const { filename, fileSize, totalChunks } = req.body;
@@ -4993,6 +5092,123 @@ app.get('/api/streams/:id/logs', isAuthenticated, async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to fetch stream logs' });
   }
 });
+
+app.get('/api/youtube/channels', isAuthenticated, async (req, res) => {
+  try {
+    const YoutubeChannel = require('./models/YoutubeChannel');
+    const channels = await YoutubeChannel.findAll(req.session.userId);
+    res.json({ success: true, channels });
+  } catch (error) {
+    console.error('Error fetching YouTube channels:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch YouTube channels' });
+  }
+});
+
+app.get('/api/youtube/broadcasts/:channelId', isAuthenticated, async (req, res) => {
+  try {
+    const YoutubeChannel = require('./models/YoutubeChannel');
+    const { getYouTubeOAuth2Client } = require('./services/youtubeService');
+    const { google } = require('googleapis');
+    const { decrypt } = require('./utils/encryption');
+
+    const channel = await YoutubeChannel.findById(req.params.channelId);
+    if (!channel || channel.user_id !== req.session.userId) {
+      return res.status(404).json({ success: false, error: 'Channel not found' });
+    }
+
+    const user = await User.findById(req.session.userId);
+    const clientSecret = decrypt(user.youtube_client_secret);
+    const accessToken = decrypt(channel.access_token);
+    const refreshToken = decrypt(channel.refresh_token);
+
+    if (!clientSecret || !accessToken) {
+      return res.status(400).json({ success: false, error: 'Credentials error' });
+    }
+
+    const oauth2Client = getYouTubeOAuth2Client(user.youtube_client_id, clientSecret, `${req.protocol}://${req.get('host')}/auth/youtube/callback`);
+    oauth2Client.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
+
+    const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+    // Fetch active and upcoming broadcasts
+    const response = await youtube.liveBroadcasts.list({
+      part: 'id,snippet,status',
+      mine: true,
+      broadcastStatus: 'all', // 'active', 'upcoming', 'all'
+      maxResults: 20
+    });
+
+    const broadcasts = response.data.items || [];
+    res.json({ success: true, broadcasts });
+  } catch (error) {
+    console.error('Error listing live broadcasts:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch broadcasts from YouTube API: ' + error.message });
+  }
+});
+
+app.post('/api/gallery/apply-thumbnail', isAuthenticated, async (req, res) => {
+  try {
+    const { videoId, targetType, targetId, channelId } = req.body;
+
+    const video = await Video.findById(videoId);
+    if (!video || video.user_id !== req.session.userId) {
+      return res.status(404).json({ success: false, error: 'Image not found' });
+    }
+
+    if (targetType === 'stream') {
+      const stream = await Stream.findById(targetId);
+      if (!stream || stream.user_id !== req.session.userId) {
+        return res.status(404).json({ success: false, error: 'Stream configuration not found' });
+      }
+      
+      await Stream.update(targetId, { youtube_thumbnail: video.filepath });
+      return res.json({ success: true, message: `Thumbnail applied to stream "${stream.title}" configuration.` });
+    } else if (targetType === 'broadcast') {
+      const YoutubeChannel = require('./models/YoutubeChannel');
+      const { getYouTubeOAuth2Client } = require('./services/youtubeService');
+      const { google } = require('googleapis');
+      const { decrypt } = require('./utils/encryption');
+
+      const channel = await YoutubeChannel.findById(channelId);
+      if (!channel || channel.user_id !== req.session.userId) {
+        return res.status(404).json({ success: false, error: 'YouTube channel not found' });
+      }
+
+      const user = await User.findById(req.session.userId);
+      const clientSecret = decrypt(user.youtube_client_secret);
+      const accessToken = decrypt(channel.access_token);
+      const refreshToken = decrypt(channel.refresh_token);
+
+      const oauth2Client = getYouTubeOAuth2Client(user.youtube_client_id, clientSecret, `${req.protocol}://${req.get('host')}/auth/youtube/callback`);
+      oauth2Client.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
+
+      const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+      const projectRoot = path.resolve(__dirname);
+      const imagePath = path.join(projectRoot, 'public', video.filepath);
+      if (!fs.existsSync(imagePath)) {
+        return res.status(400).json({ success: false, error: 'Image file not found on server' });
+      }
+
+      const thumbnailStream = fs.createReadStream(imagePath);
+      await youtube.thumbnails.set({
+        videoId: targetId,
+        media: {
+          mimeType: 'image/jpeg',
+          body: thumbnailStream
+        }
+      });
+
+      return res.json({ success: true, message: 'Thumbnail successfully uploaded to active YouTube live broadcast!' });
+    } else {
+      return res.status(400).json({ success: false, error: 'Invalid target type' });
+    }
+  } catch (error) {
+    console.error('Error applying thumbnail:', error);
+    res.status(500).json({ success: false, error: 'Failed to apply thumbnail: ' + error.message });
+  }
+});
+
 app.get('/playlist', isAuthenticated, async (req, res) => {
   try {
     const playlists = await Playlist.findAll(req.session.userId);

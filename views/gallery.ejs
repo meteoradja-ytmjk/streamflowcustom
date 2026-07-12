@@ -112,6 +112,7 @@ function formatDuration(seconds) {
           <option value="all">All Media</option>
           <option value="video">Video</option>
           <option value="audio">Audio</option>
+          <option value="image">Image/Thumbnail</option>
         </select>
         <select id="sortSelect" class="bg-dark-700 border border-gray-600 text-white pl-2 pr-5 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-xs w-[84px] sm:w-[90px] sm:px-3 sm:text-sm">
           <option value="newest">Newest</option>
@@ -191,12 +192,15 @@ function formatDuration(seconds) {
       <% } %>
       <% videos.forEach(function(video) { 
         const isAudio = video.filepath && (video.filepath.includes('/audio/') || video.filepath.endsWith('.m4a') || video.filepath.endsWith('.aac') || video.filepath.endsWith('.mp3'));
-        const mediaType = isAudio ? 'audio' : 'video';
+        const isImage = video.format === 'image' || (video.filepath && (video.filepath.includes('/thumbnails/') || video.filepath.endsWith('.jpg') || video.filepath.endsWith('.jpeg') || video.filepath.endsWith('.png') || video.filepath.endsWith('.gif')));
+        const mediaType = isAudio ? 'audio' : isImage ? 'image' : 'video';
+        const displayThumbnail = video.thumbnail_path || (isImage ? video.filepath : '/images/default-video-thumbnail.svg');
       %>
-      <div class="gallery-grid-item file-item group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer relative"
+      <div class="gallery-grid-item file-item <%= isImage ? 'gallery-inspectable' : 'gallery-playable' %> group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer relative"
         data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
+        data-filepath="<%= video.filepath %>" data-resolution="<%= video.resolution %>"
         draggable="true"
-        onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
+        onclick="<%= isImage ? "openMediaInspector('" + video.id + "', '" + video.title.replace(/'/g, "\\'") + "', '" + video.filepath + "', " + video.file_size + ", '" + (video.resolution || '') + "')" : "playMedia('" + video.id + "', '" + video.title.replace(/'/g, "\\'") + "', '" + mediaType + "')" %>">
         <!-- Selection Checkbox -->
         <div class="absolute top-2 left-2 z-10">
           <input type="checkbox" class="file-checkbox w-5 h-5 rounded border-2 border-gray-600 bg-dark-800/80 checked:bg-primary checked:border-primary cursor-pointer"
@@ -212,19 +216,26 @@ function formatDuration(seconds) {
             </div>
           </div>
           <% } else { %>
-          <img src="<%= video.thumbnail_path %>" alt="<%= video.title %>" class="w-full h-full object-cover">
+          <img src="<%= displayThumbnail %>" alt="<%= video.title %>" class="w-full h-full object-cover">
           <% } %>
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <div class="bg-primary/90 w-10 h-10 rounded-full flex items-center justify-center">
-              <i class="ti ti-player-play-filled text-white"></i>
+              <i class="ti <%= isImage ? 'ti-eye' : 'ti-player-play-filled' %> text-white"></i>
             </div>
           </div>
+          <% if (!isImage) { %>
           <span class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
             <%= formatDuration(video.duration) %>
           </span>
+          <% } %>
           <% if (isAudio) { %>
           <span class="absolute top-2 left-2 bg-primary/80 text-white text-xs px-1.5 py-0.5 rounded">
             <i class="ti ti-music text-xs mr-1"></i>Audio
+          </span>
+          <% } %>
+          <% if (isImage) { %>
+          <span class="absolute top-2 left-2 bg-[#2d5af6] text-white text-xs px-1.5 py-0.5 rounded">
+            <i class="ti ti-photo text-xs mr-1"></i>Image
           </span>
           <% } %>
         </div>
@@ -296,12 +307,15 @@ function formatDuration(seconds) {
             <% } %>
             <% videos.forEach(function(video) { 
               const isAudio = video.filepath && (video.filepath.includes('/audio/') || video.filepath.endsWith('.m4a') || video.filepath.endsWith('.aac') || video.filepath.endsWith('.mp3'));
-              const mediaType = isAudio ? 'audio' : 'video';
+              const isImage = video.format === 'image' || (video.filepath && (video.filepath.includes('/thumbnails/') || video.filepath.endsWith('.jpg') || video.filepath.endsWith('.jpeg') || video.filepath.endsWith('.png') || video.filepath.endsWith('.gif')));
+              const mediaType = isAudio ? 'audio' : isImage ? 'image' : 'video';
+              const displayThumbnail = video.thumbnail_path || (isImage ? video.filepath : '/images/default-video-thumbnail.svg');
             %>
-            <tr class="gallery-list-item file-item-row group hover:bg-dark-700 transition-colors cursor-pointer"
+            <tr class="gallery-list-item file-item-row <%= isImage ? 'gallery-inspectable' : 'gallery-playable' %> group hover:bg-dark-700 transition-colors cursor-pointer"
               data-id="<%= video.id %>" data-kind="file" data-title="<%= video.title %>" data-date="<%= video.upload_date %>" data-size="<%= video.file_size %>" data-type="<%= mediaType %>"
+              data-filepath="<%= video.filepath %>" data-resolution="<%= video.resolution %>"
               draggable="true"
-              onclick="playMedia('<%= video.id %>', '<%= video.title %>', '<%= mediaType %>')">
+              onclick="<%= isImage ? "openMediaInspector('" + video.id + "', '" + video.title.replace(/'/g, "\\'") + "', '" + video.filepath + "', " + video.file_size + ", '" + (video.resolution || '') + "')" : "playMedia('" + video.id + "', '" + video.title.replace(/'/g, "\\'") + "', '" + mediaType + "')" %>">
               <td class="px-4 py-3" onclick="event.stopPropagation()">
                 <input type="checkbox" class="file-checkbox w-4 h-4 rounded border-2 border-gray-600 bg-dark-700 checked:bg-primary checked:border-primary cursor-pointer"
                   data-id="<%= video.id %>"
@@ -314,7 +328,7 @@ function formatDuration(seconds) {
                     <% if (isAudio) { %>
                     <i class="ti ti-music text-primary"></i>
                     <% } else { %>
-                    <img src="<%= video.thumbnail_path %>" alt="" class="w-full h-full object-cover">
+                    <img src="<%= displayThumbnail %>" alt="" class="w-full h-full object-cover">
                     <% } %>
                   </div>
                   <div class="flex items-center gap-2">
@@ -322,7 +336,7 @@ function formatDuration(seconds) {
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-400"><%= formatDuration(video.duration) %></td>
+              <td class="px-4 py-3 text-sm text-gray-400"><%= isImage ? '--' : formatDuration(video.duration) %></td>
               <td class="px-4 py-3 text-sm text-gray-400"><%= formatFileSize(video.file_size) %></td>
               <td class="px-4 py-3 text-sm text-gray-400"><%= new Date(video.upload_date).toLocaleDateString() %></td>
               <td class="px-4 py-3 text-right">
@@ -365,6 +379,136 @@ function formatDuration(seconds) {
   </div>
   <% } %>
 </div>
+
+<!-- Media Inspector Side Panel (Right slide-over) -->
+<div id="mediaInspectorPanel" class="fixed top-0 right-0 h-full w-[400px] max-w-full bg-dark-800/95 backdrop-blur-md border-l border-gray-700 shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+  <!-- Panel Header -->
+  <div class="flex items-center justify-between p-4 border-b border-gray-700 bg-dark-900/50">
+    <div class="flex items-center gap-2">
+      <i class="ti ti-info-circle text-primary text-xl"></i>
+      <h3 class="text-md font-semibold text-white">Media Details</h3>
+    </div>
+    <button onclick="closeMediaInspector()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-dark-700 transition-colors">
+      <i class="ti ti-x text-xl"></i>
+    </button>
+  </div>
+  
+  <!-- Panel Content (Scrollable) -->
+  <div class="flex-1 overflow-y-auto p-5 space-y-6">
+    <!-- Image Preview Card -->
+    <div class="aspect-video relative rounded-lg overflow-hidden bg-dark-900 border border-gray-700 shadow-inner group">
+      <img id="inspectorImgPreview" src="" alt="Thumbnail Preview" class="w-full h-full object-cover">
+      <div class="absolute bottom-2 left-2 bg-black/75 px-2 py-0.5 rounded text-[10px] text-gray-400 font-mono" id="inspectorImgDim">-- x --</div>
+    </div>
+    
+    <!-- Meta Information -->
+    <div class="space-y-3 bg-dark-900/40 p-4 rounded-xl border border-gray-700/50">
+      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">File Information</h4>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-400">Title:</span>
+          <span class="font-medium text-white truncate max-w-[200px]" id="inspectorTitle">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Size:</span>
+          <span class="font-medium text-white" id="inspectorSize">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Type:</span>
+          <span class="font-medium text-blue-400">Image/Thumbnail</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- YouTube Channel Integration Container -->
+    <div class="space-y-4 bg-dark-900/60 p-4 rounded-xl border border-gray-700">
+      <div class="flex items-center gap-2 border-b border-gray-700/50 pb-2">
+        <i class="ti ti-brand-youtube text-red-500 text-lg"></i>
+        <h4 class="text-sm font-semibold text-white">YouTube Integration</h4>
+      </div>
+      
+      <!-- Loading Channel State -->
+      <div id="inspectorYtLoading" class="text-center py-4 text-gray-500 text-xs flex flex-col items-center justify-center gap-2">
+        <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <span>Loading YouTube settings...</span>
+      </div>
+
+      <!-- No Channels Connected State -->
+      <div id="inspectorYtNoChannels" class="hidden text-center py-4 space-y-3">
+        <p class="text-xs text-gray-400">No YouTube channels connected to your account.</p>
+        <a href="/settings" class="inline-flex items-center justify-center gap-1.5 bg-dark-700 hover:bg-dark-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-600 transition-colors">
+          <i class="ti ti-settings"></i>
+          <span>Configure settings</span>
+        </a>
+      </div>
+
+      <!-- Main Integration Controls -->
+      <div id="inspectorYtControls" class="hidden space-y-4">
+        <!-- Choose Channel Dropdown -->
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Select YouTube Channel</label>
+          <div class="relative">
+            <select id="inspectorYtChannelSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+              <!-- Dynamically populated -->
+            </select>
+            <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+          </div>
+        </div>
+
+        <!-- Choose Target Type -->
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Choose Application Mode</label>
+          <div class="flex gap-2">
+            <button type="button" id="btnModeStream" class="flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all" onclick="setInspectorMode('stream')">
+              Stream Config
+            </button>
+            <button type="button" id="btnModeBroadcast" class="flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all" onclick="setInspectorMode('broadcast')">
+              Live Broadcast
+            </button>
+          </div>
+        </div>
+
+        <!-- Target Destination Selection -->
+        <div>
+          <!-- Stream Config Target Selection -->
+          <div id="targetStreamContainer" class="space-y-1.5">
+            <label class="block text-xs text-gray-400">Select Stream Config</label>
+            <div class="relative">
+              <select id="inspectorStreamSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                <!-- Dynamically populated -->
+              </select>
+              <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+            </div>
+            <p class="text-[10px] text-gray-500">Links the thumbnail to this stream config. Will be uploaded automatically when you start streaming from this app.</p>
+          </div>
+
+          <!-- Direct Broadcast Target Selection -->
+          <div id="targetBroadcastContainer" class="hidden space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs text-gray-400">Select YouTube Broadcast</label>
+              <button onclick="refreshInspectorBroadcasts()" class="text-[10px] text-primary hover:text-rose-400 flex items-center gap-1">
+                <i class="ti ti-refresh text-xs"></i>Refresh
+              </button>
+            </div>
+            <div class="relative">
+              <select id="inspectorBroadcastSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                <option value="">-- No active broadcasts found --</option>
+              </select>
+              <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+            </div>
+            <p class="text-[10px] text-gray-500">Pushes the thumbnail *immediately* to YouTube for this active/upcoming broadcast.</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="btnInspectorApply" onclick="applyInspectorThumbnail()" class="w-full bg-primary hover:bg-rose-600 text-white py-2 rounded-lg text-xs font-semibold shadow-lg shadow-primary/10 transition-colors flex items-center justify-center gap-2">
+          <i class="ti ti-check"></i>
+          <span>Apply YouTube Thumbnail</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
 <div id="uploadModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden modal-overlay overflow-y-auto">
@@ -383,6 +527,9 @@ function formatDuration(seconds) {
           </button>
           <button type="button" id="tabAudio" class="flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors" onclick="switchUploadTab('audio')">
             <i class="ti ti-music mr-2"></i>Audio
+          </button>
+          <button type="button" id="tabImage" class="flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors" onclick="switchUploadTab('image')">
+            <i class="ti ti-photo mr-2"></i>Image/Thumbnail
           </button>
         </div>
         <form id="videoUploadForm" enctype="multipart/form-data">
@@ -625,25 +772,37 @@ function switchUploadTab(type) {
   
   const tabVideo = document.getElementById('tabVideo');
   const tabAudio = document.getElementById('tabAudio');
+  const tabImage = document.getElementById('tabImage');
   const dropzoneIcon = document.getElementById('dropzoneIcon');
   const dropzoneText = document.getElementById('dropzoneText');
   const dropzoneFormats = document.getElementById('dropzoneFormats');
   const mediaFileInput = document.getElementById('mediaFileInput');
   
+  // Reset tabs
+  [tabVideo, tabAudio, tabImage].forEach(tab => {
+    if (tab) {
+      tab.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    }
+  });
+  
   if (type === 'video') {
-    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
-    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+    if (tabVideo) tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
     if (dropzoneIcon) dropzoneIcon.className = 'ti ti-video text-2xl text-gray-400';
     dropzoneText.textContent = 'Drag and drop video files here';
     dropzoneFormats.textContent = 'Supported formats: MP4, AVI, MOV (max 50GB)';
     mediaFileInput.setAttribute('accept', 'video/*,.mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.3gp,.ts,.mpeg,.mpg');
-  } else {
-    tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
-    tabVideo.className = 'flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors';
+  } else if (type === 'audio') {
+    if (tabAudio) tabAudio.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
     if (dropzoneIcon) dropzoneIcon.className = 'ti ti-music text-2xl text-gray-400';
     dropzoneText.textContent = 'Drag and drop audio files here';
     dropzoneFormats.textContent = 'Supported formats: MP3, WAV, AAC, M4A, OGG, FLAC (max 50GB)';
     mediaFileInput.setAttribute('accept', 'audio/*,.mp3,.wav,.aac,.m4a,.ogg,.flac');
+  } else if (type === 'image') {
+    if (tabImage) tabImage.className = 'flex-1 py-2 px-4 rounded-lg bg-primary text-white transition-colors';
+    if (dropzoneIcon) dropzoneIcon.className = 'ti ti-photo text-2xl text-gray-400';
+    dropzoneText.textContent = 'Drag and drop image files here';
+    dropzoneFormats.textContent = 'Supported formats: PNG, JPG, JPEG (max 10MB)';
+    mediaFileInput.setAttribute('accept', 'image/*,.png,.jpg,.jpeg');
   }
   
   document.getElementById('uploadType').value = type;
@@ -1523,6 +1682,21 @@ function isVideoFile(file) {
   return false;
 }
 
+function isImageFile(file) {
+  const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+  const imageExts = ['.jpg', '.jpeg', '.png', '.gif'];
+  const fileName = file.name.toLowerCase();
+  const ext = fileName.substring(fileName.lastIndexOf('.'));
+  
+  if (file.type && imageTypes.includes(file.type.toLowerCase())) {
+    return true;
+  }
+  if (imageExts.includes(ext)) {
+    return true;
+  }
+  return false;
+}
+
 
 
 function getRemainingSpace() {
@@ -1581,8 +1755,10 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log('File:', f.name, 'Type:', f.type, 'Size:', f.size);
           if (currentUploadType === 'video') {
             console.log('  isVideoFile:', isVideoFile(f));
-          } else {
+          } else if (currentUploadType === 'audio') {
             console.log('  isAudioFile:', isAudioFile(f));
+          } else {
+            console.log('  isImageFile:', isImageFile(f));
           }
         });
         
@@ -1590,8 +1766,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const invalidFiles = newFiles.filter(f => {
           if (currentUploadType === 'video') {
             return !isVideoFile(f);
-          } else {
+          } else if (currentUploadType === 'audio') {
             return !isAudioFile(f);
+          } else {
+            return !isImageFile(f);
           }
         });
         
@@ -1600,7 +1778,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (invalidFiles.length > 0) {
           const fileTypeMsg = currentUploadType === 'video' 
             ? 'Please select valid video files (MP4, AVI, MOV)' 
-            : 'Please select valid audio files (MP3, WAV, AAC, M4A, OGG, FLAC)';
+            : currentUploadType === 'audio'
+              ? 'Please select valid audio files (MP3, WAV, AAC, M4A, OGG, FLAC)'
+              : 'Please select valid image files (PNG, JPG, JPEG)';
           showToast('error', fileTypeMsg);
           this.value = '';
           return;
@@ -1642,8 +1822,9 @@ document.addEventListener('DOMContentLoaded', function() {
     selectedFilesList.innerHTML = '';
     selectedFiles.forEach((file, i) => {
       const isAudio = isAudioFile(file);
-      const icon = isAudio ? 'ti-music' : 'ti-video';
-      console.log('Adding file to list:', file.name, 'isAudio:', isAudio);
+      const isImage = isImageFile(file);
+      const icon = isAudio ? 'ti-music' : isImage ? 'ti-photo' : 'ti-video';
+      console.log('Adding file to list:', file.name, 'isAudio:', isAudio, 'isImage:', isImage);
       const div = document.createElement('div');
       div.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-dark-600 transition-colors';
       div.innerHTML = `
@@ -1684,7 +1865,8 @@ document.addEventListener('DOMContentLoaded', function() {
       uploadFilesList.innerHTML = '';
       selectedFiles.forEach((f) => {
         const isAudio = isAudioFile(f);
-        const icon = isAudio ? 'ti-music' : 'ti-video';
+        const isImage = isImageFile(f);
+        const icon = isAudio ? 'ti-music' : isImage ? 'ti-photo' : 'ti-video';
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between p-2 rounded-lg';
         div.innerHTML = `
@@ -1702,6 +1884,7 @@ document.addEventListener('DOMContentLoaded', function() {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         const isAudio = isAudioFile(file);
+        const isImage = isImageFile(file);
         uploadProgressStatus.textContent = `Uploading ${i + 1}/${selectedFiles.length}: ${file.name}`;
         updateFileProgress(i, 'uploading', 0);
         
@@ -1709,6 +1892,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
           if (isAudio) {
             result = await uploadAudioSimple(file, i, selectedFiles.length);
+          } else if (isImage) {
+            result = await uploadImageSimple(file, i, selectedFiles.length);
           } else {
             const useChunked = file.size > 50 * 1024 * 1024;
             result = useChunked ? await uploadChunked(file, i, selectedFiles.length) : await uploadSimple(file, i, selectedFiles.length);
@@ -1844,6 +2029,51 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  async function uploadImageSimple(file, index, total) {
+    return new Promise((resolve) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('folderId', document.getElementById('uploadFolderId').value || '');
+      
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      if (csrfInput) {
+        formData.append('_csrf', csrfInput.value);
+      }
+      
+      const xhr = new XMLHttpRequest();
+      xhr.timeout = 30 * 60 * 1000;
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          const overall = Math.round(((index + e.loaded / e.total) / total) * 100);
+          uploadProgressBar.style.width = overall + '%';
+          uploadProgressPercent.textContent = overall + '%';
+          updateFileProgress(index, 'uploading', pct);
+        }
+      });
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          try { 
+            const r = JSON.parse(xhr.responseText); 
+            resolve({ success: r.success, message: r.error }); 
+          }
+          catch { resolve({ success: false, message: 'Invalid server response' }); }
+        } else {
+          try {
+            const r = JSON.parse(xhr.responseText);
+            resolve({ success: false, message: r.error || `Server error ${xhr.status}` });
+          } catch {
+            resolve({ success: false, message: `Upload failed with status ${xhr.status}` });
+          }
+        }
+      });
+      xhr.addEventListener('error', () => resolve({ success: false, message: 'Network error' }));
+      xhr.addEventListener('timeout', () => resolve({ success: false, message: 'Upload timeout' }));
+      xhr.open('POST', '/api/images/upload', true);
+      xhr.send(formData);
+    });
+  }
+
   async function uploadChunked(file, index, total) {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     try {
@@ -1959,7 +2189,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (files.length > 0) {
         const validFiles = Array.from(files).filter(f => {
           if (currentUploadType === 'video') return isVideoFile(f);
-          return isAudioFile(f);
+          if (currentUploadType === 'audio') return isAudioFile(f);
+          return isImageFile(f);
         });
         if (validFiles.length > 0) {
           const totalNewSize = validFiles.reduce((sum, f) => sum + f.size, 0);
@@ -1976,7 +2207,8 @@ document.addEventListener('DOMContentLoaded', function() {
           uploadButton.disabled = false;
         } else {
           if (currentUploadType === 'video') showToast('error', 'Please upload a valid video file (MP4, AVI, MOV)');
-          else showToast('error', 'Please upload a valid audio file (MP3, WAV, AAC, M4A, OGG, FLAC)');
+          else if (currentUploadType === 'audio') showToast('error', 'Please upload a valid audio file (MP3, WAV, AAC, M4A, OGG, FLAC)');
+          else showToast('error', 'Please upload a valid image file (PNG, JPG, JPEG)');
         }
       }
     });
@@ -1994,6 +2226,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function isAudioMediaItem(video) {
     const filepath = (video.filepath || '').toLowerCase();
     return filepath.includes('/audio/') || filepath.endsWith('.m4a') || filepath.endsWith('.aac') || filepath.endsWith('.mp3');
+  }
+
+  function isImageMediaItem(video) {
+    const filepath = (video.filepath || '').toLowerCase();
+    const format = (video.format || '').toLowerCase();
+    return format === 'image' || filepath.includes('/thumbnails/') || filepath.endsWith('.jpg') || filepath.endsWith('.jpeg') || filepath.endsWith('.png') || filepath.endsWith('.gif');
   }
 
   function formatGalleryDate(value) {
@@ -2028,13 +2266,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function buildVideoGridMarkup(video) {
     const isAudio = isAudioMediaItem(video);
-    const mediaType = isAudio ? 'audio' : 'video';
-    const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
+    const isImage = isImageMediaItem(video);
+    const mediaType = isAudio ? 'audio' : isImage ? 'image' : 'video';
+    const thumbnail = escapeHtml(video.thumbnail_path || (isImage ? video.filepath : '/images/default-video-thumbnail.svg'));
     const title = escapeHtml(video.title || '');
     return `
-      <div class="gallery-grid-item file-item gallery-playable group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
+      <div class="gallery-grid-item file-item ${isImage ? 'gallery-inspectable' : 'gallery-playable'} group bg-dark-700 rounded-lg overflow-hidden border border-transparent hover:border-gray-600 hover:bg-dark-600 transition-all cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
-        data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
+        data-media-type="${mediaType}" data-media-title="${title}" data-filepath="${escapeHtml(video.filepath)}" data-resolution="${escapeHtml(video.resolution || '')}" draggable="true">
         <div class="aspect-video relative overflow-hidden bg-dark-900">
           ${isAudio ? `
           <div class="w-full h-full flex items-center justify-center bg-[#181818]">
@@ -2044,11 +2283,12 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>` : `<img src="${thumbnail}" alt="${title}" class="w-full h-full object-cover">`}
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <div class="bg-primary/90 w-10 h-10 rounded-full flex items-center justify-center">
-              <i class="ti ti-player-play-filled text-white"></i>
+              <i class="ti ${isImage ? 'ti-eye' : 'ti-player-play-filled'} text-white"></i>
             </div>
           </div>
-          <span class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">${formatDuration(video.duration)}</span>
+          ${!isImage ? `<span class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">${formatDuration(video.duration)}</span>` : ''}
           ${isAudio ? `<span class="absolute top-2 left-2 bg-primary/80 text-white text-xs px-1.5 py-0.5 rounded"><i class="ti ti-music text-xs mr-1"></i>Audio</span>` : ''}
+          ${isImage ? `<span class="absolute top-2 left-2 bg-[#2d5af6] text-white text-xs px-1.5 py-0.5 rounded"><i class="ti ti-photo text-xs mr-1"></i>Image</span>` : ''}
         </div>
         <div class="p-3">
           <h3 class="font-medium text-sm truncate mb-1">${title}</h3>
@@ -2102,14 +2342,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function buildVideoListMarkup(video) {
     const isAudio = isAudioMediaItem(video);
-    const mediaType = isAudio ? 'audio' : 'video';
+    const isImage = isImageMediaItem(video);
+    const mediaType = isAudio ? 'audio' : isImage ? 'image' : 'video';
     const title = escapeHtml(video.title || '');
-    const thumbnail = escapeHtml(video.thumbnail_path || '/images/default-video-thumbnail.svg');
+    const thumbnail = escapeHtml(video.thumbnail_path || (isImage ? video.filepath : '/images/default-video-thumbnail.svg'));
     const isChecked = selectedFileIds.has(video.id) ? 'checked' : '';
     return `
-      <tr class="gallery-list-item file-item-row gallery-playable group hover:bg-dark-700 transition-colors cursor-pointer"
+      <tr class="gallery-list-item file-item-row ${isImage ? 'gallery-inspectable' : 'gallery-playable'} group hover:bg-dark-700 transition-colors cursor-pointer"
         data-id="${escapeHtml(video.id)}" data-kind="file" data-title="${title}" data-date="${escapeHtml(video.upload_date || video.created_at || '')}" data-size="${Number(video.file_size || 0)}" data-type="${mediaType}"
-        data-media-type="${mediaType}" data-media-title="${title}" draggable="true">
+        data-media-type="${mediaType}" data-media-title="${title}" data-filepath="${escapeHtml(video.filepath)}" data-resolution="${escapeHtml(video.resolution || '')}" draggable="true">
         <td class="px-4 py-3" onclick="event.stopPropagation()">
           <input type="checkbox" class="file-checkbox w-4 h-4 rounded border-2 border-gray-600 bg-dark-700 checked:bg-primary checked:border-primary cursor-pointer"
             data-id="${escapeHtml(video.id)}"
@@ -2127,7 +2368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           </div>
         </td>
-        <td class="px-4 py-3 text-sm text-gray-400">${formatDuration(video.duration)}</td>
+        <td class="px-4 py-3 text-sm text-gray-400">${isImage ? '--' : formatDuration(video.duration)}</td>
         <td class="px-4 py-3 text-sm text-gray-400">${formatFileSize(video.file_size || 0)}</td>
         <td class="px-4 py-3 text-sm text-gray-400">${formatGalleryDate(video.upload_date || video.created_at)}</td>
         <td class="px-4 py-3 text-right">
@@ -2147,6 +2388,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function bindGalleryItemInteractions() {
     document.querySelectorAll('.gallery-playable').forEach(item => {
       item.onclick = () => playMedia(item.dataset.id, item.dataset.mediaTitle, item.dataset.mediaType);
+    });
+
+    document.querySelectorAll('.gallery-inspectable').forEach(item => {
+      item.onclick = () => openMediaInspector(item.dataset.id, item.dataset.title, item.dataset.filepath, item.dataset.size, item.dataset.resolution);
     });
 
     document.querySelectorAll('.gallery-folder-link').forEach(item => {
@@ -2622,6 +2867,209 @@ async function showMoveSelectedDialog() {
   
   dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
 }
+
+  let activeInspectorId = null;
+  let activeInspectorMode = 'stream'; // 'stream' or 'broadcast'
+  let inspectorChannels = [];
+  let inspectorStreams = [];
+
+  window.openMediaInspector = async function(id, title, filepath, size, resolution) {
+    activeInspectorId = id;
+    
+    // Update basic details
+    document.getElementById('inspectorImgPreview').src = filepath;
+    document.getElementById('inspectorTitle').textContent = title;
+    document.getElementById('inspectorSize').textContent = formatFileSize(size);
+    document.getElementById('inspectorImgDim').textContent = resolution || '-- x --';
+    
+    // Open Panel
+    const panel = document.getElementById('mediaInspectorPanel');
+    panel.classList.remove('translate-x-full');
+    
+    // Set default mode
+    setInspectorMode('stream');
+    
+    // Reset YT controls
+    document.getElementById('inspectorYtLoading').classList.remove('hidden');
+    document.getElementById('inspectorYtNoChannels').classList.add('hidden');
+    document.getElementById('inspectorYtControls').classList.add('hidden');
+    
+    // Load YouTube configuration details
+    try {
+      // 1. Fetch connected channels
+      const channelsRes = await fetch('/api/youtube/channels');
+      const channelsData = await channelsRes.json();
+      
+      if (!channelsData.success || !channelsData.channels || channelsData.channels.length === 0) {
+        document.getElementById('inspectorYtLoading').classList.add('hidden');
+        document.getElementById('inspectorYtNoChannels').classList.remove('hidden');
+        return;
+      }
+      
+      inspectorChannels = channelsData.channels;
+      
+      // Populate channel dropdown
+      const channelSelect = document.getElementById('inspectorYtChannelSelect');
+      channelSelect.innerHTML = inspectorChannels.map(c => `
+        <option value="${c.id}">${c.channel_name} (${c.subscriber_count} subs)</option>
+      `).join('');
+      
+      // 2. Fetch local stream configurations
+      const streamsRes = await fetch('/api/streams');
+      const streamsData = await streamsRes.json();
+      
+      if (streamsData.success && streamsData.streams) {
+        // Filter streams that are mapped to YouTube
+        inspectorStreams = streamsData.streams.filter(s => s.is_youtube_api || s.platform === 'YouTube' || s.platform?.toLowerCase?.() === 'youtube');
+      } else {
+        inspectorStreams = [];
+      }
+      
+      const streamSelect = document.getElementById('inspectorStreamSelect');
+      if (inspectorStreams.length > 0) {
+        streamSelect.innerHTML = inspectorStreams.map(s => `
+          <option value="${s.id}">${s.title}</option>
+        `).join('');
+      } else {
+        streamSelect.innerHTML = '<option value="">-- No YouTube stream configs --</option>';
+      }
+      
+      // Hide loading, show controls
+      document.getElementById('inspectorYtLoading').classList.add('hidden');
+      document.getElementById('inspectorYtControls').classList.remove('hidden');
+      
+      // Hook up channel change to load broadcasts
+      channelSelect.onchange = () => {
+        if (activeInspectorMode === 'broadcast') {
+          refreshInspectorBroadcasts();
+        }
+      };
+      
+    } catch (e) {
+      console.error('Error loading inspector data:', e);
+      document.getElementById('inspectorYtLoading').classList.add('hidden');
+      document.getElementById('inspectorYtNoChannels').classList.remove('hidden');
+    }
+  };
+
+  window.closeMediaInspector = function() {
+    activeInspectorId = null;
+    const panel = document.getElementById('mediaInspectorPanel');
+    panel.classList.add('translate-x-full');
+  };
+
+  window.setInspectorMode = function(mode) {
+    activeInspectorMode = mode;
+    const btnStream = document.getElementById('btnModeStream');
+    const btnBroadcast = document.getElementById('btnModeBroadcast');
+    const containerStream = document.getElementById('targetStreamContainer');
+    const containerBroadcast = document.getElementById('targetBroadcastContainer');
+    
+    if (mode === 'stream') {
+      btnStream.className = 'flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all';
+      btnBroadcast.className = 'flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all';
+      containerStream.classList.remove('hidden');
+      containerBroadcast.classList.add('hidden');
+    } else {
+      btnBroadcast.className = 'flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all';
+      btnStream.className = 'flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all';
+      containerBroadcast.classList.remove('hidden');
+      containerStream.classList.add('hidden');
+      
+      // Load broadcasts
+      refreshInspectorBroadcasts();
+    }
+  };
+
+  window.refreshInspectorBroadcasts = async function() {
+    const channelId = document.getElementById('inspectorYtChannelSelect').value;
+    if (!channelId) return;
+    
+    const broadcastSelect = document.getElementById('inspectorBroadcastSelect');
+    broadcastSelect.innerHTML = '<option value="">Loading broadcasts...</option>';
+    broadcastSelect.disabled = true;
+    
+    try {
+      const res = await fetch(`/api/youtube/broadcasts/${channelId}`);
+      const data = await res.json();
+      
+      if (data.success && data.broadcasts && data.broadcasts.length > 0) {
+        broadcastSelect.innerHTML = data.broadcasts.map(b => `
+          <option value="${b.id}">${b.snippet.title} (${b.status.lifeCycleStatus || b.status.privacyStatus})</option>
+        `).join('');
+        broadcastSelect.disabled = false;
+      } else {
+        broadcastSelect.innerHTML = '<option value="">-- No live broadcasts found --</option>';
+        broadcastSelect.disabled = true;
+      }
+    } catch (e) {
+      console.error(e);
+      broadcastSelect.innerHTML = '<option value="">Failed to load broadcasts</option>';
+      broadcastSelect.disabled = true;
+    }
+  };
+
+  window.applyInspectorThumbnail = async function() {
+    if (!activeInspectorId) return;
+    
+    const targetType = activeInspectorMode; // 'stream' or 'broadcast'
+    const channelId = document.getElementById('inspectorYtChannelSelect').value;
+    
+    let targetId = '';
+    if (targetType === 'stream') {
+      targetId = document.getElementById('inspectorStreamSelect').value;
+      if (!targetId) {
+        showToast('error', 'Please select a stream configuration target.');
+        return;
+      }
+    } else {
+      targetId = document.getElementById('inspectorBroadcastSelect').value;
+      if (!targetId) {
+        showToast('error', 'Please select an active YouTube broadcast target.');
+        return;
+      }
+    }
+    
+    const btn = document.getElementById('btnInspectorApply');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Applying...';
+    
+    try {
+      const csrfInput = document.querySelector('input[name="_csrf"]');
+      const response = await fetch('/api/gallery/apply-thumbnail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfInput ? csrfInput.value : ''
+        },
+        body: JSON.stringify({
+          videoId: activeInspectorId,
+          targetType,
+          targetId,
+          channelId
+        })
+      });
+      const data = await response.json();
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      
+      if (data.success) {
+        showToast('success', data.message || 'Thumbnail successfully applied!');
+        closeMediaInspector();
+        
+        // Refresh local gallery data so it stays up-to-date
+        await window.refreshGalleryData?.();
+      } else {
+        showToast('error', data.error || 'Failed to apply thumbnail');
+      }
+    } catch (error) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      console.error(error);
+      showToast('error', 'An error occurred while applying the thumbnail.');
+    }
+  };
 </script>
 
 <style>
@@ -2634,5 +3082,10 @@ async function showMoveSelectedDialog() {
 @keyframes pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+#mediaInspectorPanel {
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
