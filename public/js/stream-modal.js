@@ -126,8 +126,11 @@ async function loadGalleryVideos() {
       displayFilteredVideos(content);
     }
 
+    // Fetch audios from dedicated endpoint
+    const audioResponse = await fetch('/api/stream/audios');
+    const audios = await audioResponse.json();
+
     // Populate audio selects
-    const audios = content.audios || [];
     const audioSelect = document.getElementById('selectedAudioId');
     if (audioSelect) {
       audioSelect.innerHTML = '<option value="">No separate audio (use video audio)</option>';

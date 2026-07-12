@@ -4115,6 +4115,28 @@ app.get('/api/stream/content', isAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/stream/audios', isAuthenticated, async (req, res) => {
+  try {
+    const allVideos = await Video.findAll(req.session.userId);
+    const audios = allVideos.filter(video => {
+      const filepath = (video.filepath || '').toLowerCase();
+      return filepath.includes('/audio/') || filepath.endsWith('.m4a') || filepath.endsWith('.aac') || filepath.endsWith('.mp3');
+    });
+    const formattedAudios = audios.map(audio => {
+      return {
+        id: audio.id,
+        name: audio.title,
+        title: audio.title,
+        url: audio.filepath
+      };
+    });
+    res.json(formattedAudios);
+  } catch (error) {
+    console.error('Error fetching audios:', error);
+    res.status(500).json({ error: 'Failed to load audios' });
+  }
+});
+
 app.get('/api/streams/:id/export', isAuthenticated, async (req, res) => {
   try {
     const stream = await Stream.findById(req.params.id);
