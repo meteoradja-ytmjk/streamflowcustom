@@ -7,6 +7,13 @@ let isStreamKeyValid = true;
 let currentPlatform = 'Custom';
 let audioCodecWarningActive = false;
 
+let allFolders = [];
+let allStreamAudios = [];
+let selectedVideoFolderId = 'all';
+let selectedAudioFolderId = 'all';
+let selectedEditVideoFolderId = 'all';
+let selectedEditAudioFolderId = 'all';
+
 function openNewStreamModal() {
   const modal = document.getElementById('newStreamModal');
   document.body.style.overflow = 'hidden';
@@ -116,63 +123,160 @@ function selectVideo(video) {
 async function loadGalleryVideos() {
   try {
     const container = document.getElementById('videoListContainer');
-    if (container) {
+    if (container && !container.innerHTML.includes('ti-loader')) {
       container.innerHTML = '<div class="text-center py-3"><i class="ti ti-loader animate-spin mr-2"></i>Loading content...</div>';
     }
+    
     const response = await fetch('/api/stream/content');
     const content = await response.json();
     window.allStreamVideos = content;
-    if (container) {
-      displayFilteredVideos(content);
-    }
 
-    // Fetch audios from dedicated endpoint
+    // Fetch folders
+    const foldersResponse = await fetch('/api/gallery/folders');
+    allFolders = await foldersResponse.json();
+
+    // Fetch audios
     const audioResponse = await fetch('/api/stream/audios');
-    const audios = await audioResponse.json();
+    allStreamAudios = await audioResponse.json();
 
-    // Populate audio selects
-    const audioSelect = document.getElementById('selectedAudioId');
-    if (audioSelect) {
-      audioSelect.innerHTML = '<option value="">No separate audio (use video audio)</option>';
-      audios.forEach(audio => {
-        const option = document.createElement('option');
-        option.value = audio.id;
-        option.textContent = audio.title || audio.name;
-        audioSelect.appendChild(option);
-      });
-    }
-    const editAudioSelect = document.getElementById('editSelectedAudioId');
-    if (editAudioSelect) {
-      editAudioSelect.innerHTML = '<option value="">No separate audio (use video audio)</option>';
-      audios.forEach(audio => {
-        const option = document.createElement('option');
-        option.value = audio.id;
-        option.textContent = audio.title || audio.name;
-        editAudioSelect.appendChild(option);
-      });
-    }
+    // Render folder pills
+    renderFolderPills('videoFolderFilters', selectedVideoFolderId, (folderId) => {
+      selectedVideoFolderId = folderId;
+      filterAndDisplayVideos();
+    });
 
+    renderFolderPills('audioFolderFilters', selectedAudioFolderId, (folderId) => {
+      selectedAudioFolderId = folderId;
+      filterAndDisplayAudios();
+    });
+
+    // Populate initial views
+    filterAndDisplayVideos();
+    filterAndDisplayAudios();
+
+    // Setup search input listeners
     const searchInput = document.getElementById('videoSearchInput');
-    if (searchInput) { searchInput.removeEventListener('input', handleVideoSearch); searchInput.addEventListener('input', handleVideoSearch); }
+    if (searchInput) {
+      searchInput.removeEventListener('input', handleVideoSearch);
+      searchInput.addEventListener('input', handleVideoSearch);
+    }
+
+    const audioSearchInput = document.getElementById('audioSearchInput');
+    if (audioSearchInput) {
+      audioSearchInput.removeEventListener('input', handleAudioSearch);
+      audioSearchInput.addEventListener('input', handleAudioSearch);
+    }
   } catch (error) {
+    console.error('Error loading gallery videos:', error);
     const container = document.getElementById('videoListContainer');
-    if (container) container.innerHTML = `<div class="text-center py-5 text-red-400"><i class="ti ti-alert-circle text-2xl mb-2"></i><p>Failed to load content</p><p class="text-xs text-gray-500 mt-1">Please try again</p></div>`;
+    if (container) {
+      container.innerHTML = `<div class="text-center py-5 text-red-400"><i class="ti ti-alert-circle text-2xl mb-2"></i><p>Failed to load content</p><p class="text-xs text-gray-500 mt-1">Please try again</p></div>`;
+    }
   }
 }
 
+function renderFolderPills(containerId, activeFolderId, onFilterCallback) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '';
+  
+  // "All" filter pill
+  const allBtn = document.createElement('button');
+  allBtn.type = 'button';
+  allBtn.className = `flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+    activeFolderId === 'all'
+      ? 'bg-primary border-primary text-white shadow-sm'
+      : 'bg-dark-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+  }`;
+  allBtn.innerHTML = '<i class="ti ti-folder mr-1"></i>All';
+  allBtn.onclick = () => onFilterCallback('all');
+  container.appendChild(allBtn);
+
+  // "Root" filter pill
+  const rootBtn = document.createElement('button');
+  rootBtn.type = 'button';
+  rootBtn.className = `flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+    activeFolderId === 'root'
+      ? 'bg-primary border-primary text-white shadow-sm'
+      : 'bg-dark-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+  }`;
+  rootBtn.innerHTML = '<i class="ti ti-folder-off mr-1"></i>Root';
+  rootBtn.onclick = () => onFilterCallback('root');
+  container.appendChild(rootBtn);
+
+  // Dynamic Folder Pills
+  allFolders.forEach(folder => {
+    const folderBtn = document.createElement('button');
+    folderBtn.type = 'button';
+    folderBtn.className = `flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+      activeFolderId === folder.id
+        ? 'bg-primary border-primary text-white shadow-sm'
+        : 'bg-dark-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+    }`;
+    folderBtn.innerHTML = `<i class="ti ti-folder mr-1"></i>${folder.name}`;
+    folderBtn.onclick = () => onFilterCallback(folder.id);
+    container.appendChild(folderBtn);
+  });
+}
+
 function handleVideoSearch(e) {
-  const searchTerm = e.target.value.toLowerCase().trim();
+  filterAndDisplayVideos();
+}
+
+function handleAudioSearch(e) {
+  filterAndDisplayAudios();
+}
+
+function filterAndDisplayVideos() {
   if (!window.allStreamVideos) return;
-  if (searchTerm === '') { displayFilteredVideos(window.allStreamVideos); return; }
-  const filteredContent = window.allStreamVideos.filter(item => item.name.toLowerCase().includes(searchTerm) || (item.type === 'playlist' && item.description && item.description.toLowerCase().includes(searchTerm)));
-  displayFilteredVideos(filteredContent);
+  const searchInput = document.getElementById('videoSearchInput');
+  const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  const filtered = window.allStreamVideos.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
+                          (item.type === 'playlist' && item.description && item.description.toLowerCase().includes(searchTerm));
+    
+    let matchesFolder = true;
+    if (selectedVideoFolderId === 'root') {
+      matchesFolder = !item.folderId;
+    } else if (selectedVideoFolderId !== 'all') {
+      matchesFolder = item.folderId === selectedVideoFolderId;
+    }
+
+    return matchesSearch && matchesFolder;
+  });
+
+  displayFilteredVideos(filtered);
+}
+
+function filterAndDisplayAudios() {
+  if (!allStreamAudios) return;
+  const searchInput = document.getElementById('audioSearchInput');
+  const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  const filtered = allStreamAudios.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+    
+    let matchesFolder = true;
+    if (selectedAudioFolderId === 'root') {
+      matchesFolder = !item.folderId;
+    } else if (selectedAudioFolderId !== 'all') {
+      matchesFolder = item.folderId === selectedAudioFolderId;
+    }
+
+    return matchesSearch && matchesFolder;
+  });
+
+  displayFilteredAudios(filtered);
 }
 
 function displayFilteredVideos(videos) {
   const container = document.getElementById('videoListContainer');
+  if (!container) return;
   container.innerHTML = '';
   if (!videos || videos.length === 0) {
-    container.innerHTML = `<div class="text-center py-5 text-gray-400"><i class="ti ti-search-off text-2xl mb-2"></i><p>No matching content found</p><p class="text-xs text-gray-500 mt-1">Try different keywords</p></div>`;
+    container.innerHTML = `<div class="text-center py-5 text-gray-400"><i class="ti ti-search-off text-2xl mb-2"></i><p>No matching content found</p><p class="text-xs text-gray-500 mt-1">Try different keywords or folders</p></div>`;
     return;
   }
   const playlists = videos.filter(item => item.type === 'playlist');
@@ -216,6 +320,223 @@ function displayFilteredVideos(videos) {
       container.appendChild(button);
     });
   }
+}
+
+function displayFilteredAudios(audios) {
+  const container = document.getElementById('audioListContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // "No separate audio" option
+  const defaultBtn = document.createElement('button');
+  defaultBtn.type = 'button';
+  defaultBtn.className = 'w-full flex items-center gap-3 p-2 rounded-lg hover:bg-dark-600 cursor-pointer transition-colors text-left';
+  defaultBtn.onclick = () => selectAudio(null);
+  defaultBtn.innerHTML = `<div class="w-10 h-10 bg-dark-800 rounded flex-shrink-0 flex items-center justify-center"><i class="ti ti-music-off text-gray-500 text-lg"></i></div><div class="flex-1 min-w-0"><p class="text-sm text-gray-300 font-semibold truncate">No separate audio</p><p class="text-xs text-gray-500">Use default video audio</p></div>`;
+  container.appendChild(defaultBtn);
+
+  if (!audios || audios.length === 0) return;
+
+  audios.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'w-full flex items-center gap-3 p-2 rounded-lg hover:bg-dark-600 cursor-pointer transition-colors text-left';
+    button.onclick = () => selectAudio(item);
+    button.innerHTML = `<div class="w-10 h-10 bg-emerald-500/20 rounded flex-shrink-0 flex items-center justify-center"><i class="ti ti-music text-emerald-400 text-lg"></i></div><div class="flex-1 min-w-0"><p class="text-sm text-white truncate">${item.name}</p><p class="text-xs text-gray-400">Background music</p></div>`;
+    container.appendChild(button);
+  });
+}
+
+function toggleAudioSelector() {
+  const dropdown = document.getElementById('audioSelectorDropdown');
+  if (!dropdown) return;
+  if (dropdown.classList.contains('hidden')) {
+    dropdown.classList.remove('hidden');
+    const searchInput = document.getElementById('audioSearchInput');
+    if (searchInput) setTimeout(() => searchInput.focus(), 10);
+  } else {
+    dropdown.classList.add('hidden');
+    const searchInput = document.getElementById('audioSearchInput');
+    if (searchInput) searchInput.value = '';
+  }
+}
+
+function selectAudio(audio) {
+  const hiddenInput = document.getElementById('selectedAudioId');
+  const displayText = audio ? audio.name : 'No separate audio (use video audio)';
+  document.getElementById('selectedAudio').textContent = displayText;
+  if (hiddenInput) hiddenInput.value = audio ? audio.id : '';
+  const dropdown = document.getElementById('audioSelectorDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+}
+
+// Edit Modal Counterpart Methods
+function toggleEditVideoSelector() {
+  const dropdown = document.getElementById('editVideoSelectorDropdown');
+  if (!dropdown) return;
+  if (dropdown.classList.contains('hidden')) {
+    dropdown.classList.remove('hidden');
+    if (!dropdown.dataset.loaded) {
+      loadEditGalleryVideos();
+      dropdown.dataset.loaded = 'true';
+    }
+  } else {
+    dropdown.classList.add('hidden');
+  }
+}
+
+function toggleEditAudioSelector() {
+  const dropdown = document.getElementById('editAudioSelectorDropdown');
+  if (!dropdown) return;
+  if (dropdown.classList.contains('hidden')) {
+    dropdown.classList.remove('hidden');
+    const searchInput = document.getElementById('editAudioSearchInput');
+    if (searchInput) setTimeout(() => searchInput.focus(), 10);
+  } else {
+    dropdown.classList.add('hidden');
+    const searchInput = document.getElementById('editAudioSearchInput');
+    if (searchInput) searchInput.value = '';
+  }
+}
+
+function selectEditAudio(audio) {
+  const hiddenInput = document.getElementById('editSelectedAudioId');
+  const displayText = audio ? audio.name : 'No separate audio (use video audio)';
+  document.getElementById('editSelectedAudio').textContent = displayText;
+  if (hiddenInput) hiddenInput.value = audio ? audio.id : '';
+  const dropdown = document.getElementById('editAudioSelectorDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+}
+
+async function loadEditGalleryVideos() {
+  try {
+    const container = document.getElementById('editVideoListContainer');
+    if (container && !container.innerHTML.includes('ti-loader')) {
+      container.innerHTML = '<div class="text-center py-3"><i class="ti ti-loader animate-spin mr-2"></i>Loading content...</div>';
+    }
+    
+    const response = await fetch('/api/stream/content');
+    const content = await response.json();
+    window.allEditStreamContent = content;
+
+    // Fetch folders
+    const foldersResponse = await fetch('/api/gallery/folders');
+    allFolders = await foldersResponse.json();
+
+    // Fetch audios
+    const audioResponse = await fetch('/api/stream/audios');
+    allStreamAudios = await audioResponse.json();
+
+    // Render folder pills
+    renderFolderPills('editVideoFolderFilters', selectedEditVideoFolderId, (folderId) => {
+      selectedEditVideoFolderId = folderId;
+      filterAndDisplayEditVideos();
+    });
+
+    renderFolderPills('editAudioFolderFilters', selectedEditAudioFolderId, (folderId) => {
+      selectedEditAudioFolderId = folderId;
+      filterAndDisplayEditAudios();
+    });
+
+    // Populate initial views
+    filterAndDisplayEditVideos();
+    filterAndDisplayEditAudios();
+
+    // Setup search input listeners
+    const searchInput = document.getElementById('editVideoSearchInput');
+    if (searchInput) {
+      searchInput.removeEventListener('input', handleEditVideoSearch);
+      searchInput.addEventListener('input', handleEditVideoSearch);
+    }
+
+    const audioSearchInput = document.getElementById('editAudioSearchInput');
+    if (audioSearchInput) {
+      audioSearchInput.removeEventListener('input', handleEditAudioSearch);
+      audioSearchInput.addEventListener('input', handleEditAudioSearch);
+    }
+  } catch (error) {
+    console.error('Error loading edit gallery videos:', error);
+    const container = document.getElementById('editVideoListContainer');
+    if (container) {
+      container.innerHTML = `<div class="text-center py-5 text-red-400"><i class="ti ti-alert-circle text-2xl mb-2"></i><p>Failed to load content</p><p class="text-xs text-gray-500 mt-1">Please try again</p></div>`;
+    }
+  }
+}
+
+function handleEditVideoSearch(e) {
+  filterAndDisplayEditVideos();
+}
+
+function handleEditAudioSearch(e) {
+  filterAndDisplayEditAudios();
+}
+
+function filterAndDisplayEditVideos() {
+  if (!window.allEditStreamContent) return;
+  const searchInput = document.getElementById('editVideoSearchInput');
+  const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  const filtered = window.allEditStreamContent.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
+                          (item.type === 'playlist' && item.description && item.description.toLowerCase().includes(searchTerm));
+    
+    let matchesFolder = true;
+    if (selectedEditVideoFolderId === 'root') {
+      matchesFolder = !item.folderId;
+    } else if (selectedEditVideoFolderId !== 'all') {
+      matchesFolder = item.folderId === selectedEditVideoFolderId;
+    }
+
+    return matchesSearch && matchesFolder;
+  });
+
+  displayEditFilteredVideos(filtered);
+}
+
+function filterAndDisplayEditAudios() {
+  if (!allStreamAudios) return;
+  const searchInput = document.getElementById('editAudioSearchInput');
+  const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  const filtered = allStreamAudios.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+    
+    let matchesFolder = true;
+    if (selectedEditAudioFolderId === 'root') {
+      matchesFolder = !item.folderId;
+    } else if (selectedEditAudioFolderId !== 'all') {
+      matchesFolder = item.folderId === selectedEditAudioFolderId;
+    }
+
+    return matchesSearch && matchesFolder;
+  });
+
+  displayEditFilteredAudios(filtered);
+}
+
+function displayEditFilteredAudios(audios) {
+  const container = document.getElementById('editAudioListContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // "No separate audio" option
+  const defaultBtn = document.createElement('button');
+  defaultBtn.type = 'button';
+  defaultBtn.className = 'w-full flex items-center gap-3 p-2 rounded-lg hover:bg-dark-600 cursor-pointer transition-colors text-left';
+  defaultBtn.onclick = () => selectEditAudio(null);
+  defaultBtn.innerHTML = `<div class="w-10 h-10 bg-dark-800 rounded flex-shrink-0 flex-shrink-0 flex items-center justify-center"><i class="ti ti-music-off text-gray-500 text-lg"></i></div><div class="flex-1 min-w-0"><p class="text-sm text-gray-300 font-semibold truncate">No separate audio</p><p class="text-xs text-gray-500">Use default video audio</p></div>`;
+  container.appendChild(defaultBtn);
+
+  if (!audios || audios.length === 0) return;
+
+  audios.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'w-full flex items-center gap-3 p-2 rounded-lg hover:bg-dark-600 cursor-pointer transition-colors text-left';
+    button.onclick = () => selectEditAudio(item);
+    button.innerHTML = `<div class="w-10 h-10 bg-emerald-500/20 rounded flex-shrink-0 flex items-center justify-center"><i class="ti ti-music text-emerald-400 text-lg"></i></div><div class="flex-1 min-w-0"><p class="text-sm text-white truncate">${item.name}</p><p class="text-xs text-gray-400">Background music</p></div>`;
+    container.appendChild(button);
+  });
 }
 
 function resetModalForm() {
@@ -269,20 +590,67 @@ function resetModalForm() {
   if (rtmpUrlContainer) rtmpUrlContainer.classList.add('hidden');
   const toggleRtmpConfigBtn = document.getElementById('toggleRtmpConfigBtn');
   if (toggleRtmpConfigBtn) toggleRtmpConfigBtn.innerHTML = '<i class="ti ti-settings"></i><span>Show RTMP URL</span>';
+
+  // Reset audio selector values
+  selectAudio(null);
 }
 
 function initModal() {
   const modal = document.getElementById('newStreamModal');
   if (!modal) return;
   modal.addEventListener('click', (e) => { if (e.target === modal) closeNewStreamModal(); });
-  if (videoSelectorDropdown) {
-    document.addEventListener('click', (e) => {
-      const isClickInsideDropdown = videoSelectorDropdown.contains(e.target);
-      const isClickOnButton = e.target.closest('[onclick="toggleVideoSelector()"]');
-      if (!isClickInsideDropdown && !isClickOnButton && isDropdownOpen) toggleVideoSelector();
-    });
-  }
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (isDropdownOpen) toggleVideoSelector(); else if (!modal.classList.contains('hidden')) closeNewStreamModal(); } });
+  
+  document.addEventListener('click', (e) => {
+    // Close Create Video Dropdown
+    const videoDropdown = document.getElementById('videoSelectorDropdown');
+    if (videoDropdown && !videoDropdown.classList.contains('hidden')) {
+      const btn = e.target.closest('[onclick="toggleVideoSelector()"]');
+      if (!videoDropdown.contains(e.target) && !btn) {
+        toggleVideoSelector();
+      }
+    }
+    
+    // Close Create Audio Dropdown
+    const audioDropdown = document.getElementById('audioSelectorDropdown');
+    if (audioDropdown && !audioDropdown.classList.contains('hidden')) {
+      const btn = e.target.closest('[onclick="toggleAudioSelector()"]');
+      if (!audioDropdown.contains(e.target) && !btn) {
+        toggleAudioSelector();
+      }
+    }
+
+    // Close Edit Video Dropdown
+    const editVideoDropdown = document.getElementById('editVideoSelectorDropdown');
+    if (editVideoDropdown && !editVideoDropdown.classList.contains('hidden')) {
+      const btn = e.target.closest('[onclick="toggleEditVideoSelector()"]');
+      if (!editVideoDropdown.contains(e.target) && !btn) {
+        toggleEditVideoSelector();
+      }
+    }
+
+    // Close Edit Audio Dropdown
+    const editAudioDropdown = document.getElementById('editAudioSelectorDropdown');
+    if (editAudioDropdown && !editAudioDropdown.classList.contains('hidden')) {
+      const btn = e.target.closest('[onclick="toggleEditAudioSelector()"]');
+      if (!editAudioDropdown.contains(e.target) && !btn) {
+        toggleEditAudioSelector();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => { 
+    if (e.key === 'Escape') { 
+      const videoDropdown = document.getElementById('videoSelectorDropdown');
+      const audioDropdown = document.getElementById('audioSelectorDropdown');
+      const editVideoDropdown = document.getElementById('editVideoSelectorDropdown');
+      const editAudioDropdown = document.getElementById('editAudioSelectorDropdown');
+      if (videoDropdown && !videoDropdown.classList.contains('hidden')) toggleVideoSelector();
+      else if (audioDropdown && !audioDropdown.classList.contains('hidden')) toggleAudioSelector();
+      else if (editVideoDropdown && !editVideoDropdown.classList.contains('hidden')) toggleEditVideoSelector();
+      else if (editAudioDropdown && !editAudioDropdown.classList.contains('hidden')) toggleEditAudioSelector();
+      else if (!modal.classList.contains('hidden')) closeNewStreamModal(); 
+    } 
+  });
   modal.addEventListener('touchmove', (e) => { if (e.target === modal) e.preventDefault(); }, { passive: false });
 }
 

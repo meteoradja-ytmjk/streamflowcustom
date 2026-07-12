@@ -4085,7 +4085,8 @@ app.get('/api/stream/content', isAuthenticated, async (req, res) => {
         resolution: video.resolution || '1280x720',
         duration: formattedDuration,
         url: `/stream/${video.id}`,
-        type: 'video'
+        type: 'video',
+        folderId: video.folder_id
       };
     });
 
@@ -4127,13 +4128,24 @@ app.get('/api/stream/audios', isAuthenticated, async (req, res) => {
         id: audio.id,
         name: audio.title,
         title: audio.title,
-        url: audio.filepath
+        url: audio.filepath,
+        folderId: audio.folder_id
       };
     });
     res.json(formattedAudios);
   } catch (error) {
     console.error('Error fetching audios:', error);
     res.status(500).json({ error: 'Failed to load audios' });
+  }
+});
+
+app.get('/api/gallery/folders', isAuthenticated, async (req, res) => {
+  try {
+    const folders = await MediaFolder.findAllByUser(req.session.userId);
+    res.json(folders);
+  } catch (error) {
+    console.error('Error fetching folders:', error);
+    res.status(500).json({ error: 'Failed to load folders' });
   }
 });
 
