@@ -25,7 +25,7 @@ function formatDuration(seconds) {
     <div>
       <h2 class="text-2xl font-bold">Media Gallery</h2>
       <p class="text-gray-400 text-sm mt-1">
-        <span>Manage your videos and audio for streaming</span>
+        <span>Manage your videos, audio, and thumbnails for streaming</span>
         <span id="diskUsageInfo" class="hidden">
           <span class="text-gray-500 mx-1">•</span>
           <i class="ti ti-database text-xs"></i>
@@ -33,13 +33,13 @@ function formatDuration(seconds) {
         </span>
       </p>
 
-      <!-- Equal-Width Segmented Sub-Tabs Bar (Directly below description text) -->
-      <div class="mt-4 w-full sm:w-[380px] bg-dark-900/90 p-1 rounded-xl border border-gray-700/80 shadow-inner grid grid-cols-2 gap-1">
-        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold text-xs sm:text-sm transition-all bg-primary text-white shadow-md focus:outline-none">
+      <!-- Ultra Modern Segmented Sub-Tabs Bar (Directly below description text) -->
+      <div class="mt-4 w-full sm:w-[400px] bg-dark-900/95 backdrop-blur-md p-1.5 rounded-2xl border border-gray-700/80 shadow-xl grid grid-cols-2 gap-1.5">
+        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 bg-gradient-to-r from-primary to-rose-600 text-white shadow-lg shadow-primary/25 focus:outline-none">
           <i class="ti ti-video text-base"></i>
           <span>Media Gallery</span>
         </button>
-        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all text-gray-400 hover:text-white focus:outline-none">
+        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 text-gray-400 hover:text-white hover:bg-dark-700/50 focus:outline-none">
           <i class="ti ti-photo text-base"></i>
           <span>Thumbnail Management</span>
         </button>
@@ -409,12 +409,12 @@ function formatDuration(seconds) {
         <p class="text-xs text-gray-400 mt-0.5">Kelola gambar thumbnail, rapikan dalam folder, dan hubungkan ke Channel YouTube</p>
       </div>
     </div>
-    <div class="flex items-center gap-2 w-full sm:w-auto">
-      <button onclick="openCreateThumbnailFolderDialog()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-dark-700 hover:bg-dark-600 text-white border border-gray-600 px-3 py-2 rounded-lg text-xs font-medium transition-colors">
-        <i class="ti ti-folder-plus text-sm"></i>
+    <div class="grid grid-cols-2 gap-2 w-full sm:w-[340px]">
+      <button onclick="openCreateThumbnailFolderDialog()" class="h-10 flex items-center justify-center gap-1.5 bg-dark-700 hover:bg-dark-600 text-white border border-gray-600 rounded-xl text-xs font-medium transition-all shadow-sm w-full">
+        <i class="ti ti-folder-plus text-base"></i>
         <span>Folder Baru</span>
       </button>
-      <button onclick="openUploadModal('image')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-lg shadow-primary/10 transition-colors">
+      <button onclick="openUploadModal('image')" class="h-10 flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-rose-600 hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-md shadow-primary/20 transition-all w-full">
         <i class="ti ti-cloud-upload text-base"></i>
         <span>Upload Thumbnail</span>
       </button>
@@ -2934,14 +2934,14 @@ async function showMoveSelectedDialog() {
     const headerActionButtons = document.getElementById('headerActionButtons');
 
     if (tab === 'media') {
-      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold text-xs sm:text-sm transition-all bg-primary text-white shadow-md focus:outline-none';
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all text-gray-400 hover:text-white focus:outline-none';
+      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 bg-gradient-to-r from-primary to-rose-600 text-white shadow-lg shadow-primary/25 focus:outline-none';
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 text-gray-400 hover:text-white hover:bg-dark-700/50 focus:outline-none';
       if (viewMedia) viewMedia.classList.remove('hidden');
       if (viewThumbnail) viewThumbnail.classList.add('hidden');
       if (headerActionButtons) headerActionButtons.classList.remove('hidden');
     } else {
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold text-xs sm:text-sm transition-all bg-primary text-white shadow-md focus:outline-none';
-      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all text-gray-400 hover:text-white focus:outline-none';
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 bg-gradient-to-r from-primary to-rose-600 text-white shadow-lg shadow-primary/25 focus:outline-none';
+      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 text-gray-400 hover:text-white hover:bg-dark-700/50 focus:outline-none';
       if (viewThumbnail) viewThumbnail.classList.remove('hidden');
       if (viewMedia) viewMedia.classList.add('hidden');
       if (headerActionButtons) headerActionButtons.classList.add('hidden');
