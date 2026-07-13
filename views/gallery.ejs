@@ -83,6 +83,18 @@ function formatDuration(seconds) {
     Drag file here to move it back to root
   </div>
   <% } %>
+  <!-- Sub-Navigation Header (Opsi B: Media Gallery vs Thumbnail Management) -->
+  <div class="flex border-b border-gray-700 mb-6 gap-2">
+    <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center gap-2.5 px-6 py-3 border-b-2 border-primary text-primary font-semibold text-sm transition-all focus:outline-none">
+      <i class="ti ti-video text-lg"></i>
+      <span>Media Gallery</span>
+    </button>
+    <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center gap-2.5 px-6 py-3 border-b-2 border-transparent text-gray-400 hover:text-white font-medium text-sm transition-all focus:outline-none">
+      <i class="ti ti-photo-heart text-lg"></i>
+      <span>Thumbnail Management</span>
+      <span class="bg-red-500/20 text-red-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-red-500/30">YouTube</span>
+    </button>
+  </div>
 </div>
 
 <%
@@ -91,7 +103,8 @@ function formatDuration(seconds) {
   const hasGalleryItems = galleryItemCount > 0;
 %>
 
-<!-- Gallery Content -->
+<!-- Sub-Tab 1: Media Gallery View (Video & Audio) -->
+<div id="subTabMediaGalleryView" class="space-y-6">
 <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden">
   <!-- Toolbar -->
   <div class="p-3 sm:p-4 border-b border-gray-700">
@@ -380,136 +393,161 @@ function formatDuration(seconds) {
   <% } %>
 </div>
 
-<!-- Media Inspector Side Panel (Right slide-over) -->
-<div id="mediaInspectorPanel" class="fixed top-0 right-0 h-full w-[400px] max-w-full bg-dark-800/95 backdrop-blur-md border-l border-gray-700 shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-  <!-- Panel Header -->
-  <div class="flex items-center justify-between p-4 border-b border-gray-700 bg-dark-900/50">
-    <div class="flex items-center gap-2">
-      <i class="ti ti-info-circle text-primary text-xl"></i>
-      <h3 class="text-md font-semibold text-white">Media Details</h3>
+</div>
+</div> <!-- End of subTabMediaGalleryView -->
+
+<!-- Sub-Tab 2: Thumbnail Management View (Images & YouTube Integration Studio) -->
+<div id="subTabThumbnailMgmtView" class="hidden space-y-6">
+  <!-- Top Banner / Header -->
+  <div class="bg-dark-800 rounded-lg p-5 border border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+        <i class="ti ti-photo-heart text-2xl"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-white text-base">YouTube Thumbnail Studio</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Kelola gambar thumbnail dan hubungkan langsung ke Channel / Live Broadcast YouTube Anda</p>
+      </div>
     </div>
-    <button onclick="closeMediaInspector()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-dark-700 transition-colors">
-      <i class="ti ti-x text-xl"></i>
+    <button onclick="openUploadModal('image')" class="flex items-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 py-2.5 rounded-lg text-xs font-semibold shadow-lg shadow-primary/10 transition-colors">
+      <i class="ti ti-cloud-upload text-base"></i>
+      <span>Upload Thumbnail Baru</span>
     </button>
   </div>
-  
-  <!-- Panel Content (Scrollable) -->
-  <div class="flex-1 overflow-y-auto p-5 space-y-6">
-    <!-- Image Preview Card -->
-    <div class="aspect-video relative rounded-lg overflow-hidden bg-dark-900 border border-gray-700 shadow-inner group">
-      <img id="inspectorImgPreview" src="" alt="Thumbnail Preview" class="w-full h-full object-cover">
-      <div class="absolute bottom-2 left-2 bg-black/75 px-2 py-0.5 rounded text-[10px] text-gray-400 font-mono" id="inspectorImgDim">-- x --</div>
-    </div>
-    
-    <!-- Meta Information -->
-    <div class="space-y-3 bg-dark-900/40 p-4 rounded-xl border border-gray-700/50">
-      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">File Information</h4>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-400">Title:</span>
-          <span class="font-medium text-white truncate max-w-[200px]" id="inspectorTitle">--</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-400">Size:</span>
-          <span class="font-medium text-white" id="inspectorSize">--</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-400">Type:</span>
-          <span class="font-medium text-blue-400">Image/Thumbnail</span>
-        </div>
+
+  <!-- Layout: Grid (Left 2 cols) + Integrated Studio Control (Right 1 col) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Thumbnail Library Grid -->
+    <div class="lg:col-span-2 bg-dark-800 rounded-lg border border-gray-700 p-4 space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-700 pb-3">
+        <h4 class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <i class="ti ti-photo text-primary"></i>
+          <span>Koleksi Gambar / Thumbnail</span>
+        </h4>
+        <span id="thumbnailCountBadge" class="text-xs text-gray-400 font-mono">0 gambar</span>
+      </div>
+
+      <!-- Thumbnail Cards Container -->
+      <div id="thumbnailGridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[620px] overflow-y-auto pr-1">
+        <!-- Dynamically populated via JS -->
       </div>
     </div>
-    
-    <!-- YouTube Channel Integration Container -->
-    <div class="space-y-4 bg-dark-900/60 p-4 rounded-xl border border-gray-700">
-      <div class="flex items-center gap-2 border-b border-gray-700/50 pb-2">
-        <i class="ti ti-brand-youtube text-red-500 text-lg"></i>
-        <h4 class="text-sm font-semibold text-white">YouTube Integration</h4>
-      </div>
-      
-      <!-- Loading Channel State -->
-      <div id="inspectorYtLoading" class="text-center py-4 text-gray-500 text-xs flex flex-col items-center justify-center gap-2">
-        <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <span>Loading YouTube settings...</span>
-      </div>
 
-      <!-- No Channels Connected State -->
-      <div id="inspectorYtNoChannels" class="hidden text-center py-4 space-y-3">
-        <p class="text-xs text-gray-400">No YouTube channels connected to your account.</p>
-        <a href="/settings" class="inline-flex items-center justify-center gap-1.5 bg-dark-700 hover:bg-dark-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-600 transition-colors">
-          <i class="ti ti-settings"></i>
-          <span>Configure settings</span>
-        </a>
-      </div>
-
-      <!-- Main Integration Controls -->
-      <div id="inspectorYtControls" class="hidden space-y-4">
-        <!-- Choose Channel Dropdown -->
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Select YouTube Channel</label>
-          <div class="relative">
-            <select id="inspectorYtChannelSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
-              <!-- Dynamically populated -->
-            </select>
-            <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
-          </div>
+    <!-- Right Column: YouTube Integration Control Studio -->
+    <div class="bg-dark-800 rounded-lg border border-gray-700 p-5 flex flex-col justify-between space-y-4">
+      <div>
+        <div class="flex items-center gap-2 border-b border-gray-700 pb-3 mb-4">
+          <i class="ti ti-brand-youtube text-red-500 text-xl"></i>
+          <h4 class="font-semibold text-white text-sm">YouTube Integration Studio</h4>
         </div>
 
-        <!-- Choose Target Type -->
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Choose Application Mode</label>
-          <div class="flex gap-2">
-            <button type="button" id="btnModeStream" class="flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all" onclick="setInspectorMode('stream')">
-              Stream Config
+        <!-- Empty State (No Image Selected) -->
+        <div id="studioEmptyState" class="text-center py-12 border-2 border-dashed border-gray-700 rounded-xl bg-dark-900/40 p-4">
+          <div class="w-12 h-12 rounded-full bg-dark-700 text-gray-500 flex items-center justify-center mx-auto mb-3">
+            <i class="ti ti-click text-2xl"></i>
+          </div>
+          <p class="text-xs font-medium text-gray-300 mb-1">Pilih Gambar Thumbnail</p>
+          <p class="text-[11px] text-gray-500">Klik salah satu kartu gambar di sebelah kiri untuk mengatur pengaplikasiannya ke YouTube.</p>
+        </div>
+
+        <!-- Active Selected State -->
+        <div id="studioActiveState" class="hidden space-y-4">
+          <!-- Preview Card -->
+          <div class="aspect-video relative rounded-xl overflow-hidden bg-dark-900 border border-gray-700 shadow-lg group">
+            <img id="studioImgPreview" src="" alt="Thumbnail Preview" class="w-full h-full object-cover">
+            <div class="absolute bottom-2 left-2 bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-gray-300 font-mono" id="studioImgDim">-- x --</div>
+          </div>
+
+          <!-- File Info -->
+          <div class="bg-dark-900/60 p-3 rounded-lg border border-gray-700/50 text-xs space-y-1.5">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Judul:</span>
+              <span id="studioImgTitle" class="font-semibold text-white truncate max-w-[170px]">--</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Ukuran:</span>
+              <span id="studioImgSize" class="font-medium text-gray-300">--</span>
+            </div>
+          </div>
+
+          <!-- YouTube Controls Form -->
+          <div id="studioYtLoading" class="text-center py-4 text-gray-500 text-xs flex flex-col items-center justify-center gap-2">
+            <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <span>Memuat channel YouTube...</span>
+          </div>
+
+          <div id="studioYtNoChannels" class="hidden text-center py-4 space-y-2 bg-dark-900/50 rounded-lg p-3 border border-gray-700/50">
+            <p class="text-xs text-gray-400">Belum ada channel YouTube yang terhubung.</p>
+            <a href="/settings" class="inline-flex items-center gap-1 text-primary text-xs font-semibold hover:underline">
+              <i class="ti ti-settings"></i>Hubungkan Channel di Settings
+            </a>
+          </div>
+
+          <div id="studioYtControls" class="hidden space-y-4">
+            <!-- Channel Dropdown -->
+            <div>
+              <label class="block text-xs text-gray-400 mb-1 font-medium">Channel YouTube</label>
+              <div class="relative">
+                <select id="studioYtChannelSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                </select>
+                <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+              </div>
+            </div>
+
+            <!-- Mode Selector -->
+            <div>
+              <label class="block text-xs text-gray-400 mb-1 font-medium">Mode Pengaplikasian</label>
+              <div class="flex gap-2">
+                <button type="button" id="btnStudioModeStream" class="flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all" onclick="setStudioMode('stream')">
+                  Stream Config
+                </button>
+                <button type="button" id="btnStudioModeBroadcast" class="flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all" onclick="setStudioMode('broadcast')">
+                  Live Broadcast
+                </button>
+              </div>
+            </div>
+
+            <!-- Target Dropdowns -->
+            <div>
+              <div id="studioTargetStreamContainer" class="space-y-1">
+                <label class="block text-xs text-gray-400 font-medium">Target Stream Config</label>
+                <div class="relative">
+                  <select id="studioStreamSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                  </select>
+                  <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                </div>
+                <p class="text-[10px] text-gray-500">Thumbnail tersimpan & terpasang otomatis saat Anda mulai streaming.</p>
+              </div>
+
+              <div id="studioTargetBroadcastContainer" class="hidden space-y-1">
+                <div class="flex justify-between items-center">
+                  <label class="block text-xs text-gray-400 font-medium">Target Broadcast YouTube</label>
+                  <button onclick="refreshStudioBroadcasts()" class="text-[10px] text-primary hover:text-rose-400 flex items-center gap-1">
+                    <i class="ti ti-refresh text-xs"></i>Refresh
+                  </button>
+                </div>
+                <div class="relative">
+                  <select id="studioBroadcastSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                    <option value="">-- Tidak ada broadcast aktif --</option>
+                  </select>
+                  <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                </div>
+                <p class="text-[10px] text-gray-500">Langsung mengunggah thumbnail ke siaran YouTube aktif secara instan.</p>
+              </div>
+            </div>
+
+            <!-- Apply Button -->
+            <button id="btnStudioApply" onclick="applyStudioThumbnail()" class="w-full bg-primary hover:bg-rose-600 text-white py-2.5 rounded-lg text-xs font-semibold shadow-lg shadow-primary/10 transition-colors flex items-center justify-center gap-2">
+              <i class="ti ti-check"></i>
+              <span>Pasang Thumbnail Ke YouTube</span>
             </button>
-            <button type="button" id="btnModeBroadcast" class="flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all" onclick="setInspectorMode('broadcast')">
-              Live Broadcast
-            </button>
           </div>
         </div>
-
-        <!-- Target Destination Selection -->
-        <div>
-          <!-- Stream Config Target Selection -->
-          <div id="targetStreamContainer" class="space-y-1.5">
-            <label class="block text-xs text-gray-400">Select Stream Config</label>
-            <div class="relative">
-              <select id="inspectorStreamSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
-                <!-- Dynamically populated -->
-              </select>
-              <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
-            </div>
-            <p class="text-[10px] text-gray-500">Links the thumbnail to this stream config. Will be uploaded automatically when you start streaming from this app.</p>
-          </div>
-
-          <!-- Direct Broadcast Target Selection -->
-          <div id="targetBroadcastContainer" class="hidden space-y-1.5">
-            <div class="flex justify-between items-center">
-              <label class="block text-xs text-gray-400">Select YouTube Broadcast</label>
-              <button onclick="refreshInspectorBroadcasts()" class="text-[10px] text-primary hover:text-rose-400 flex items-center gap-1">
-                <i class="ti ti-refresh text-xs"></i>Refresh
-              </button>
-            </div>
-            <div class="relative">
-              <select id="inspectorBroadcastSelect" class="w-full bg-dark-700 border border-gray-600 text-white px-3 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
-                <option value="">-- No active broadcasts found --</option>
-              </select>
-              <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
-            </div>
-            <p class="text-[10px] text-gray-500">Pushes the thumbnail *immediately* to YouTube for this active/upcoming broadcast.</p>
-          </div>
-        </div>
-
-        <!-- Submit Button -->
-        <button id="btnInspectorApply" onclick="applyInspectorThumbnail()" class="w-full bg-primary hover:bg-rose-600 text-white py-2 rounded-lg text-xs font-semibold shadow-lg shadow-primary/10 transition-colors flex items-center justify-center gap-2">
-          <i class="ti ti-check"></i>
-          <span>Apply YouTube Thumbnail</span>
-        </button>
       </div>
     </div>
   </div>
 </div>
-</div>
+</div> <!-- End of galleryPageRoot -->
 
 <div id="uploadModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden modal-overlay overflow-y-auto">
   <div class="flex min-h-screen items-center justify-center p-4">
@@ -1175,11 +1213,14 @@ function createModalDialog(options) {
   });
 }
 
-function openUploadModal() {
+function openUploadModal(defaultTab) {
   const modal = document.getElementById('uploadModal');
   modal.classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
   resetUploadForm();
+  if (defaultTab) {
+    switchUploadTab(defaultTab);
+  }
 }
 
 function closeUploadModal() {
@@ -2691,6 +2732,9 @@ document.addEventListener('DOMContentLoaded', function() {
       galleryCurrentFolderState = data.currentFolder || null;
       currentPage = 1;
       renderGalleryContent();
+      if (currentGalleryTab === 'thumbnail') {
+        renderThumbnailStudio();
+      }
       loadDiskUsage();
     } catch (error) {
       console.error('Error refreshing gallery:', error);
@@ -2868,103 +2912,182 @@ async function showMoveSelectedDialog() {
   dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
 }
 
-  let activeInspectorId = null;
-  let activeInspectorMode = 'stream'; // 'stream' or 'broadcast'
-  let inspectorChannels = [];
-  let inspectorStreams = [];
+  let activeStudioImage = null;
+  let activeStudioMode = 'stream'; // 'stream' or 'broadcast'
+  let studioChannels = [];
+  let studioStreams = [];
+  let currentGalleryTab = 'media';
 
-  window.openMediaInspector = async function(id, title, filepath, size, resolution) {
-    activeInspectorId = id;
-    
-    // Update basic details
-    document.getElementById('inspectorImgPreview').src = filepath;
-    document.getElementById('inspectorTitle').textContent = title;
-    document.getElementById('inspectorSize').textContent = formatFileSize(size);
-    document.getElementById('inspectorImgDim').textContent = resolution || '-- x --';
-    
-    // Open Panel
-    const panel = document.getElementById('mediaInspectorPanel');
-    panel.classList.remove('translate-x-full');
-    
-    // Set default mode
-    setInspectorMode('stream');
-    
-    // Reset YT controls
-    document.getElementById('inspectorYtLoading').classList.remove('hidden');
-    document.getElementById('inspectorYtNoChannels').classList.add('hidden');
-    document.getElementById('inspectorYtControls').classList.add('hidden');
-    
-    // Load YouTube configuration details
-    try {
-      // 1. Fetch connected channels
-      const channelsRes = await fetch('/api/youtube/channels');
-      const channelsData = await channelsRes.json();
-      
-      if (!channelsData.success || !channelsData.channels || channelsData.channels.length === 0) {
-        document.getElementById('inspectorYtLoading').classList.add('hidden');
-        document.getElementById('inspectorYtNoChannels').classList.remove('hidden');
-        return;
-      }
-      
-      inspectorChannels = channelsData.channels;
-      
-      // Populate channel dropdown
-      const channelSelect = document.getElementById('inspectorYtChannelSelect');
-      channelSelect.innerHTML = inspectorChannels.map(c => `
-        <option value="${c.id}">${c.channel_name} (${c.subscriber_count} subs)</option>
-      `).join('');
-      
-      // 2. Fetch local stream configurations
-      const streamsRes = await fetch('/api/streams');
-      const streamsData = await streamsRes.json();
-      
-      if (streamsData.success && streamsData.streams) {
-        // Filter streams that are mapped to YouTube
-        inspectorStreams = streamsData.streams.filter(s => s.is_youtube_api || s.platform === 'YouTube' || s.platform?.toLowerCase?.() === 'youtube');
-      } else {
-        inspectorStreams = [];
-      }
-      
-      const streamSelect = document.getElementById('inspectorStreamSelect');
-      if (inspectorStreams.length > 0) {
-        streamSelect.innerHTML = inspectorStreams.map(s => `
-          <option value="${s.id}">${s.title}</option>
-        `).join('');
-      } else {
-        streamSelect.innerHTML = '<option value="">-- No YouTube stream configs --</option>';
-      }
-      
-      // Hide loading, show controls
-      document.getElementById('inspectorYtLoading').classList.add('hidden');
-      document.getElementById('inspectorYtControls').classList.remove('hidden');
-      
-      // Hook up channel change to load broadcasts
-      channelSelect.onchange = () => {
-        if (activeInspectorMode === 'broadcast') {
-          refreshInspectorBroadcasts();
-        }
-      };
-      
-    } catch (e) {
-      console.error('Error loading inspector data:', e);
-      document.getElementById('inspectorYtLoading').classList.add('hidden');
-      document.getElementById('inspectorYtNoChannels').classList.remove('hidden');
+  window.switchGalleryTab = function(tab) {
+    currentGalleryTab = tab;
+    const tabMedia = document.getElementById('tabNavMedia');
+    const tabThumbnail = document.getElementById('tabNavThumbnail');
+    const viewMedia = document.getElementById('subTabMediaGalleryView');
+    const viewThumbnail = document.getElementById('subTabThumbnailMgmtView');
+
+    if (tab === 'media') {
+      if (tabMedia) tabMedia.className = 'flex items-center gap-2.5 px-6 py-3 border-b-2 border-primary text-primary font-semibold text-sm transition-all focus:outline-none';
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-2.5 px-6 py-3 border-b-2 border-transparent text-gray-400 hover:text-white font-medium text-sm transition-all focus:outline-none';
+      if (viewMedia) viewMedia.classList.remove('hidden');
+      if (viewThumbnail) viewThumbnail.classList.add('hidden');
+    } else {
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-2.5 px-6 py-3 border-b-2 border-primary text-primary font-semibold text-sm transition-all focus:outline-none';
+      if (tabMedia) tabMedia.className = 'flex items-center gap-2.5 px-6 py-3 border-b-2 border-transparent text-gray-400 hover:text-white font-medium text-sm transition-all focus:outline-none';
+      if (viewThumbnail) viewThumbnail.classList.remove('hidden');
+      if (viewMedia) viewMedia.classList.add('hidden');
+      renderThumbnailStudio();
     }
   };
 
-  window.closeMediaInspector = function() {
-    activeInspectorId = null;
-    const panel = document.getElementById('mediaInspectorPanel');
-    panel.classList.add('translate-x-full');
+  function renderThumbnailStudio() {
+    const container = document.getElementById('thumbnailGridContainer');
+    const badge = document.getElementById('thumbnailCountBadge');
+    if (!container) return;
+
+    const images = (galleryVideosState || []).filter(isImageMediaItem);
+    if (badge) badge.textContent = `${images.length} gambar`;
+
+    if (images.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full text-center py-10 bg-dark-900/40 rounded-xl border border-dashed border-gray-700">
+          <i class="ti ti-photo-off text-3xl text-gray-500 mb-2"></i>
+          <p class="text-xs text-gray-400 font-medium">Belum ada gambar/thumbnail</p>
+          <p class="text-[11px] text-gray-500 mb-3">Upload gambar pertama Anda untuk pengelolaan YouTube</p>
+          <button onclick="openUploadModal('image')" class="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-rose-600 transition-colors">
+            Upload Gambar
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = images.map(img => {
+      const isSelected = activeStudioImage && activeStudioImage.id === img.id;
+      const title = escapeHtml(img.title || '');
+      const thumb = escapeHtml(img.thumbnail_path || img.filepath || '');
+      return `
+        <div class="thumbnail-studio-card group relative bg-dark-900 rounded-xl overflow-hidden border ${isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-gray-700 hover:border-gray-500'} transition-all cursor-pointer shadow-sm"
+          onclick="selectStudioImage('${escapeHtml(img.id)}')" data-id="${escapeHtml(img.id)}">
+          <div class="aspect-video relative overflow-hidden bg-black/60">
+            <img src="${thumb}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            ${isSelected ? `
+            <div class="absolute top-2 right-2 bg-primary text-white rounded-full p-1 shadow-md">
+              <i class="ti ti-check text-xs"></i>
+            </div>` : ''}
+          </div>
+          <div class="p-2.5">
+            <h5 class="text-xs font-medium text-white truncate mb-0.5">${title}</h5>
+            <div class="flex items-center justify-between text-[10px] text-gray-400">
+              <span>${formatFileSize(img.file_size || 0)}</span>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="text-gray-400 hover:text-white p-0.5" onclick="event.stopPropagation(); showRenameDialog('${escapeHtml(img.id)}', '${title}')" title="Rename">
+                  <i class="ti ti-pencil"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-400 p-0.5" onclick="event.stopPropagation(); showDeleteDialog('${escapeHtml(img.id)}', '${title}')" title="Delete">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Auto select first image if none selected
+    if (!activeStudioImage && images.length > 0) {
+      selectStudioImage(images[0].id);
+    }
+  }
+
+  window.selectStudioImage = async function(imageId) {
+    const images = (galleryVideosState || []).filter(isImageMediaItem);
+    const img = images.find(i => i.id === imageId);
+    if (!img) return;
+
+    activeStudioImage = img;
+
+    // Update active highlight class on grid cards
+    document.querySelectorAll('.thumbnail-studio-card').forEach(card => {
+      const isThis = card.dataset.id === imageId;
+      card.className = `thumbnail-studio-card group relative bg-dark-900 rounded-xl overflow-hidden border ${isThis ? 'border-primary ring-2 ring-primary/30' : 'border-gray-700 hover:border-gray-500'} transition-all cursor-pointer shadow-sm`;
+    });
+
+    // Toggle Studio States
+    document.getElementById('studioEmptyState').classList.add('hidden');
+    document.getElementById('studioActiveState').classList.remove('hidden');
+
+    // Update preview details
+    document.getElementById('studioImgPreview').src = img.filepath;
+    document.getElementById('studioImgTitle').textContent = img.title;
+    document.getElementById('studioImgSize').textContent = formatFileSize(img.file_size || 0);
+    document.getElementById('studioImgDim').textContent = img.resolution || '-- x --';
+
+    // Reset YouTube Studio controls
+    document.getElementById('studioYtLoading').classList.remove('hidden');
+    document.getElementById('studioYtNoChannels').classList.add('hidden');
+    document.getElementById('studioYtControls').classList.add('hidden');
+
+    setStudioMode('stream');
+
+    try {
+      // 1. Load YouTube channels
+      const channelsRes = await fetch('/api/youtube/channels');
+      const channelsData = await channelsRes.json();
+
+      if (!channelsData.success || !channelsData.channels || channelsData.channels.length === 0) {
+        document.getElementById('studioYtLoading').classList.add('hidden');
+        document.getElementById('studioYtNoChannels').classList.remove('hidden');
+        return;
+      }
+
+      studioChannels = channelsData.channels;
+      const channelSelect = document.getElementById('studioYtChannelSelect');
+      channelSelect.innerHTML = studioChannels.map(c => `
+        <option value="${c.id}">${c.channel_name} (${c.subscriber_count} subs)</option>
+      `).join('');
+
+      // 2. Load stream configurations
+      const streamsRes = await fetch('/api/streams');
+      const streamsData = await streamsRes.json();
+
+      if (streamsData.success && streamsData.streams) {
+        studioStreams = streamsData.streams.filter(s => s.is_youtube_api || s.platform === 'YouTube' || s.platform?.toLowerCase?.() === 'youtube');
+      } else {
+        studioStreams = [];
+      }
+
+      const streamSelect = document.getElementById('studioStreamSelect');
+      if (studioStreams.length > 0) {
+        streamSelect.innerHTML = studioStreams.map(s => `
+          <option value="${s.id}">${s.title}</option>
+        `).join('');
+      } else {
+        streamSelect.innerHTML = '<option value="">-- Tidak ada stream config YouTube --</option>';
+      }
+
+      document.getElementById('studioYtLoading').classList.add('hidden');
+      document.getElementById('studioYtControls').classList.remove('hidden');
+
+      channelSelect.onchange = () => {
+        if (activeStudioMode === 'broadcast') {
+          refreshStudioBroadcasts();
+        }
+      };
+
+    } catch (e) {
+      console.error('Error loading studio data:', e);
+      document.getElementById('studioYtLoading').classList.add('hidden');
+      document.getElementById('studioYtNoChannels').classList.remove('hidden');
+    }
   };
 
-  window.setInspectorMode = function(mode) {
-    activeInspectorMode = mode;
-    const btnStream = document.getElementById('btnModeStream');
-    const btnBroadcast = document.getElementById('btnModeBroadcast');
-    const containerStream = document.getElementById('targetStreamContainer');
-    const containerBroadcast = document.getElementById('targetBroadcastContainer');
-    
+  window.setStudioMode = function(mode) {
+    activeStudioMode = mode;
+    const btnStream = document.getElementById('btnStudioModeStream');
+    const btnBroadcast = document.getElementById('btnStudioModeBroadcast');
+    const containerStream = document.getElementById('studioTargetStreamContainer');
+    const containerBroadcast = document.getElementById('studioTargetBroadcastContainer');
+
     if (mode === 'stream') {
       btnStream.className = 'flex-1 py-1.5 px-3 rounded-lg border border-primary bg-primary/10 text-primary text-xs font-medium transition-all';
       btnBroadcast.className = 'flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all';
@@ -2975,66 +3098,64 @@ async function showMoveSelectedDialog() {
       btnStream.className = 'flex-1 py-1.5 px-3 rounded-lg border border-gray-600 bg-dark-700 text-gray-400 hover:text-white text-xs font-medium transition-all';
       containerBroadcast.classList.remove('hidden');
       containerStream.classList.add('hidden');
-      
-      // Load broadcasts
-      refreshInspectorBroadcasts();
+      refreshStudioBroadcasts();
     }
   };
 
-  window.refreshInspectorBroadcasts = async function() {
-    const channelId = document.getElementById('inspectorYtChannelSelect').value;
-    if (!channelId) return;
-    
-    const broadcastSelect = document.getElementById('inspectorBroadcastSelect');
-    broadcastSelect.innerHTML = '<option value="">Loading broadcasts...</option>';
+  window.refreshStudioBroadcasts = async function() {
+    const channelSelect = document.getElementById('studioYtChannelSelect');
+    if (!channelSelect || !channelSelect.value) return;
+
+    const broadcastSelect = document.getElementById('studioBroadcastSelect');
+    broadcastSelect.innerHTML = '<option value="">Memuat siaran broadcast...</option>';
     broadcastSelect.disabled = true;
-    
+
     try {
-      const res = await fetch(`/api/youtube/broadcasts/${channelId}`);
+      const res = await fetch(`/api/youtube/broadcasts/${channelSelect.value}`);
       const data = await res.json();
-      
+
       if (data.success && data.broadcasts && data.broadcasts.length > 0) {
         broadcastSelect.innerHTML = data.broadcasts.map(b => `
           <option value="${b.id}">${b.snippet.title} (${b.status.lifeCycleStatus || b.status.privacyStatus})</option>
         `).join('');
         broadcastSelect.disabled = false;
       } else {
-        broadcastSelect.innerHTML = '<option value="">-- No live broadcasts found --</option>';
+        broadcastSelect.innerHTML = '<option value="">-- Tidak ada broadcast aktif --</option>';
         broadcastSelect.disabled = true;
       }
     } catch (e) {
       console.error(e);
-      broadcastSelect.innerHTML = '<option value="">Failed to load broadcasts</option>';
+      broadcastSelect.innerHTML = '<option value="">Gagal memuat broadcast</option>';
       broadcastSelect.disabled = true;
     }
   };
 
-  window.applyInspectorThumbnail = async function() {
-    if (!activeInspectorId) return;
-    
-    const targetType = activeInspectorMode; // 'stream' or 'broadcast'
-    const channelId = document.getElementById('inspectorYtChannelSelect').value;
-    
+  window.applyStudioThumbnail = async function() {
+    if (!activeStudioImage) return;
+
+    const targetType = activeStudioMode;
+    const channelId = document.getElementById('studioYtChannelSelect').value;
+
     let targetId = '';
     if (targetType === 'stream') {
-      targetId = document.getElementById('inspectorStreamSelect').value;
+      targetId = document.getElementById('studioStreamSelect').value;
       if (!targetId) {
-        showToast('error', 'Please select a stream configuration target.');
+        showToast('error', 'Pilih target konfigurasi stream.');
         return;
       }
     } else {
-      targetId = document.getElementById('inspectorBroadcastSelect').value;
+      targetId = document.getElementById('studioBroadcastSelect').value;
       if (!targetId) {
-        showToast('error', 'Please select an active YouTube broadcast target.');
+        showToast('error', 'Pilih target broadcast YouTube aktif.');
         return;
       }
     }
-    
-    const btn = document.getElementById('btnInspectorApply');
+
+    const btn = document.getElementById('btnStudioApply');
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Applying...';
-    
+    btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Memasang...';
+
     try {
       const csrfInput = document.querySelector('input[name="_csrf"]');
       const response = await fetch('/api/gallery/apply-thumbnail', {
@@ -3044,7 +3165,7 @@ async function showMoveSelectedDialog() {
           'X-CSRF-Token': csrfInput ? csrfInput.value : ''
         },
         body: JSON.stringify({
-          videoId: activeInspectorId,
+          videoId: activeStudioImage.id,
           targetType,
           targetId,
           channelId
@@ -3053,21 +3174,18 @@ async function showMoveSelectedDialog() {
       const data = await response.json();
       btn.disabled = false;
       btn.innerHTML = originalText;
-      
+
       if (data.success) {
-        showToast('success', data.message || 'Thumbnail successfully applied!');
-        closeMediaInspector();
-        
-        // Refresh local gallery data so it stays up-to-date
+        showToast('success', data.message || 'Thumbnail berhasil dipasang!');
         await window.refreshGalleryData?.();
       } else {
-        showToast('error', data.error || 'Failed to apply thumbnail');
+        showToast('error', data.error || 'Gagal memasang thumbnail');
       }
     } catch (error) {
       btn.disabled = false;
       btn.innerHTML = originalText;
       console.error(error);
-      showToast('error', 'An error occurred while applying the thumbnail.');
+      showToast('error', 'Terjadi kesalahan saat memasang thumbnail.');
     }
   };
 </script>
