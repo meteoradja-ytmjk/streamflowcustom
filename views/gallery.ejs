@@ -33,13 +33,13 @@ function formatDuration(seconds) {
         </span>
       </p>
 
-      <!-- Ultra Modern Segmented Sub-Tabs Bar (Directly below description text) -->
-      <div class="mt-4 w-full sm:w-[400px] bg-dark-900/95 backdrop-blur-md p-1.5 rounded-2xl border border-gray-700/80 shadow-xl grid grid-cols-2 gap-1.5">
-        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 bg-gradient-to-r from-primary to-rose-600 text-white shadow-lg shadow-primary/25 focus:outline-none">
+      <!-- Minimalist Modern Sub-Tabs Bar -->
+      <div class="mt-4 w-full sm:w-[380px] bg-dark-900/80 p-1 rounded-xl border border-gray-700/60 grid grid-cols-2 gap-1">
+        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all bg-dark-700 text-white shadow-sm border border-gray-600/50 focus:outline-none">
           <i class="ti ti-video text-base"></i>
           <span>Media Gallery</span>
         </button>
-        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 text-gray-400 hover:text-white hover:bg-dark-700/50 focus:outline-none">
+        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all text-gray-400 hover:text-gray-200 focus:outline-none">
           <i class="ti ti-photo text-base"></i>
           <span>Thumbnail Management</span>
         </button>
@@ -414,7 +414,7 @@ function formatDuration(seconds) {
         <i class="ti ti-folder-plus text-base"></i>
         <span>Folder Baru</span>
       </button>
-      <button onclick="openUploadModal('image')" class="h-10 flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-rose-600 hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-md shadow-primary/20 transition-all w-full">
+      <button onclick="openThumbnailUploadModal()" class="h-10 flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-rose-600 hover:opacity-95 text-white rounded-xl text-xs font-semibold shadow-md shadow-primary/20 transition-all w-full">
         <i class="ti ti-cloud-upload text-base"></i>
         <span>Upload Thumbnail</span>
       </button>
@@ -572,9 +572,6 @@ function formatDuration(seconds) {
           <button type="button" id="tabAudio" class="flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors" onclick="switchUploadTab('audio')">
             <i class="ti ti-music mr-2"></i>Audio
           </button>
-          <button type="button" id="tabImage" class="flex-1 py-2 px-4 rounded-lg bg-dark-700 text-gray-400 hover:text-white transition-colors" onclick="switchUploadTab('image')">
-            <i class="ti ti-photo mr-2"></i>Image/Thumbnail
-          </button>
         </div>
         <form id="videoUploadForm" enctype="multipart/form-data">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -634,6 +631,79 @@ function formatDuration(seconds) {
         <button onclick="closeUploadModal()" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg transition-colors">Cancel</button>
         <button id="uploadButton" class="px-4 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>
           <i class="ti ti-upload mr-1.5"></i>Upload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dedicated Upload Thumbnail Modal (Thumbnail Management) -->
+<div id="uploadThumbnailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden modal-overlay overflow-y-auto">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div class="bg-dark-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-700/80 overflow-hidden" id="uploadThumbnailModalContent">
+      <div class="flex items-center justify-between p-5 border-b border-gray-700 bg-dark-900/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+            <i class="ti ti-photo text-lg"></i>
+          </div>
+          <h3 class="text-base font-semibold text-white">Upload Thumbnail Assets</h3>
+        </div>
+        <button onclick="closeThumbnailUploadModal()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-dark-700 transition-colors">
+          <i class="ti ti-x text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <form id="thumbnailUploadForm" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div id="thumbDropzone" class="border-2 border-dashed border-gray-600 hover:border-primary rounded-xl py-8 px-6 text-center transition-all cursor-pointer bg-dark-900/40">
+            <div class="flex flex-col items-center justify-center space-y-3">
+              <div class="w-14 h-14 rounded-full bg-dark-700 flex items-center justify-center shadow-inner">
+                <i class="ti ti-cloud-upload text-3xl text-primary"></i>
+              </div>
+              <div>
+                <p class="text-white font-medium text-sm">Drag & drop image files here</p>
+                <p class="text-gray-400 text-xs mt-0.5">Atau klik untuk jelajahi berkas</p>
+              </div>
+              <label class="bg-primary hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors inline-block cursor-pointer shadow-md shadow-primary/20">
+                <span>Pilih Gambar</span>
+                <input type="file" name="image" accept="image/*,.png,.jpg,.jpeg,.gif,.webp" multiple class="hidden" id="thumbFileInput">
+              </label>
+              <p class="text-gray-500 text-[11px]">Format didukung: PNG, JPG, JPEG, GIF, WEBP (Maks 10MB per gambar)</p>
+            </div>
+          </div>
+
+          <div id="selectedThumbInfo" class="hidden mt-4">
+            <div class="bg-dark-700 p-4 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i class="ti ti-files text-primary"></i>
+                  <span class="text-xs font-medium text-white" id="selectedThumbCount">0 gambar dipilih</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="text-primary hover:underline text-xs" onclick="document.getElementById('thumbFileInput').click()">Tambah</button>
+                  <button type="button" id="clearThumbButton" class="text-gray-400 hover:text-white text-xs">Clear</button>
+                </div>
+              </div>
+              <div id="selectedThumbsList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+          <div class="mt-4 hidden" id="thumbUploadProgress">
+            <div class="flex justify-between items-center text-xs mb-2">
+              <span id="thumbProgressStatus" class="text-gray-400 truncate mr-2">Mengunggah...</span>
+              <span id="thumbProgressPercent" class="text-primary font-bold">0%</span>
+            </div>
+            <div class="w-full bg-dark-700 rounded-full h-2">
+              <div id="thumbProgressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="flex justify-end gap-3 p-4 border-t border-gray-700 bg-dark-900/40">
+        <button onclick="closeThumbnailUploadModal()" class="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg text-xs font-medium transition-colors">Batal</button>
+        <button id="submitThumbUploadBtn" class="px-5 py-2 bg-primary hover:bg-rose-600 text-white rounded-lg text-xs font-semibold shadow-md shadow-primary/20 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="ti ti-upload"></i>
+          <span>Mulai Upload</span>
         </button>
       </div>
     </div>
@@ -1234,6 +1304,37 @@ function closeUploadModal() {
   modal.classList.add('hidden');
   document.body.classList.remove('overflow-hidden');
   resetUploadForm();
+}
+
+let selectedThumbFiles = [];
+
+function openThumbnailUploadModal() {
+  const modal = document.getElementById('uploadThumbnailModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    resetThumbnailUploadForm();
+  }
+}
+
+function closeThumbnailUploadModal() {
+  const modal = document.getElementById('uploadThumbnailModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    resetThumbnailUploadForm();
+  }
+}
+
+function resetThumbnailUploadForm() {
+  document.getElementById('thumbnailUploadForm')?.reset();
+  document.getElementById('selectedThumbInfo')?.classList.add('hidden');
+  document.getElementById('thumbDropzone')?.classList.remove('hidden');
+  document.getElementById('thumbUploadProgress')?.classList.add('hidden');
+  const btn = document.getElementById('submitThumbUploadBtn');
+  if (btn) btn.disabled = true;
+  document.getElementById('thumbProgressBar')?.style.setProperty('width', '0%');
+  selectedThumbFiles = [];
 }
 
 function resetUploadForm() {
@@ -2258,6 +2359,127 @@ document.addEventListener('DOMContentLoaded', function() {
           else showToast('error', 'Please upload a valid image file (PNG, JPG, JPEG)');
         }
       }
+  }
+
+  // Handle Thumbnail Dedicated Upload Form Event Listeners
+  const thumbFileInput = document.getElementById('thumbFileInput');
+  const thumbDropzone = document.getElementById('thumbDropzone');
+  const selectedThumbInfo = document.getElementById('selectedThumbInfo');
+  const selectedThumbCount = document.getElementById('selectedThumbCount');
+  const selectedThumbsList = document.getElementById('selectedThumbsList');
+  const submitThumbUploadBtn = document.getElementById('submitThumbUploadBtn');
+  const clearThumbButton = document.getElementById('clearThumbButton');
+
+  function updateThumbFilesList() {
+    if (!selectedThumbsList) return;
+    selectedThumbsList.innerHTML = selectedThumbFiles.map((f, idx) => `
+      <div class="flex items-center justify-between text-xs bg-dark-800 p-2.5 rounded-lg border border-gray-700">
+        <div class="flex items-center gap-2 truncate">
+          <i class="ti ti-photo text-primary"></i>
+          <span class="text-white truncate">${escapeHtml(f.name)}</span>
+          <span class="text-gray-400 font-mono text-[11px]">(${formatFileSize(f.size)})</span>
+        </div>
+        <button type="button" class="text-gray-400 hover:text-red-400 p-1" onclick="removeThumbFile(${idx})">
+          <i class="ti ti-x text-xs"></i>
+        </button>
+      </div>
+    `).join('');
+
+    if (selectedThumbCount) selectedThumbCount.textContent = `${selectedThumbFiles.length} gambar dipilih`;
+    if (submitThumbUploadBtn) submitThumbUploadBtn.disabled = selectedThumbFiles.length === 0;
+  }
+
+  window.removeThumbFile = function(index) {
+    selectedThumbFiles.splice(index, 1);
+    updateThumbFilesList();
+    if (selectedThumbFiles.length === 0) {
+      if (selectedThumbInfo) selectedThumbInfo.classList.add('hidden');
+      if (thumbDropzone) thumbDropzone.classList.remove('hidden');
+    }
+  };
+
+  if (clearThumbButton) {
+    clearThumbButton.addEventListener('click', () => {
+      selectedThumbFiles = [];
+      updateThumbFilesList();
+      if (selectedThumbInfo) selectedThumbInfo.classList.add('hidden');
+      if (thumbDropzone) thumbDropzone.classList.remove('hidden');
+    });
+  }
+
+  if (thumbFileInput) {
+    thumbFileInput.addEventListener('change', function() {
+      const files = Array.from(this.files).filter(isImageFile);
+      if (files.length > 0) {
+        files.forEach(f => {
+          if (!selectedThumbFiles.some(e => e.name === f.name && e.size === f.size)) {
+            selectedThumbFiles.push(f);
+          }
+        });
+        updateThumbFilesList();
+        if (thumbDropzone) thumbDropzone.classList.add('hidden');
+        if (selectedThumbInfo) selectedThumbInfo.classList.remove('hidden');
+      } else {
+        showToast('error', 'Pilih berkas gambar yang valid (PNG, JPG, JPEG, GIF, WEBP)');
+      }
+    });
+  }
+
+  if (thumbDropzone) {
+    thumbDropzone.addEventListener('click', (e) => {
+      if (!e.target.closest('label')) thumbFileInput?.click();
+    });
+    thumbDropzone.addEventListener('dragenter', (e) => { e.preventDefault(); thumbDropzone.classList.add('border-primary', 'bg-primary/5'); });
+    thumbDropzone.addEventListener('dragover', (e) => { e.preventDefault(); });
+    thumbDropzone.addEventListener('dragleave', (e) => { e.preventDefault(); thumbDropzone.classList.remove('border-primary', 'bg-primary/5'); });
+    thumbDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      thumbDropzone.classList.remove('border-primary', 'bg-primary/5');
+      const files = Array.from(e.dataTransfer.files).filter(isImageFile);
+      if (files.length > 0) {
+        files.forEach(f => {
+          if (!selectedThumbFiles.some(e => e.name === f.name && e.size === f.size)) {
+            selectedThumbFiles.push(f);
+          }
+        });
+        updateThumbFilesList();
+        if (thumbDropzone) thumbDropzone.classList.add('hidden');
+        if (selectedThumbInfo) selectedThumbInfo.classList.remove('hidden');
+      } else {
+        showToast('error', 'Pilih berkas gambar yang valid (PNG, JPG, JPEG, GIF, WEBP)');
+      }
+    });
+  }
+
+  if (submitThumbUploadBtn) {
+    submitThumbUploadBtn.addEventListener('click', async () => {
+      if (selectedThumbFiles.length === 0) return;
+      submitThumbUploadBtn.disabled = true;
+      const progressDiv = document.getElementById('thumbUploadProgress');
+      const progressBar = document.getElementById('thumbProgressBar');
+      const progressPercent = document.getElementById('thumbProgressPercent');
+      const progressStatus = document.getElementById('thumbProgressStatus');
+
+      if (progressDiv) progressDiv.classList.remove('hidden');
+
+      let success = 0;
+      let failed = 0;
+
+      for (let i = 0; i < selectedThumbFiles.length; i++) {
+        const file = selectedThumbFiles[i];
+        if (progressStatus) progressStatus.textContent = `Mengunggah (${i + 1}/${selectedThumbFiles.length}): ${file.name}`;
+        
+        const res = await uploadImageSimple(file, i, selectedThumbFiles.length);
+        if (res.success) {
+          success++;
+        } else {
+          failed++;
+        }
+      }
+
+      showToast('success', `${success} thumbnail berhasil diunggah!`);
+      closeThumbnailUploadModal();
+      await window.refreshGalleryData?.();
     });
   }
 
