@@ -1,8 +1,21 @@
 node_modules
 public/uploads/
 logs/
+backups/
 
 # ignore real env from repo
 .env
 package-lock.json
+
+# Database files
 db/streamflow.db
+db/sessions.db
+database.sqlite
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
