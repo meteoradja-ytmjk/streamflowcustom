@@ -3532,13 +3532,19 @@ app.post('/api/update/install', isAuthenticated, csrfProtection, async (req, res
       });
       proc.on('close', (code) => {
         if (code === 0) resolve(output);
-        else reject(new Error(`Process exited with code ${code}`));
+        else reject(new Error(`Process exited with code ${code}. Output: ${output.trim()}`));
       });
     });
 
     try {
       sendLine(`📥 Running: git pull origin ${gitBranch}...`);
-      await runCommand('git', ['pull', 'origin', gitBranch], appDir);
+      try {
+        await runCommand('git', ['pull', 'origin', gitBranch], appDir);
+      } catch (pullError) {
+        sendLine('⚠️ Git pull failed. Trying to force update (discarding local changes)...');
+        await runCommand('git', ['fetch', 'origin'], appDir);
+        await runCommand('git', ['reset', '--hard', `origin/${gitBranch}`], appDir);
+      }
 
       sendLine('📦 Running: npm install --omit=dev...');
       await runCommand('npm', ['install', '--omit=dev'], appDir);
