@@ -815,6 +815,420 @@ function formatDuration(seconds) {
   let galleryCurrentFolderState = JSON.parse(initData.currentFolder);
   const userRoles = initData.userRole;
 
+// ========================================
+// DECLARE ALL WINDOW FUNCTIONS FIRST (CRITICAL FOR ONCLICK)
+// ========================================
+
+// Tab switching - MUST BE DEFINED FIRST
+window.switchGalleryTab = function(tab) {
+  console.log('switchGalleryTab called:', tab);
+  const currentGalleryTab = tab;
+  const tabMedia = document.getElementById('tabNavMedia');
+  const tabThumbnail = document.getElementById('tabNavThumbnail');
+  const viewMedia = document.getElementById('subTabMediaGalleryView');
+  const viewThumbnail = document.getElementById('subTabThumbnailMgmtView');
+  const headerActionButtons = document.getElementById('headerActionButtons');
+
+  if (tab === 'media') {
+    if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
+    if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
+    if (viewMedia) viewMedia.classList.remove('hidden');
+    if (viewThumbnail) viewThumbnail.classList.add('hidden');
+    if (headerActionButtons) headerActionButtons.classList.remove('hidden');
+  } else {
+    if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
+    if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
+    if (viewThumbnail) viewThumbnail.classList.remove('hidden');
+    if (viewMedia) viewMedia.classList.add('hidden');
+    if (headerActionButtons) headerActionButtons.classList.add('hidden');
+    if (typeof renderThumbnailStudio === 'function') renderThumbnailStudio();
+  }
+};
+
+// View switching
+window.switchView = function(view) {
+  console.log('switchView called:', view);
+  currentView = view;
+  applyGalleryViewMode();
+};
+
+// Upload modal
+window.openUploadModal = function(defaultTab) {
+  console.log('openUploadModal called');
+  const modal = document.getElementById('uploadModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (typeof resetUploadForm === 'function') resetUploadForm();
+    if (defaultTab && typeof switchUploadTab === 'function') switchUploadTab(defaultTab);
+  }
+};
+
+window.closeUploadModal = function() {
+  const modal = document.getElementById('uploadModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    if (typeof resetUploadForm === 'function') resetUploadForm();
+  }
+};
+
+// Cloud dropdown
+window.toggleCloudDropdown = function() {
+  console.log('toggleCloudDropdown called');
+  const dropdown = document.getElementById('cloudDropdown');
+  if (dropdown) dropdown.classList.toggle('hidden');
+};
+
+// Cloud modals
+window.openCloudModal = function(type) {
+  console.log('openCloudModal called:', type);
+  const dropdown = document.getElementById('cloudDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+  const modal = document.getElementById('cloudImportModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (typeof initCloudModal === 'function') initCloudModal(type);
+  }
+};
+
+window.closeCloudModal = function() {
+  const modal = document.getElementById('cloudImportModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+};
+
+// Local import modal
+window.openLocalImportModal = function() {
+  console.log('openLocalImportModal called');
+  const dropdown = document.getElementById('cloudDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+  const modal = document.getElementById('localImportModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    const pathInput = document.getElementById('local-import-path');
+    const titleInput = document.getElementById('local-import-title');
+    const browserContainer = document.getElementById('fileBrowserContainer');
+    if (pathInput) pathInput.value = '';
+    if (titleInput) titleInput.value = '';
+    if (browserContainer) browserContainer.classList.add('hidden');
+  }
+};
+
+window.closeLocalImportModal = function() {
+  const modal = document.getElementById('localImportModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+};
+
+// Create folder
+window.openCreateFolderDialog = async function() {
+  console.log('openCreateFolderDialog called');
+  if (typeof createModalDialog !== 'function') {
+    alert('Error: createModalDialog not defined');
+    return;
+  }
+  const result = await createModalDialog({
+    type: 'info',
+    icon: 'ti-folder-plus',
+    title: 'Create Folder',
+    message: 'Enter a name for the new folder:',
+    hasInput: true,
+    confirmText: 'Create'
+  });
+
+  if (!result.confirmed || !result.value) return;
+
+  try {
+    const response = await fetch('/api/media-folders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+      },
+      body: JSON.stringify({ name: result.value.trim() })
+    });
+    const data = await response.json();
+    if (data.success) {
+      if (typeof showToast === 'function') showToast('success', 'Folder created successfully');
+      if (window.refreshGalleryData) await window.refreshGalleryData();
+    } else {
+      if (typeof showToast === 'function') showToast('error', data.error || 'Failed to create folder');
+    }
+  } catch (error) {
+    console.error(error);
+    if (typeof showToast === 'function') showToast('error', 'An error occurred while creating the folder');
+  }
+};
+
+// Thumbnail modals
+window.openThumbnailUploadModal = function() {
+  console.log('openThumbnailUploadModal called');
+  const modal = document.getElementById('uploadThumbnailModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    if (typeof resetThumbnailUploadForm === 'function') resetThumbnailUploadForm();
+  }
+};
+
+window.closeThumbnailUploadModal = function() {
+  const modal = document.getElementById('uploadThumbnailModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    if (typeof resetThumbnailUploadForm === 'function') resetThumbnailUploadForm();
+  }
+};
+
+window.openCreateThumbnailFolderDialog = async function() {
+  console.log('openCreateThumbnailFolderDialog called');
+  if (typeof createModalDialog !== 'function') return;
+  const result = await createModalDialog({
+    type: 'info',
+    icon: 'ti-folder-plus',
+    title: 'Buat Folder Thumbnail',
+    message: 'Masukkan nama folder baru untuk merapikan thumbnail:',
+    hasInput: true,
+    confirmText: 'Buat Folder'
+  });
+
+  if (!result.confirmed || !result.value) return;
+
+  try {
+    const response = await fetch('/api/media-folders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+      },
+      body: JSON.stringify({ name: result.value.trim() })
+    });
+    const data = await response.json();
+    if (data.success) {
+      if (typeof showToast === 'function') showToast('success', 'Folder thumbnail berhasil dibuat');
+      if (window.refreshGalleryData) await window.refreshGalleryData();
+    } else {
+      if (typeof showToast === 'function') showToast('error', data.error || 'Gagal membuat folder');
+    }
+  } catch (error) {
+    console.error(error);
+    if (typeof showToast === 'function') showToast('error', 'Terjadi kesalahan saat membuat folder');
+  }
+};
+
+// Video/file actions - FULL IMPLEMENTATION
+window.playMedia = function(mediaId, mediaTitle, mediaType) {
+  console.log('playMedia called:', mediaId, mediaType);
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
+  modal.id = 'media-player-modal';
+  
+  if (mediaType === 'audio') {
+    modal.innerHTML = `
+      <div class="relative w-full max-w-lg mx-auto">
+        <div class="bg-dark-800 rounded-lg overflow-hidden shadow-xl">
+          <div class="flex items-center justify-between p-4 border-b border-gray-700">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <i class="ti ti-music text-primary"></i>
+              </div>
+              <h3 class="text-lg font-medium truncate pr-4">${mediaTitle || 'Now Playing'}</h3>
+            </div>
+            <button id="close-player-btn" class="text-gray-400 hover:text-white">
+              <i class="ti ti-x text-xl"></i>
+            </button>
+          </div>
+          <div class="p-6">
+            <audio id="audio-player" class="w-full" controls autoplay>
+              <source src="/stream/${mediaId}" type="audio/mp4">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    modal.innerHTML = `
+      <div class="relative w-full max-w-4xl mx-auto">
+        <div class="bg-dark-800 rounded-lg overflow-hidden shadow-xl">
+          <div class="flex items-center justify-between p-4 border-b border-gray-700">
+            <h3 class="text-lg font-medium truncate pr-4">${mediaTitle || 'Now Playing'}</h3>
+            <button id="close-player-btn" class="text-gray-400 hover:text-white">
+              <i class="ti ti-x text-xl"></i>
+            </button>
+          </div>
+          <div class="bg-black aspect-video">
+            <video id="native-player" class="w-full h-full" controls preload="auto" autoplay>
+              <source src="/stream/${mediaId}" type="video/mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  document.body.appendChild(modal);
+  document.body.classList.add('overflow-hidden');
+  
+  const closePlayer = () => {
+    const video = document.getElementById('native-player');
+    const audio = document.getElementById('audio-player');
+    if (video) video.pause();
+    if (audio) audio.pause();
+    modal.remove();
+    document.body.classList.remove('overflow-hidden');
+  };
+  
+  document.getElementById('close-player-btn').addEventListener('click', closePlayer);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closePlayer(); });
+  document.addEventListener('keydown', function handler(e) {
+    if (e.key === 'Escape') { closePlayer(); document.removeEventListener('keydown', handler); }
+  });
+};
+
+// Video/file actions - FULL IMPLEMENTATION
+window.showRenameDialog = async function(videoId, currentTitle) {
+  console.log('showRenameDialog called:', videoId);
+  const result = await createModalDialog({
+    type: 'info',
+    icon: 'ti-pencil',
+    title: 'Rename Video',
+    message: 'Enter a new title for your video:',
+    hasInput: true,
+    inputValue: currentTitle,
+    confirmText: 'Save'
+  });
+  if (result.confirmed && result.value && result.value !== currentTitle) {
+    try {
+      const response = await fetch(`/api/videos/${videoId}/rename`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: result.value })
+      });
+      const data = await response.json();
+      if (data.success) {
+        showToast('success', 'Video renamed successfully');
+        await window.refreshGalleryData?.();
+      } else {
+        showToast('error', data.error || 'Failed to rename video');
+      }
+    } catch (error) {
+      showToast('error', 'An error occurred while renaming the video');
+    }
+  }
+};
+
+window.showDeleteDialog = async function(videoId, videoTitle) {
+  console.log('showDeleteDialog called:', videoId);
+  const result = await createModalDialog({
+    type: 'danger',
+    icon: 'ti-trash',
+    title: 'Delete Video',
+    message: `Are you sure you want to delete "${videoTitle}"? This action cannot be undone.`,
+    confirmText: 'Delete',
+    confirmClass: 'bg-red-500 hover:bg-red-600'
+  });
+  if (result.confirmed) {
+    try {
+      const response = await fetch(`/api/videos/${videoId}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        showToast('success', 'Video deleted successfully');
+        await window.refreshGalleryData?.();
+      } else {
+        showToast('error', data.error || 'Failed to delete video');
+      }
+    } catch (error) {
+      showToast('error', 'An error occurred while deleting the video');
+    }
+  }
+};
+
+window.showRenameFolderDialog = async function(folderId, currentName) {
+  console.log('showRenameFolderDialog called:', folderId);
+  const result = await createModalDialog({
+    type: 'info',
+    icon: 'ti-pencil',
+    title: 'Rename Folder',
+    message: 'Enter a new name for this folder:',
+    hasInput: true,
+    inputValue: currentName,
+    confirmText: 'Save'
+  });
+
+  if (!result.confirmed || !result.value || result.value === currentName) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/media-folders/${folderId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+      },
+      body: JSON.stringify({ name: result.value.trim() })
+    });
+    const data = await response.json();
+    if (data.success) {
+      showToast('success', 'Folder renamed successfully');
+      await window.refreshGalleryData?.();
+    } else {
+      showToast('error', data.error || 'Failed to rename folder');
+    }
+  } catch (error) {
+    showToast('error', 'An error occurred while renaming the folder');
+  }
+};
+
+window.showDeleteFolderDialog = async function(folderId, folderName) {
+  console.log('showDeleteFolderDialog called:', folderId);
+  const result = await createModalDialog({
+    type: 'danger',
+    icon: 'ti-trash',
+    title: 'Delete Folder',
+    message: `Delete "${folderName}"? All files inside this folder will also be deleted.`,
+    confirmText: 'Delete',
+    confirmClass: 'bg-red-500 hover:bg-red-600'
+  });
+
+  if (!result.confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/media-folders/${folderId}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+      }
+    });
+    const data = await response.json();
+    if (data.success) {
+      showToast('success', 'Folder deleted successfully');
+      await window.refreshGalleryData?.();
+    } else {
+      showToast('error', data.error || 'Failed to delete folder');
+    }
+  } catch (error) {
+    showToast('error', 'An error occurred while deleting the folder');
+  }
+};
+
+console.log('All window functions declared');
+
+// ========================================
+// REST OF THE CODE CONTINUES BELOW
+// ========================================
+
+
 async function loadDiskUsage() {
   try {
     const response = await fetch('/api/user/disk-usage');
@@ -988,232 +1402,13 @@ window.switchView = function(view) {
   applyGalleryViewMode();
 };
 
-window.playMedia = function(mediaId, mediaTitle, mediaType) {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
-  modal.id = 'media-player-modal';
-  
-  if (mediaType === 'audio') {
-    modal.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto">
-        <div class="bg-dark-800 rounded-lg overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between p-4 border-b border-gray-700">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <i class="ti ti-music text-primary"></i>
-              </div>
-              <h3 class="text-lg font-medium truncate pr-4">${mediaTitle || 'Now Playing'}</h3>
-            </div>
-            <button id="close-player-btn" class="text-gray-400 hover:text-white">
-              <i class="ti ti-x text-xl"></i>
-            </button>
-          </div>
-          <div class="p-6">
-            <audio id="audio-player" class="w-full" controls autoplay>
-              <source src="/stream/${mediaId}" type="audio/mp4">
-              Your browser does not support the audio element.
-            </audio>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    modal.innerHTML = `
-      <div class="relative w-full max-w-4xl mx-auto">
-        <div class="bg-dark-800 rounded-lg overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between p-4 border-b border-gray-700">
-            <h3 class="text-lg font-medium truncate pr-4">${mediaTitle || 'Now Playing'}</h3>
-            <button id="close-player-btn" class="text-gray-400 hover:text-white">
-              <i class="ti ti-x text-xl"></i>
-            </button>
-          </div>
-          <div class="bg-black aspect-video">
-            <video id="native-player" class="w-full h-full" controls preload="auto" autoplay>
-              <source src="/stream/${mediaId}" type="video/mp4">
-            </video>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
-  document.body.appendChild(modal);
-  document.body.classList.add('overflow-hidden');
-  
-  const closePlayer = () => {
-    const video = document.getElementById('native-player');
-    const audio = document.getElementById('audio-player');
-    if (video) video.pause();
-    if (audio) audio.pause();
-    modal.remove();
-    document.body.classList.remove('overflow-hidden');
-  };
-  
-  document.getElementById('close-player-btn').addEventListener('click', closePlayer);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closePlayer(); });
-  document.addEventListener('keydown', function handler(e) {
-    if (e.key === 'Escape') { closePlayer(); document.removeEventListener('keydown', handler); }
-  });
-}
+// playMedia already defined at top of script
 
-window.showRenameDialog = async function(videoId, currentTitle) {
-  const result = await createModalDialog({
-    type: 'info',
-    icon: 'ti-pencil',
-    title: 'Rename Video',
-    message: 'Enter a new title for your video:',
-    hasInput: true,
-    inputValue: currentTitle,
-    confirmText: 'Save'
-  });
-  if (result.confirmed && result.value && result.value !== currentTitle) {
-    try {
-      const response = await fetch(`/api/videos/${videoId}/rename`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: result.value })
-      });
-      const data = await response.json();
-      if (data.success) {
-        showToast('success', 'Video renamed successfully');
-        await window.refreshGalleryData?.();
-      } else {
-        showToast('error', data.error || 'Failed to rename video');
-      }
-    } catch (error) {
-      showToast('error', 'An error occurred while renaming the video');
-    }
-  }
-};
+// showRenameDialog, showDeleteDialog already defined at top of script
 
-window.showDeleteDialog = async function(videoId, videoTitle) {
-  const result = await createModalDialog({
-    type: 'danger',
-    icon: 'ti-trash',
-    title: 'Delete Video',
-    message: `Are you sure you want to delete "${videoTitle}"? This action cannot be undone.`,
-    confirmText: 'Delete',
-    confirmClass: 'bg-red-500 hover:bg-red-600'
-  });
-  if (result.confirmed) {
-    try {
-      const response = await fetch(`/api/videos/${videoId}`, { method: 'DELETE' });
-      const data = await response.json();
-      if (data.success) {
-        showToast('success', 'Video deleted successfully');
-        await window.refreshGalleryData?.();
-      } else {
-        showToast('error', data.error || 'Failed to delete video');
-      }
-    } catch (error) {
-      showToast('error', 'An error occurred while deleting the video');
-    }
-  }
-};
+// openCreateFolderDialog already defined at top of script
 
-window.openCreateFolderDialog = async function() {
-  const result = await createModalDialog({
-    type: 'info',
-    icon: 'ti-folder-plus',
-    title: 'Create Folder',
-    message: 'Enter a name for the new folder:',
-    hasInput: true,
-    confirmText: 'Create'
-  });
-
-  if (!result.confirmed || !result.value) {
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/media-folders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-      },
-      body: JSON.stringify({ name: result.value.trim() })
-    });
-    const data = await response.json();
-    if (data.success) {
-      showToast('success', 'Folder created successfully');
-      await window.refreshGalleryData?.();
-    } else {
-      showToast('error', data.error || 'Failed to create folder');
-    }
-  } catch (error) {
-    showToast('error', 'An error occurred while creating the folder');
-  }
-};
-
-window.showRenameFolderDialog = async function(folderId, currentName) {
-  const result = await createModalDialog({
-    type: 'info',
-    icon: 'ti-pencil',
-    title: 'Rename Folder',
-    message: 'Enter a new name for this folder:',
-    hasInput: true,
-    inputValue: currentName,
-    confirmText: 'Save'
-  });
-
-  if (!result.confirmed || !result.value || result.value === currentName) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/media-folders/${folderId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-      },
-      body: JSON.stringify({ name: result.value.trim() })
-    });
-    const data = await response.json();
-    if (data.success) {
-      showToast('success', 'Folder renamed successfully');
-      await window.refreshGalleryData?.();
-    } else {
-      showToast('error', data.error || 'Failed to rename folder');
-    }
-  } catch (error) {
-    showToast('error', 'An error occurred while renaming the folder');
-  }
-};
-
-window.showDeleteFolderDialog = async function(folderId, folderName) {
-  const result = await createModalDialog({
-    type: 'danger',
-    icon: 'ti-trash',
-    title: 'Delete Folder',
-    message: `Delete "${folderName}"? All files inside this folder will also be deleted.`,
-    confirmText: 'Delete',
-    confirmClass: 'bg-red-500 hover:bg-red-600'
-  });
-
-  if (!result.confirmed) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/media-folders/${folderId}`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-      }
-    });
-    const data = await response.json();
-    if (data.success) {
-      showToast('success', 'Folder deleted successfully');
-      await window.refreshGalleryData?.();
-    } else {
-      showToast('error', data.error || 'Failed to delete folder');
-    }
-  } catch (error) {
-    showToast('error', 'An error occurred while deleting the folder');
-  }
-};
+// showRenameFolderDialog, showDeleteFolderDialog already defined at top of script
 
 async function moveVideoToFolder(videoId, folderId) {
   try {
@@ -1294,42 +1489,11 @@ function createModalDialog(options) {
   });
 }
 
-window.openUploadModal = function(defaultTab) {
-  const modal = document.getElementById('uploadModal');
-  modal.classList.remove('hidden');
-  document.body.classList.add('overflow-hidden');
-  resetUploadForm();
-  if (defaultTab) {
-    switchUploadTab(defaultTab);
-  }
-};
-
-window.closeUploadModal = function() {
-  const modal = document.getElementById('uploadModal');
-  modal.classList.add('hidden');
-  document.body.classList.remove('overflow-hidden');
-  resetUploadForm();
-};
+// openUploadModal and closeUploadModal already defined at top of script
 
 let selectedThumbFiles = [];
 
-window.openThumbnailUploadModal = function() {
-  const modal = document.getElementById('uploadThumbnailModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
-    resetThumbnailUploadForm();
-  }
-};
-
-window.closeThumbnailUploadModal = function() {
-  const modal = document.getElementById('uploadThumbnailModal');
-  if (modal) {
-    modal.classList.add('hidden');
-    document.body.classList.remove('overflow-hidden');
-    resetThumbnailUploadForm();
-  }
-};
+// openThumbnailUploadModal and closeThumbnailUploadModal already defined at top of script
 
 function resetThumbnailUploadForm() {
   document.getElementById('thumbnailUploadForm')?.reset();
@@ -1354,12 +1518,11 @@ function resetUploadForm() {
   selectedFiles = [];
 }
 
+// toggleCloudDropdown, openCloudModal, closeCloudModal already defined at top
+
 let currentCloudType = '';
 
-window.toggleCloudDropdown = function() {
-  const dropdown = document.getElementById('cloudDropdown');
-  dropdown.classList.toggle('hidden');
-};
+// Event listener for closing dropdown when clicking outside
 
 document.addEventListener('click', function(e) {
   const dropdown = document.getElementById('cloudDropdown');
@@ -1369,28 +1532,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-window.openCloudModal = function(type) {
-  currentCloudType = type;
-  document.getElementById('cloudDropdown').classList.add('hidden');
-  const modal = document.getElementById('cloudImportModal');
-  modal.classList.remove('hidden');
-  document.body.classList.add('overflow-hidden');
-  initCloudModal(type);
-};
-
-window.closeCloudModal = function() {
-  const modal = document.getElementById('cloudImportModal');
-  modal.classList.add('hidden');
-  document.body.classList.remove('overflow-hidden');
-};
-
-function openGDriveModal() {
-  openCloudModal('gdrive');
-}
-
-function closeGDriveModal() {
-  closeCloudModal();
-}
+// openCloudModal, closeCloudModal, openGDriveModal, closeGDriveModal already defined at top
 
 function initCloudModal(type) {
   const configs = {
@@ -1525,21 +1667,7 @@ function showImportProgress(jobId) {
   }, 1000);
 }
 
-window.openLocalImportModal = function() {
-  document.getElementById('cloudDropdown').classList.add('hidden');
-  document.getElementById('localImportModal').classList.remove('hidden');
-  document.body.classList.add('overflow-hidden');
-  document.getElementById('local-import-path').value = '';
-  document.getElementById('local-import-title').value = '';
-  document.getElementById('fileBrowserContainer').classList.add('hidden');
-  selectedLocalFiles = [];
-  updateSelectedLocalFilesUI();
-};
-
-window.closeLocalImportModal = function() {
-  document.getElementById('localImportModal').classList.add('hidden');
-  document.body.classList.remove('overflow-hidden');
-};
+// openLocalImportModal and closeLocalImportModal already defined at top
 
 let selectedLocalFiles = [];
 
@@ -3152,67 +3280,14 @@ async function showMoveSelectedDialog() {
   let currentGalleryTab = 'media';
   let currentThumbnailFolderId = null;
 
-  window.switchGalleryTab = function(tab) {
-    currentGalleryTab = tab;
-    const tabMedia = document.getElementById('tabNavMedia');
-    const tabThumbnail = document.getElementById('tabNavThumbnail');
-    const viewMedia = document.getElementById('subTabMediaGalleryView');
-    const viewThumbnail = document.getElementById('subTabThumbnailMgmtView');
-    const headerActionButtons = document.getElementById('headerActionButtons');
-
-    if (tab === 'media') {
-      if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
-      if (viewMedia) viewMedia.classList.remove('hidden');
-      if (viewThumbnail) viewThumbnail.classList.add('hidden');
-      if (headerActionButtons) headerActionButtons.classList.remove('hidden');
-    } else {
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
-      if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
-      if (viewThumbnail) viewThumbnail.classList.remove('hidden');
-      if (viewMedia) viewMedia.classList.add('hidden');
-      if (headerActionButtons) headerActionButtons.classList.add('hidden');
-      renderThumbnailStudio();
-    }
-  };
+  // switchGalleryTab already defined at top of script
 
   window.navigateToThumbnailFolder = function(folderId) {
     currentThumbnailFolderId = folderId;
     renderThumbnailStudio();
   };
 
-  window.openCreateThumbnailFolderDialog = async function() {
-    const result = await createModalDialog({
-      type: 'info',
-      icon: 'ti-folder-plus',
-      title: 'Buat Folder Thumbnail',
-      message: 'Masukkan nama folder baru untuk merapikan thumbnail:',
-      hasInput: true,
-      confirmText: 'Buat Folder'
-    });
-
-    if (!result.confirmed || !result.value) return;
-
-    try {
-      const response = await fetch('/api/media-folders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
-        },
-        body: JSON.stringify({ name: result.value.trim() })
-      });
-      const data = await response.json();
-      if (data.success) {
-        showToast('success', 'Folder thumbnail berhasil dibuat');
-        await window.refreshGalleryData?.();
-      } else {
-        showToast('error', data.error || 'Gagal membuat folder');
-      }
-    } catch (error) {
-      showToast('error', 'Terjadi kesalahan saat membuat folder');
-    }
-  };
+  // openCreateThumbnailFolderDialog already defined at top
 
   function renderThumbnailStudio() {
     const container = document.getElementById('thumbnailGridContainer');
