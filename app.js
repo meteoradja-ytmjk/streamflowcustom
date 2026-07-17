@@ -908,14 +908,16 @@ app.post('/api/media-folders', isAuthenticated, [
     }
 
     const name = req.body.name.trim();
-    const existingFolder = await MediaFolder.findByName(req.session.userId, name);
+    const type = req.body.type || 'media';
+    const existingFolder = await MediaFolder.findByNameAndType(req.session.userId, name, type);
     if (existingFolder) {
       return res.status(400).json({ success: false, error: 'Folder name already exists' });
     }
 
     const folder = await MediaFolder.create({
       name,
-      user_id: req.session.userId
+      user_id: req.session.userId,
+      type
     });
 
     res.json({ success: true, folder });
@@ -940,7 +942,7 @@ app.put('/api/media-folders/:id', isAuthenticated, [
     }
 
     const name = req.body.name.trim();
-    const existingFolder = await MediaFolder.findByName(req.session.userId, name);
+    const existingFolder = await MediaFolder.findByNameAndType(req.session.userId, name, folder.type);
     if (existingFolder && existingFolder.id !== folder.id) {
       return res.status(400).json({ success: false, error: 'Folder name already exists' });
     }

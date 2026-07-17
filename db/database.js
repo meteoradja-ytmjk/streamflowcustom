@@ -51,6 +51,7 @@ function createTables() {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         user_id TEXT NOT NULL,
+        type TEXT DEFAULT 'media',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
@@ -430,6 +431,12 @@ function createTables() {
       db.run(`ALTER TABLE streams ADD COLUMN schedule_weekdays TEXT`, (err) => {
         if (err && !err.message.includes('duplicate column name')) {
           console.error('Error adding schedule_weekdays column to streams:', err.message);
+        }
+      });
+
+      db.run(`ALTER TABLE media_folders ADD COLUMN type TEXT DEFAULT 'media'`, (err) => {
+        if (err && !err.message.includes('duplicate column name')) {
+          console.error('Error adding type column to media_folders:', err.message);
         }
       });
 

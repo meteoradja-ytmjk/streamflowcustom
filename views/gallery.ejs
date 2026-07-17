@@ -98,8 +98,9 @@ function formatDuration(seconds) {
 </div>
 
 <%
-  const hasRootFolders = !currentFolder && folders && folders.length > 0;
-  const galleryItemCount = (videos ? videos.length : 0) + (hasRootFolders ? folders.length : 0);
+  const mediaFolders = (folders || []).filter(f => f.type !== 'thumbnail');
+  const hasRootFolders = !currentFolder && mediaFolders.length > 0;
+  const galleryItemCount = (videos ? videos.length : 0) + (hasRootFolders ? mediaFolders.length : 0);
   const hasGalleryItems = galleryItemCount > 0;
 %>
 
@@ -180,7 +181,7 @@ function formatDuration(seconds) {
     <% if (hasGalleryItems) { %>
     <div id="gridView" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <% if (hasRootFolders) { %>
-      <% folders.forEach(function(folder) { %>
+      <% mediaFolders.forEach(function(folder) { %>
       <a href="/gallery?folder=<%= folder.id %>" class="gallery-grid-item folder-drop-target group bg-dark-700 rounded-lg border border-gray-700 hover:border-gray-600 hover:bg-dark-600 transition-all p-4 flex flex-col justify-between min-h-[172px]"
         data-folder-id="<%= folder.id %>" data-kind="folder" data-type="folder" data-title="<%= folder.name %>" data-date="<%= folder.updated_at || folder.created_at %>" data-size="0">
         <div class="flex items-start justify-between gap-3">
@@ -285,7 +286,7 @@ function formatDuration(seconds) {
           </thead>
           <tbody class="divide-y divide-gray-700">
             <% if (hasRootFolders) { %>
-            <% folders.forEach(function(folder) { %>
+            <% mediaFolders.forEach(function(folder) { %>
             <tr class="gallery-list-item folder-drop-target group hover:bg-dark-700 transition-colors cursor-pointer"
               data-folder-id="<%= folder.id %>" data-kind="folder" data-type="folder" data-title="<%= folder.name %>" data-date="<%= folder.updated_at || folder.created_at %>" data-size="0"
               onclick="window.location.href='/gallery?folder=<%= folder.id %>'">
@@ -969,7 +970,7 @@ window.openCreateFolderDialog = async function() {
         'Content-Type': 'application/json',
         'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
       },
-      body: JSON.stringify({ name: result.value.trim() })
+      body: JSON.stringify({ name: result.value.trim(), type: 'media' })
     });
     const data = await response.json();
     if (data.success) {
@@ -1025,7 +1026,7 @@ window.openCreateThumbnailFolderDialog = async function() {
         'Content-Type': 'application/json',
         'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
       },
-      body: JSON.stringify({ name: result.value.trim() })
+      body: JSON.stringify({ name: result.value.trim(), type: 'thumbnail' })
     });
     const data = await response.json();
     if (data.success) {
@@ -2905,8 +2906,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const paginationBar = document.getElementById('galleryPaginationBar');
     if (!content) return;
 
-    const hasRootFolders = !currentFolderId && galleryFoldersState.length > 0;
-    const totalItems = galleryVideosState.length + (hasRootFolders ? galleryFoldersState.length : 0);
+    const mediaFolders = (galleryFoldersState || []).filter(f => f.type !== 'thumbnail');
+    const hasRootFolders = !currentFolderId && mediaFolders.length > 0;
+    const totalItems = galleryVideosState.length + (hasRootFolders ? mediaFolders.length : 0);
 
     if (totalItems === 0) {
       content.innerHTML = `
@@ -2927,8 +2929,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    const folderGridMarkup = hasRootFolders ? galleryFoldersState.map(buildFolderGridMarkup).join('') : '';
-    const folderListMarkup = hasRootFolders ? galleryFoldersState.map(buildFolderListMarkup).join('') : '';
+    const folderGridMarkup = hasRootFolders ? mediaFolders.map(buildFolderGridMarkup).join('') : '';
+    const folderListMarkup = hasRootFolders ? mediaFolders.map(buildFolderListMarkup).join('') : '';
     const videoGridMarkup = galleryVideosState.map(buildVideoGridMarkup).join('');
     const videoListMarkup = galleryVideosState.map(buildVideoListMarkup).join('');
 
@@ -3209,7 +3211,12 @@ async function showMoveSelectedDialog() {
   
   // Build folder options
   let folderOptions = '<option value="">Root Folder</option>';
-  galleryFoldersState.forEach(folder => {
+  const isMovingImages = Array.from(selectedFileIds).every(fileId => {
+    const video = galleryVideosState.find(v => v.id === fileId);
+    return video && isImageMediaItem(video);
+  });
+  const filteredFolders = (galleryFoldersState || []).filter(f => isMovingImages ? f.type === 'thumbnail' : f.type !== 'thumbnail');
+  filteredFolders.forEach(folder => {
     folderOptions += `<option value="${folder.id}">${folder.name}</option>`;
   });
   
@@ -3319,6 +3326,7 @@ async function showMoveSelectedDialog() {
     // Filter folders and image files
     const allImages = (galleryVideosState || []).filter(isImageMediaItem);
     const allFolders = (galleryFoldersState || []);
+    const thumbnailFolders = allFolders.filter(f => f.type === 'thumbnail');
     const currentFolderObj = currentThumbnailFolderId ? allFolders.find(f => f.id === currentThumbnailFolderId) : null;
 
     const folderImages = currentThumbnailFolderId 
@@ -3347,7 +3355,7 @@ async function showMoveSelectedDialog() {
 
     // Render Folders List (LEFT COLUMN)
     if (foldersContainer) {
-      if (allFolders.length === 0) {
+      if (thumbnailFolders.length === 0) {
         foldersContainer.innerHTML = `
           <div class="text-center py-8 text-gray-500">
             <i class="ti ti-folder-off text-3xl mb-2"></i>
@@ -3356,7 +3364,7 @@ async function showMoveSelectedDialog() {
         `;
       } else {
         let foldersHtml = '';
-        allFolders.forEach(folder => {
+        thumbnailFolders.forEach(folder => {
           const isActive = currentThumbnailFolderId === folder.id;
           const name = escapeHtml(folder.name || '');
           foldersHtml += `
