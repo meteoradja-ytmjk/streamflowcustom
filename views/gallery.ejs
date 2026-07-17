@@ -34,48 +34,48 @@ function formatDuration(seconds) {
       </p>
 
       <!-- Minimalist Modern Sub-Tabs Bar -->
-      <div class="mt-4 w-full sm:w-[380px] bg-dark-800/50 border-b-2 border-gray-700/50 flex">
-        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-primary text-white focus:outline-none">
-          <i class="ti ti-video text-base"></i>
-          <span>Media Gallery</span>
+      <div class="mt-4 inline-flex border-b border-gray-700">
+        <button id="tabNavMedia" onclick="switchGalleryTab('media')" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none">
+          <i class="ti ti-video"></i>
+          <span>Media</span>
         </button>
-        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 focus:outline-none">
-          <i class="ti ti-photo text-base"></i>
-          <span>Thumbnail Management</span>
+        <button id="tabNavThumbnail" onclick="switchGalleryTab('thumbnail')" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none">
+          <i class="ti ti-photo"></i>
+          <span>Thumbnails</span>
         </button>
       </div>
     </div>
     
     <!-- Action Buttons - Hidden when Thumbnail tab active -->
-    <div id="headerActionButtons" class="flex justify-between sm:justify-end gap-3 w-full lg:w-auto">
-      <button onclick="openUploadModal()" class="flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 h-10 transition-all text-sm font-medium flex-1 sm:flex-none sm:w-[150px]">
-        <i class="ti ti-upload text-base"></i>
-        <span>Upload Media</span>
+    <div id="headerActionButtons" class="flex gap-2 w-full lg:w-auto">
+      <button onclick="openUploadModal()" class="flex items-center justify-center gap-1.5 bg-primary hover:bg-rose-600 text-white px-3 h-9 transition-all text-xs font-medium flex-1 sm:flex-initial sm:min-w-[120px]">
+        <i class="ti ti-upload"></i>
+        <span>Upload</span>
       </button>
-      <div class="relative flex-1 sm:flex-none sm:w-[150px]">
-        <button onclick="toggleCloudDropdown()" class="w-full flex items-center justify-center gap-2 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white px-4 h-10 transition-all text-sm font-medium">
-          <i class="ti ti-cloud-download text-base"></i>
+      <div class="relative flex-1 sm:flex-initial sm:min-w-[120px]">
+        <button onclick="toggleCloudDropdown()" class="w-full flex items-center justify-center gap-1.5 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white px-3 h-9 transition-all text-xs font-medium">
+          <i class="ti ti-cloud-download"></i>
           <span>Import</span>
-          <i class="ti ti-chevron-down text-xs"></i>
+          <i class="ti ti-chevron-down text-[10px]"></i>
         </button>
         <div id="cloudDropdown" class="hidden absolute right-0 mt-2 w-52 bg-dark-800 border border-gray-700 shadow-xl z-50">
-          <button onclick="openCloudModal('gdrive')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+          <button onclick="openCloudModal('gdrive')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm text-left">
             <img src="/images/google drive.png" alt="Google Drive" class="w-5 h-5">
             <span>Google Drive</span>
           </button>
-          <button onclick="openCloudModal('mediafire')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+          <button onclick="openCloudModal('mediafire')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm text-left">
             <img src="/images/mediafire.png" alt="Mediafire" class="w-5 h-5">
             <span>Mediafire</span>
           </button>
-          <button onclick="openCloudModal('dropbox')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+          <button onclick="openCloudModal('dropbox')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm text-left">
             <img src="/images/dropbox.png" alt="Dropbox" class="w-5 h-5">
             <span>Dropbox</span>
           </button>
-          <button onclick="openCloudModal('mega')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm">
+          <button onclick="openCloudModal('mega')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-sm text-left">
             <img src="/images/mega.png" alt="MEGA" class="w-5 h-5">
             <span>MEGA</span>
           </button>
-          <button onclick="openLocalImportModal()" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors border-t border-gray-700 text-sm">
+          <button onclick="openLocalImportModal()" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-dark-700 transition-colors border-t border-gray-700 text-sm text-left">
             <i class="ti ti-device-floppy text-lg text-primary"></i>
             <span>Local Path</span>
           </button>
@@ -137,17 +137,17 @@ function formatDuration(seconds) {
       
       <!-- Right: Actions -->
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <div class="flex bg-dark-700 border border-gray-600 overflow-hidden flex-shrink-0 h-10">
-          <button id="gridViewBtn" class="px-2.5 sm:px-3 h-full bg-primary text-white transition-colors flex items-center justify-center" title="Grid view">
+        <div class="flex bg-dark-700 border border-gray-600 overflow-hidden h-9">
+          <button id="gridViewBtn" onclick="switchView('grid')" class="px-3 h-full bg-primary text-white transition-colors flex items-center justify-center" title="Grid view">
             <i class="ti ti-layout-grid"></i>
           </button>
-          <button id="listViewBtn" class="px-2.5 sm:px-3 h-full text-gray-400 hover:text-white transition-colors flex items-center justify-center" title="List view">
+          <button id="listViewBtn" onclick="switchView('list')" class="px-3 h-full text-gray-400 hover:text-white hover:bg-dark-600 transition-colors flex items-center justify-center" title="List view">
             <i class="ti ti-list"></i>
           </button>
         </div>
         <% if (!currentFolder) { %>
-        <button onclick="openCreateFolderDialog()" class="flex items-center justify-center w-10 h-10 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white transition-colors flex-shrink-0" title="Create folder">
-          <i class="ti ti-folder-plus text-lg"></i>
+        <button onclick="openCreateFolderDialog()" class="flex items-center justify-center w-9 h-9 bg-dark-700 border border-gray-600 hover:bg-dark-600 text-white transition-colors" title="Create folder">
+          <i class="ti ti-folder-plus"></i>
         </button>
         <% } %>
       </div>
@@ -399,24 +399,24 @@ function formatDuration(seconds) {
 <!-- Sub-Tab 2: Thumbnail Management View (Images & YouTube Integration Studio) -->
 <div id="subTabThumbnailMgmtView" class="hidden space-y-6">
   <!-- Top Banner / Header -->
-  <div class="bg-dark-800 p-5 border-b border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+  <div class="bg-dark-800 p-4 border-b border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-3">
     <div class="flex items-center gap-3">
-      <div class="w-12 h-12 bg-primary/15 text-primary flex items-center justify-center shrink-0">
-        <i class="ti ti-photo-heart text-2xl"></i>
+      <div class="w-10 h-10 bg-primary/15 text-primary flex items-center justify-center shrink-0">
+        <i class="ti ti-photo-heart text-xl"></i>
       </div>
       <div>
-        <h3 class="font-bold text-white text-base">YouTube Thumbnail Studio</h3>
-        <p class="text-xs text-gray-400 mt-0.5">Kelola gambar thumbnail, rapikan dalam folder, dan hubungkan ke Channel YouTube</p>
+        <h3 class="font-bold text-white text-sm">YouTube Thumbnail Studio</h3>
+        <p class="text-[11px] text-gray-400 mt-0.5">Kelola gambar thumbnail dan hubungkan ke Channel YouTube</p>
       </div>
     </div>
-    <div class="flex gap-3 w-full sm:w-auto">
-      <button onclick="openCreateThumbnailFolderDialog()" class="h-10 flex items-center justify-center gap-2 bg-dark-700 hover:bg-dark-600 text-white border border-gray-600 px-4 text-sm font-medium transition-all w-full sm:w-auto">
-        <i class="ti ti-folder-plus text-base"></i>
-        <span>Folder Baru</span>
+    <div class="flex gap-2 w-full sm:w-auto">
+      <button onclick="openCreateThumbnailFolderDialog()" class="h-9 flex items-center justify-center gap-1.5 bg-dark-700 hover:bg-dark-600 text-white border border-gray-600 px-3 text-xs font-medium transition-all flex-1 sm:flex-initial sm:min-w-[120px]">
+        <i class="ti ti-folder-plus"></i>
+        <span>New Folder</span>
       </button>
-      <button onclick="openThumbnailUploadModal()" class="h-10 flex items-center justify-center gap-2 bg-primary hover:bg-rose-600 text-white px-4 text-sm font-semibold transition-all w-full sm:w-auto">
-        <i class="ti ti-cloud-upload text-base"></i>
-        <span>Upload Thumbnail</span>
+      <button onclick="openThumbnailUploadModal()" class="h-9 flex items-center justify-center gap-1.5 bg-primary hover:bg-rose-600 text-white px-3 text-xs font-semibold transition-all flex-1 sm:flex-initial sm:min-w-[120px]">
+        <i class="ti ti-cloud-upload"></i>
+        <span>Upload</span>
       </button>
     </div>
   </div>
@@ -983,7 +983,12 @@ function initializeGalleryViewButtons() {
   applyGalleryViewMode();
 }
 
-function playMedia(mediaId, mediaTitle, mediaType) {
+window.switchView = function(view) {
+  currentView = view;
+  applyGalleryViewMode();
+};
+
+window.playMedia = function(mediaId, mediaTitle, mediaType) {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
   modal.id = 'media-player-modal';
@@ -1051,7 +1056,7 @@ function playMedia(mediaId, mediaTitle, mediaType) {
   });
 }
 
-async function showRenameDialog(videoId, currentTitle) {
+window.showRenameDialog = async function(videoId, currentTitle) {
   const result = await createModalDialog({
     type: 'info',
     icon: 'ti-pencil',
@@ -1079,9 +1084,9 @@ async function showRenameDialog(videoId, currentTitle) {
       showToast('error', 'An error occurred while renaming the video');
     }
   }
-}
+};
 
-async function showDeleteDialog(videoId, videoTitle) {
+window.showDeleteDialog = async function(videoId, videoTitle) {
   const result = await createModalDialog({
     type: 'danger',
     icon: 'ti-trash',
@@ -1104,9 +1109,9 @@ async function showDeleteDialog(videoId, videoTitle) {
       showToast('error', 'An error occurred while deleting the video');
     }
   }
-}
+};
 
-async function openCreateFolderDialog() {
+window.openCreateFolderDialog = async function() {
   const result = await createModalDialog({
     type: 'info',
     icon: 'ti-folder-plus',
@@ -1139,9 +1144,9 @@ async function openCreateFolderDialog() {
   } catch (error) {
     showToast('error', 'An error occurred while creating the folder');
   }
-}
+};
 
-async function showRenameFolderDialog(folderId, currentName) {
+window.showRenameFolderDialog = async function(folderId, currentName) {
   const result = await createModalDialog({
     type: 'info',
     icon: 'ti-pencil',
@@ -1175,9 +1180,9 @@ async function showRenameFolderDialog(folderId, currentName) {
   } catch (error) {
     showToast('error', 'An error occurred while renaming the folder');
   }
-}
+};
 
-async function showDeleteFolderDialog(folderId, folderName) {
+window.showDeleteFolderDialog = async function(folderId, folderName) {
   const result = await createModalDialog({
     type: 'danger',
     icon: 'ti-trash',
@@ -1208,7 +1213,7 @@ async function showDeleteFolderDialog(folderId, folderName) {
   } catch (error) {
     showToast('error', 'An error occurred while deleting the folder');
   }
-}
+};
 
 async function moveVideoToFolder(videoId, folderId) {
   try {
@@ -1289,7 +1294,7 @@ function createModalDialog(options) {
   });
 }
 
-function openUploadModal(defaultTab) {
+window.openUploadModal = function(defaultTab) {
   const modal = document.getElementById('uploadModal');
   modal.classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
@@ -1297,34 +1302,34 @@ function openUploadModal(defaultTab) {
   if (defaultTab) {
     switchUploadTab(defaultTab);
   }
-}
+};
 
-function closeUploadModal() {
+window.closeUploadModal = function() {
   const modal = document.getElementById('uploadModal');
   modal.classList.add('hidden');
   document.body.classList.remove('overflow-hidden');
   resetUploadForm();
-}
+};
 
 let selectedThumbFiles = [];
 
-function openThumbnailUploadModal() {
+window.openThumbnailUploadModal = function() {
   const modal = document.getElementById('uploadThumbnailModal');
   if (modal) {
     modal.classList.remove('hidden');
     document.body.classList.add('overflow-hidden');
     resetThumbnailUploadForm();
   }
-}
+};
 
-function closeThumbnailUploadModal() {
+window.closeThumbnailUploadModal = function() {
   const modal = document.getElementById('uploadThumbnailModal');
   if (modal) {
     modal.classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
     resetThumbnailUploadForm();
   }
-}
+};
 
 function resetThumbnailUploadForm() {
   document.getElementById('thumbnailUploadForm')?.reset();
@@ -1351,10 +1356,10 @@ function resetUploadForm() {
 
 let currentCloudType = '';
 
-function toggleCloudDropdown() {
+window.toggleCloudDropdown = function() {
   const dropdown = document.getElementById('cloudDropdown');
   dropdown.classList.toggle('hidden');
-}
+};
 
 document.addEventListener('click', function(e) {
   const dropdown = document.getElementById('cloudDropdown');
@@ -1364,20 +1369,20 @@ document.addEventListener('click', function(e) {
   }
 });
 
-function openCloudModal(type) {
+window.openCloudModal = function(type) {
   currentCloudType = type;
   document.getElementById('cloudDropdown').classList.add('hidden');
   const modal = document.getElementById('cloudImportModal');
   modal.classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
   initCloudModal(type);
-}
+};
 
-function closeCloudModal() {
+window.closeCloudModal = function() {
   const modal = document.getElementById('cloudImportModal');
   modal.classList.add('hidden');
   document.body.classList.remove('overflow-hidden');
-}
+};
 
 function openGDriveModal() {
   openCloudModal('gdrive');
@@ -1520,7 +1525,7 @@ function showImportProgress(jobId) {
   }, 1000);
 }
 
-function openLocalImportModal() {
+window.openLocalImportModal = function() {
   document.getElementById('cloudDropdown').classList.add('hidden');
   document.getElementById('localImportModal').classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
@@ -1529,12 +1534,12 @@ function openLocalImportModal() {
   document.getElementById('fileBrowserContainer').classList.add('hidden');
   selectedLocalFiles = [];
   updateSelectedLocalFilesUI();
-}
+};
 
-function closeLocalImportModal() {
+window.closeLocalImportModal = function() {
   document.getElementById('localImportModal').classList.add('hidden');
   document.body.classList.remove('overflow-hidden');
-}
+};
 
 let selectedLocalFiles = [];
 
@@ -3156,14 +3161,14 @@ async function showMoveSelectedDialog() {
     const headerActionButtons = document.getElementById('headerActionButtons');
 
     if (tab === 'media') {
-      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-primary text-white focus:outline-none';
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 focus:outline-none';
+      if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
       if (viewMedia) viewMedia.classList.remove('hidden');
       if (viewThumbnail) viewThumbnail.classList.add('hidden');
       if (headerActionButtons) headerActionButtons.classList.remove('hidden');
     } else {
-      if (tabThumbnail) tabThumbnail.className = 'flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-primary text-white focus:outline-none';
-      if (tabMedia) tabMedia.className = 'flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 focus:outline-none';
+      if (tabThumbnail) tabThumbnail.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-primary text-white focus:outline-none';
+      if (tabMedia) tabMedia.className = 'flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500 focus:outline-none';
       if (viewThumbnail) viewThumbnail.classList.remove('hidden');
       if (viewMedia) viewMedia.classList.add('hidden');
       if (headerActionButtons) headerActionButtons.classList.add('hidden');
